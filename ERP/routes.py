@@ -15,7 +15,7 @@ def load_user(user_id):
 def home():
     return render_template('home.html')
 
-@app.route('/criarconta')
+@app.route('/criarconta', methods=['GET', 'POST'])
 def criar_conta():
     form_criar_conta = FormCriarConta()
     if form_criar_conta.validate_on_submit():
