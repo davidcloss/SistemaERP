@@ -16,3 +16,9 @@ class FormCriarConta(FlaskForm):
         usuario = Usuarios.query.filter_by(username=username.data).first()
         if usuario:
             raise ValidationError('Usuário já cadastrado.')
+
+class FormLogin(FlaskForm):
+    username = StringField('Usuário:', validators=[DataRequired()])
+    senha = PasswordField('Senha:', validators=[DataRequired(), Length(8, 100)])
+    lembrar_dados = BooleanField("Manter logado")
+    botao_submit_login = SubmitField('Fazer login')

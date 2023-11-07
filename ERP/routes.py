@@ -1,6 +1,6 @@
 from flask import render_template, redirect, url_for, flash, request
 from ERP import app, database, bcrypt, login_manager
-from ERP.forms import FormCriarConta
+from ERP.forms import FormCriarConta, FormLogin
 from ERP.models import Usuarios
 from flask_login import login_user, logout_user, current_user, login_required
 import secrets
@@ -27,3 +27,20 @@ def criar_conta():
         flash(f"Conta criada para: {form_criar_conta.username.data}!", 'alert-success')
         return redirect(url_for('home'))
     return render_template('criar_conta.html', form_criar_conta=form_criar_conta)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form_login = FormLogin()
+    if form_login.validate_on_submit():
+        usuario = Usuarios.query.filter_by(username=form_login.username.data).first()
+        if usuario and bcrypt.check_password_hash(usuario.senha, form_login.senha.data):
+            login_user(usuario, remember=form_login.lembrar_dados.data)
+            flash(f"Login bem sucedido em: {form_login.username.data}!", 'alert-success')
+            par_next = request.args.get('next')
+            if par_next:
+                return redirect(par_next)
+            else:
+                return redirect(url_for('home'))
+        else:
+            flash(f"E-mail ou senha incorretos ou não cadastrados!", 'alert-danger')
+    return render_template('login.html', form_login=form_login)

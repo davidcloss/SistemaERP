@@ -1,10 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% include 'base.html' %}
 
-</body>
-</html>
+{% block body %}
+    <div class="container">
+        <form method="POST" action="" class="border m-5 p-2">
+            {{ form_login.csrf_token }}
+            <legend>Login:</legend>
+            <fieldset>
+                <div class="form-group">
+                    {{ form_login.username.label(class="form-control-label") }}
+                    {{ form_login.username(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form_login.senha.label(class="form-control-label") }}
+                    {{ form_login.senha(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form_login.lembrar_dados.label(class="form-check-label") }}
+                    {{ form_login.lembrar_dados(class="form-check-input") }}
+                </div>
+            </fieldset>
+            {{ form_login.botao_submit_login(class="btn btn-primary mt-3") }}
+        </form>
+    </div>
+{% endblock %}
