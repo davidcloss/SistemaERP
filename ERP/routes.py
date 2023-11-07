@@ -21,7 +21,8 @@ def criar_conta():
     if form_criar_conta.validate_on_submit():
         senha_crip = bcrypt.generate_password_hash(form_criar_conta.senha.data)
         usuario = Usuarios(username=form_criar_conta.username.data,
-                          senha=senha_crip)
+                          senha=senha_crip,
+                           acesso=form_criar_conta.acesso.data)
         database.session.add(usuario)
         database.session.commit()
         flash(f"Conta criada para: {form_criar_conta.username.data}!", 'alert-success')

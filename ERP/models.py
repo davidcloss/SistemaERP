@@ -8,8 +8,9 @@ class Usuarios(database.Model, UserMixin):
     id = database.Column(database.Integer, primary_key=True)
     username = database.Column(database.String(100), unique=True, nullable=False)
     senha = database.Column(database.String(300), nullable=False)
+    acesso = database.Column(database.Integer, nullable=False)
     data_caadastro = database.Column(database.DateTime, default=datetime.utcnow().date())
-    ##TODO: situacao = database.Column(database.Integer, default=1)
+    situacao = database.Column(database.Integer, database.ForeignKey('situacoes.id'), default=1)
 
 class Situacoes(database.Model):
     __tablename__ = 'situacoes'
@@ -28,17 +29,21 @@ class ClientesFornecedores(database.Model):
     bairro = database.Column(database.String(70))
     cidade = database.Column(database.String(70))
     uf = database.Column(database.String(2))
+    cep = database.Column(database.String(15))
+    data_fundacao = database.Column(database.Date)
     cpf = database.Column(database.String(20))
     nome = database.Column(database.String(100))
-    data_cadastro = database.Column(database.DateTime, dafault=datetime.utcnow().date())
-    ##TODO: tipo_cadastro = database.Column(database.String(500))
+    telefone = database.Column(database.String(20))
+    telefone2 = database.Column(database.String(20))
+    telefone3 = database.Column(database.String(20))
+    email = database.Column(database.String(100))
+    data_aniversario = database.Column(database.Date)
+    data_cadastro = database.Column(database.DateTime, default=datetime.utcnow().date())
+    tipo_cadastro = database.Column(database.Integer, database.ForeignKey('tipos_cadastro.id'), nullable=False)
+    obs = database.Column(database.Text)
 
 class TiposCadastros(database.Model):
     __tablename__ = 'tipos_cadastro'
     id = database.Column(database.Integer, primary_key=True)
     nome_tipo = database.Column(database.String(70))
 
-class ContatosClientesFornecedores(database.Model):
-    __tablename__ = 'contatos_clientes_fornecedores'
-    id = database.Column(database.Integer, primary_key=True)
-#TODO: resto
