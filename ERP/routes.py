@@ -1,6 +1,6 @@
 from flask import render_template, redirect, url_for, flash, request
 from ERP import app, database, bcrypt, login_manager
-from ERP.forms import FormCriarConta, FormLogin
+from ERP.forms import FormCriarConta, FormLogin, FormCadastroCNPJ
 from ERP.models import Usuarios
 from flask_login import login_user, logout_user, current_user, login_required
 import secrets
@@ -45,3 +45,8 @@ def login():
         else:
             flash(f"E-mail ou senha incorretos ou não cadastrados!", 'alert-danger')
     return render_template('login.html', form_login=form_login)
+
+@app.route('/cadastro/cnpj', methods=['GET', 'POST'])
+def cadastro_cnpj():
+    form_cnpj = FormCadastroCNPJ()
+    return render_template('cadastro_cnpj.html', form=form_cnpj)

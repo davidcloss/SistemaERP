@@ -1,0 +1,76 @@
+{% include 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <form method='POST' action="/cadastro/cnpj" class="border m-5 p-2">
+            {{ form.csrf_token }}
+            <legend>Cadastro Cliente/Fornecedores CNPJ:</legend>
+            <fieldset>
+                <div class="form-group">
+                    {{ form.nome_fantasia.label(class="form-control-label") }}
+                    {{ form.nome_fantasia(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.razao_social.label(class="form-control-label") }}
+                    {{ form.razao_social(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.cnpj.label(class="form-control-label") }}
+                    {{ form.cnpj(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.rua.label(class="form-control-label") }}
+                    {{ form.rua(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.complemento.label(class="form-control-label") }}
+                    {{ form.complemento(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.nro.label(class="form-control-label") }}
+                    {{ form.nro(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.bairro.label(class="form-control-label") }}
+                    {{ form.bairro(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.uf.label(class="form-control-label") }}
+                    {{ form.uf(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.cep.label(class="form-control-label") }}
+                    {{ form.cep(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.fundacao.label(class="form-control-label") }}
+                    {{ form.fundacao(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.telefone.label(class="form-control-label") }}
+                    {{ form.telefone(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.telefone2.label(class="form-control-label") }}
+                    {{ form.telefone2(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.telefone3.label(class="form-control-label") }}
+                    {{ form.telefone3(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.email.label(class="form-control-label") }}
+                    {{ form.email(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.obs.label(class="form-control-label") }}
+                    {{ form.obs(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.obs.label(class="form-control-label") }}
+                    {{ form.obs(class="form-control") }}
+                </div>
+            </fieldset>
+        </form>
+    </div>
+{% endblock %}

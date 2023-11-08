@@ -12,7 +12,7 @@ class FormCriarConta(FlaskForm):
     confirmacao_senha = PasswordField('Confirme sua senha:', validators=[DataRequired(), EqualTo('senha')])
     acesso = IntegerField('Nível acesso', validators=[DataRequired()])
     botao_submit_criar_conta = SubmitField('Criar conta')
-
+#TODO: tabela acesso
     def validate_username(self, username):
         usuario = Usuarios.query.filter_by(username=username.data).first()
         if usuario:
@@ -41,6 +41,7 @@ class FormCadastroCNPJ(FlaskForm):
     email = StringField('E-mail:', validators=[DataRequired(), Email()])
     obs = StringField('Observações:')
     #TODO: tipo cadastro
+    botao_submit = SubmitField('Cadastrar')
 
 class FormCadastroCPF(FlaskForm):
     nome_completo = StringField('Nome Completo:', validators=[DataRequired()])
@@ -58,3 +59,5 @@ class FormCadastroCPF(FlaskForm):
     email = StringField('E-mail:', validators=[DataRequired(), Email()])
     obs = StringField('Observações:')
     # TODO: tipo cadastro
+
+
