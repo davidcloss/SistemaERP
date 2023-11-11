@@ -1,7 +1,7 @@
 from flask import render_template, redirect, url_for, flash, request
 from ERP import app, database, bcrypt, login_manager
-from ERP.forms import FormCriarConta, FormLogin, FormCadastroCNPJ
-from ERP.models import Usuarios
+from ERP.forms import FormCriarConta, FormLogin, FormCadastroCNPJ, FormCadastroEmpresa
+from ERP.models import Usuarios, CadastroEmpresa
 from flask_login import login_user, logout_user, current_user, login_required
 import secrets
 import os
@@ -46,7 +46,20 @@ def login():
             flash(f"E-mail ou senha incorretos ou não cadastrados!", 'alert-danger')
     return render_template('login.html', form_login=form_login)
 
-@app.route('/cadastro/cnpj', methods=['GET', 'POST'])
+@app.route('/cnpj/cadastro', methods=['GET', 'POST'])
 def cadastro_cnpj():
     form_cnpj = FormCadastroCNPJ()
     return render_template('cadastro_cnpj.html', form=form_cnpj)
+
+
+@app.route('/cadastroinicial', methods=['GET', 'POST'])
+def cadastro_inicial():
+    form = FormCadastroEmpresa()
+    if form.validate_on_submit():
+        cadastro = CadastroEmpresa(nome_empres = form.nome_empresa.data,
+                                   email_responsavel=form.email_responsavel.data)
+        database.session.add(cadastro)
+        database.session.commit()
+        flash(f"Conta criada para: {form.nome_empresa.data}!", 'alert-success')
+        return redirect(url_for('criar_conta'))
+    return render_template('cadastro_empresa.html', form=form)

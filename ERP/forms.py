@@ -60,4 +60,7 @@ class FormCadastroCPF(FlaskForm):
     obs = StringField('Observações:')
     # TODO: tipo cadastro
 
-
+class FormCadastroEmpresa(FlaskForm):
+    nome_empresa = StringField('Nome empresa:', validators=[DataRequired()])
+    email_responsavel = StringField('E-mail:', validators=[DataRequired(), Email()])
+    botao_submit = SubmitField('Cadastrar')

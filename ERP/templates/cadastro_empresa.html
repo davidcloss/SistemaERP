@@ -1,0 +1,38 @@
+{% include 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <form method='POST' action="/criarconta" class="border m-5 p-2">
+            {{ form.csrf_token }}
+            <legend>Cadastro Empresa:</legend>
+            <fieldset>
+                <div class="form-group">
+                        {{ form.nome_empresa.label(class="form-control-label") }}
+                        {{ form.nome_empresa(class="form-control") }}
+                </div>
+                <div class="form-group">
+                        {{ form.email_responsavel.label(class="form-control-label") }}
+                        {% if form.email_responsavel.errors %}
+
+                            {{ form.email_responsavel(class="form-control is-invalid") }}
+
+                            <div class="invalid_feedback">
+
+                            {% for erro in form.email_responsavel.errors %}
+
+                                {{ erro }}
+
+                            {% endfor %}
+                             </div>
+
+                        {% else %}
+
+                            {{ form.email_responsavel(class="form-control") }}
+
+                        {% endif %}
+                    </div>
+            </fieldset>
+            {{ form.botao_submit(class="btn btn-primary m-1") }}
+        </form>
+    </div>
+{% endblock %}

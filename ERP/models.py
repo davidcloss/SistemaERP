@@ -9,13 +9,15 @@ class Usuarios(database.Model, UserMixin):
     username = database.Column(database.String(100), unique=True, nullable=False)
     senha = database.Column(database.String(300), nullable=False)
     acesso = database.Column(database.Integer, nullable=False)
-    data_caadastro = database.Column(database.DateTime, default=datetime.utcnow().date())
+    data_cadastro = database.Column(database.DateTime, default=datetime.utcnow().date())
     situacao = database.Column(database.Integer, database.ForeignKey('situacoes.id'), default=1)
+    tipo_usuario = database.Column(database.Integer, database.ForeignKey('tipos_usuarios.id'), nullable=False)
 
 class Situacoes(database.Model):
     __tablename__ = 'situacoes'
     id = database.Column(database.Integer, primary_key=True)
     nome_situacao = database.Column(database.String(70))
+    situacoes_usuarios = database.relationship('Usuarios', backref='situacoes_usuarios', lazy=True)
 
 class ClientesFornecedores(database.Model):
     __tablename__ ='clientes_fornecedores'
@@ -45,5 +47,18 @@ class ClientesFornecedores(database.Model):
 class TiposCadastros(database.Model):
     __tablename__ = 'tipos_cadastro'
     id = database.Column(database.Integer, primary_key=True)
-    nome_tipo = database.Column(database.String(70))
+    nome_tipo = database.Column(database.String(70), nullable=False, unique=True)
+    tipos_cadastro = database.relationship('ClienteFornecedores', backref='cadastros_tipos', lazy=True)
 
+class TiposUsuarios(database.Model):
+    __tablename__ = 'tipos_usuarios'
+    id = database.Column(database.Integer, primary_key=True)
+    nome_tipo = database.Column(database.String(70), nullable=False, unique=True)
+    tipos_usuarios = database.relationship('Usuarios', backref='usuarios_tipo', lazy=True)
+
+class CadastroEmpresa(database.Model):
+    __tablename__ = 'cadastro_empresa'
+    id = database.Column(database.Integer, primary_key=True)
+    nome_empresa = database.Column(database.String(100), nullable=False)
+    email_verificaco = database.Column(database.String(100), nullable=False)
+    situacao = database.Column(database.Integer, default='A')
