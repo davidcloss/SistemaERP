@@ -1,7 +1,7 @@
 from flask import render_template, redirect, url_for, flash, request
 from ERP import app, database, bcrypt, login_manager
 from ERP.forms import FormCriarConta, FormLogin, FormCadastroCNPJ, FormCadastroEmpresa
-from ERP.models import Usuarios, CadastroEmpresa
+from ERP.models import Usuarios, CadastroEmpresa, TiposCadastros, ClientesFornecedores
 from flask_login import login_user, logout_user, current_user, login_required
 import secrets
 import os
@@ -46,10 +46,38 @@ def login():
             flash(f"E-mail ou senha incorretos ou não cadastrados!", 'alert-danger')
     return render_template('login.html', form_login=form_login)
 
-@app.route('/cnpj/cadastro', methods=['GET', 'POST'])
+def trata_documento(doc):
+    doc = doc.replace('.', '')
+    doc = doc.replace(',', '')
+    doc = doc.replace('/', '')
+    doc = doc.replace('-', '')
+    return doc
+
+@app.route('/clientes_fornecedores/cnpj/cadastro', methods=['GET', 'POST'])
 def cadastro_cnpj():
-    form_cnpj = FormCadastroCNPJ()
-    return render_template('cadastro_cnpj.html', form=form_cnpj)
+    form = FormCadastroCNPJ()
+    form.tipo_cadastro.choices = [(tipo.id, tipo.nome_tipo) for tipo in TiposCadastros.query.all()]
+    if form.validate_on_submit():
+        cadastro = ClientesFornecedores(nome_fantasia=form.nome_fantasia.data,
+                                        razao_social=form.razao_social.data,
+                                        cnpj=trata_documento(form.cnpj.data),
+                                        rua=form.rua.data, nro=form.nro.data,
+                                        complemento=form.complemento.data,
+                                        cidade=form.cidade.data,
+                                        bairro=form.bairro.data,
+                                        uf=form.uf.data, cep=form.cep.data,
+                                        data_fundacao=form.fundacao.data,
+                                        telefone=form.telefone.data,
+                                        telefone2=form.telefone2.data,
+                                        telefone3=form.telefone3.data,
+                                        email=form.email.data, obs=form.obs.data,
+                                        tipo_cadastro=form.tipo_cadastro.id)
+        database.session.add(cadastro)
+        database.session.commit()
+        flash('Cadastro realizado com sucesso!', 'success')
+        return redirect(url_for('home'))
+    return render_template('cadastro_cnpj.html', form=form)
+
 
 
 @app.route('/cadastroinicial', methods=['GET', 'POST'])

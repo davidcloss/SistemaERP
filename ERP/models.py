@@ -48,7 +48,7 @@ class TiposCadastros(database.Model):
     __tablename__ = 'tipos_cadastro'
     id = database.Column(database.Integer, primary_key=True)
     nome_tipo = database.Column(database.String(70), nullable=False, unique=True)
-    tipos_cadastro = database.relationship('ClienteFornecedores', backref='cadastros_tipos', lazy=True)
+    tipos_cadastro = database.relationship('ClientesFornecedores', backref='cadastros_tipos', lazy=True)
 
 class TiposUsuarios(database.Model):
     __tablename__ = 'tipos_usuarios'

@@ -1,8 +1,9 @@
+html
 {% include 'base.html' %}
 
 {% block content %}
     <div class="container">
-        <form method='POST' action="/cadastro/cnpj" class="border m-5 p-2">
+        <form method='POST' action="" class="border m-5 p-2">
             {{ form.csrf_token }}
             <legend>Cadastro Cliente/Fornecedores CNPJ:</legend>
             <fieldset>
@@ -33,6 +34,10 @@
                 <div class="form-group">
                     {{ form.bairro.label(class="form-control-label") }}
                     {{ form.bairro(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.cidade.label(class="form-control-label") }}
+                    {{ form.cidade(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.uf.label(class="form-control-label") }}
@@ -67,8 +72,11 @@
                     {{ form.obs(class="form-control") }}
                 </div>
                 <div class="form-group">
-                    {{ form.obs.label(class="form-control-label") }}
-                    {{ form.obs(class="form-control") }}
+                    {{ form.tipo_cadastro.label(class="form-control-label") }}
+                    {{ form.tipo_cadastro(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.botao_submit(class="btn btn-primary") }}
                 </div>
             </fieldset>
         </form>

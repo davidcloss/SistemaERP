@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, IntegerField, DateField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, IntegerField, DateField, SelectField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from ERP.models import Usuarios
 from flask_login import current_user
@@ -27,11 +27,12 @@ class FormLogin(FlaskForm):
 class FormCadastroCNPJ(FlaskForm):
     nome_fantasia = StringField('Nome Fantasia:', validators=[DataRequired()])
     razao_social = StringField('Razão Social:', validators=[DataRequired()])
-    cnpj = StringField('CNPJ:', validators=[DataRequired()])
+    cnpj = StringField('CNPJ:', validators=[DataRequired(), Length(14,18)])
     rua = StringField('Rua:', validators=[DataRequired()])
     complemento = StringField('Complemento:')
     nro = StringField('Nº:', validators=[DataRequired()])
     bairro = StringField('Bairro:', validators=[DataRequired()])
+    cidade = StringField('Cidade:', validators=[DataRequired()])
     uf = StringField('UF:', validators=[DataRequired()])
     cep = StringField('CEP:', validators=[DataRequired()])
     fundacao = DateField('Data Fundação Empresa:')
@@ -40,7 +41,7 @@ class FormCadastroCNPJ(FlaskForm):
     telefone3 = StringField('Telefone 3:')
     email = StringField('E-mail:', validators=[DataRequired(), Email()])
     obs = StringField('Observações:')
-    #TODO: tipo cadastro
+    tipo_cadastro = SelectField('Tipo Cadastro:')
     botao_submit = SubmitField('Cadastrar')
 
 class FormCadastroCPF(FlaskForm):
@@ -58,7 +59,8 @@ class FormCadastroCPF(FlaskForm):
     telefone3 = StringField('Telefone 3:')
     email = StringField('E-mail:', validators=[DataRequired(), Email()])
     obs = StringField('Observações:')
-    # TODO: tipo cadastro
+    tipo_cadastro = SelectField('Tipo Cadastro:')
+    botao_submit = SubmitField('Cadastrar')
 
 class FormCadastroEmpresa(FlaskForm):
     nome_empresa = StringField('Nome empresa:', validators=[DataRequired()])
