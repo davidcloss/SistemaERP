@@ -12,6 +12,7 @@ def load_user(user_id):
     return Usuarios.query.get(int(user_id))
 
 @app.route('/')
+@login_required
 def home():
     return render_template('home.html')
 
@@ -23,7 +24,7 @@ def criar_conta():
         senha_crip = bcrypt.generate_password_hash(form.senha.data)
         usuario = Usuarios(username=form.username.data,
                           senha=senha_crip,
-                           tipo_usuatrio=int(form.tipo_usuario.data))
+                           tipo_usuario=int(form.tipo_usuario.data))
         database.session.add(usuario)
         database.session.commit()
         flash(f"Conta criada para: {form.username.data}!", 'alert-success')
@@ -44,8 +45,8 @@ def login():
             else:
                 return redirect(url_for('home'))
         else:
-            flash(f"E-mail ou senha incorretos ou não cadastrados!", 'alert-danger')
-    return render_template('login.html', form_login=form)
+            flash(f"Usuário ou senha incorretos ou não cadastrados!", 'alert-danger')
+    return render_template('login.html', form=form)
 
 def trata_documento(doc):
     doc = doc.replace('.', '')
@@ -54,33 +55,48 @@ def trata_documento(doc):
     doc = doc.replace('-', '')
     return doc
 
+
 @app.route('/clientes_fornecedores/cnpj/cadastro', methods=['GET', 'POST'])
+@login_required
 def cadastro_cnpj():
     form = FormCadastroCNPJ()
-    return render_template('cadastro_cnpj.html', form=form)
     form.tipo_cadastro.choices = [(tipo.id, tipo.nome_tipo) for tipo in TiposCadastros.query.all()]
+
     if form.validate_on_submit():
-        cadastro = ClientesFornecedores(nome_fantasia=form.nome_fantasia.data,
-                                        razao_social=form.razao_social.data,
-                                        cnpj=trata_documento(form.cnpj.data),
-                                        rua=form.rua.data, nro=form.nro.data,
-                                        complemento=form.complemento.data,
-                                        cidade=form.cidade.data,
-                                        bairro=form.bairro.data,
-                                        uf=form.uf.data, cep=form.cep.data,
-                                        data_fundacao=form.fundacao.data,
-                                        telefone=form.telefone.data,
-                                        telefone2=form.telefone2.data,
-                                        telefone3=form.telefone3.data,
-                                        email=form.email.data, obs=form.obs.data,
-                                        tipo_cadastro=int(form.tipo_cadastro.data),
-                                        id_usuario_cadastro=int(current_user.id))
+        cadastro = ClientesFornecedores(
+            nome_fantasia=form.nome_fantasia.data,
+            razao_social=form.razao_social.data,
+            cnpj=trata_documento(form.cnpj.data),
+            rua=form.rua.data, nro=form.nro.data,
+            complemento=form.complemento.data,
+            cidade=form.cidade.data,
+            bairro=form.bairro.data,
+            uf=form.uf.data, cep=form.cep.data,
+            data_fundacao=form.fundacao.data,
+            telefone=form.telefone.data,
+            telefone2=form.telefone2.data,
+            telefone3=form.telefone3.data,
+            email=form.email.data, obs=form.obs.data,
+            tipo_cadastro=int(form.tipo_cadastro.data),
+            id_usuario_cadastro=int(current_user.id)
+        )
         database.session.add(cadastro)
         database.session.commit()
+        cliente_fornecedor = ClientesFornecedores.query.filter_by(cnpj=trata_documento(form.cnpj.data)).first()
         flash('Cadastro realizado com sucesso!', 'success')
-        return redirect(url_for('home'))
+        return redirect(url_for('clientes_fornecedor_cpf', cliente_fornecedor_id=cliente_fornecedor.id))
+
+    return render_template('cadastro_cnpj.html', form=form)
+
+
+@app.route('/clientes_fornecedores/cpf/<cliente_fornecedor_id>')
+@login_required
+def clientes_fornecedor_cpf(cliente_fornecedor_id):
+    cliente_fornecedor = ClientesFornecedores.query.get(cliente_fornecedor_id)
+    return render_template('cliente_fornecedor_cpf.html', cliente_fornecedor=cliente_fornecedor)
 
 @app.route('/clientes_fornecedores/cpf/cadastro', methods=['GET', 'POST'])
+@login_required
 def cadastro_cpf():
     form = FormCadastroCPF()
     form.tipo_cadastro.choices = [(tipo.id, tipo.nome_tipo) for tipo in TiposCadastros.query.all()]
@@ -108,6 +124,7 @@ def cadastro_cpf():
 
 
 @app.route('/cadastroinicial', methods=['GET', 'POST'])
+@login_required
 def cadastro_inicial():
     form = FormCadastroEmpresa()
     if form.validate_on_submit():

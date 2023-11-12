@@ -2,24 +2,33 @@
 
 {% block body %}
     <div class="container">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul class="flashes">
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
         <form method="POST" action="" class="border m-5 p-2">
-            {{ form_login.csrf_token }}
+            {{ form.csrf_token }}
             <legend>Login:</legend>
             <fieldset>
                 <div class="form-group">
-                    {{ form_login.username.label(class="form-control-label") }}
-                    {{ form_login.username(class="form-control") }}
+                    {{ form.username.label(class="form-control-label") }}
+                    {{ form.username(class="form-control") }}
                 </div>
                 <div class="form-group">
-                    {{ form_login.senha.label(class="form-control-label") }}
-                    {{ form_login.senha(class="form-control") }}
+                    {{ form.senha.label(class="form-control-label") }}
+                    {{ form.senha(class="form-control") }}
                 </div>
                 <div class="form-group">
-                    {{ form_login.lembrar_dados.label(class="form-check-label") }}
-                    {{ form_login.lembrar_dados(class="form-check-input") }}
+                    {{ form.lembrar_dados.label(class="form-check-label") }}
+                    {{ form.lembrar_dados(class="form-check-input") }}
                 </div>
             </fieldset>
-            {{ form_login.botao_submit_login(class="btn btn-primary mt-3") }}
+            {{ form.botao_submit_login(class="btn btn-primary mt-3") }}
         </form>
     </div>
 {% endblock %}

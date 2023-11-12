@@ -1,4 +1,3 @@
-html
 {% include 'base.html' %}
 
 {% block content %}
@@ -7,6 +6,13 @@ html
             {{ form.csrf_token }}
             <legend>Cadastro Cliente/Fornecedores CNPJ:</legend>
             <fieldset>
+                {% for field, errors in form.errors.items() %}
+                    {% for error in errors %}
+                        <div class="alert alert-danger">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
                 <div class="form-group">
                     {{ form.nome_fantasia.label(class="form-control-label") }}
                     {{ form.nome_fantasia(class="form-control") }}
@@ -17,7 +23,25 @@ html
                 </div>
                 <div class="form-group">
                     {{ form.cnpj.label(class="form-control-label") }}
-                    {{ form.cnpj(class="form-control") }}
+                    {% if form.cnpj.errors %}
+
+                        {{ form.cnpj(class="form-control is-invalid") }}
+
+                        <div class="invalid_feedback">
+
+                            {% for erro in form.cnpj.errors %}
+
+                                {{ erro }}
+
+                            {% endfor %}
+
+                        </div>
+
+                        {% else %}
+
+                            {{ form.cnpj(class="form-control") }}
+
+                        {% endif %}
                 </div>
                 <div class="form-group">
                     {{ form.rua.label(class="form-control-label") }}
