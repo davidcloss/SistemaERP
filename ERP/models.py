@@ -13,7 +13,7 @@ class Usuarios(database.Model, UserMixin):
     situacao = database.Column(database.Integer, database.ForeignKey('situacoes.id'), default=1)
     tipo_usuario = database.Column(database.Integer, database.ForeignKey('tipos_usuarios.id'), nullable=False)
 
-class Situacoes(database.Model):
+class SituacoesUsuarios(database.Model):
     __tablename__ = 'situacoes'
     id = database.Column(database.Integer, primary_key=True)
     nome_situacao = database.Column(database.String(70))
@@ -40,9 +40,10 @@ class ClientesFornecedores(database.Model):
     telefone3 = database.Column(database.String(20))
     email = database.Column(database.String(100))
     data_aniversario = database.Column(database.Date)
+    obs = database.Column(database.Text)
     data_cadastro = database.Column(database.DateTime, default=datetime.utcnow().date())
     tipo_cadastro = database.Column(database.Integer, database.ForeignKey('tipos_cadastro.id'), nullable=False)
-    obs = database.Column(database.Text)
+    id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False)
 
 class TiposCadastros(database.Model):
     __tablename__ = 'tipos_cadastro'

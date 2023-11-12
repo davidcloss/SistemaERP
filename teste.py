@@ -1,5 +1,5 @@
 from ERP import app, database
-from ERP.models import TiposCadastros
+from ERP.models import TiposCadastros, TiposUsuarios, SituacoesUsuarios
 from datetime import datetime
 import sqlite3 as sql
 
@@ -29,5 +29,18 @@ with app.app_context():
     retorno = TiposCadastros.query.all()
     print(retorno)
 
+tipos_usuario = ['Gerente', 'Financeiro(a)', 'Vendedor(a)', 'Administrador(a)', 'Supervisor(a)', 'Coordenador(a)']
+with app.app_context():
+    for tipo in tipos_usuario:
+        tipo_usu = TiposUsuarios(nome_tipo=tipo)
+        database.session.add(tipo_usu)
+        database.session.commit()
+
+sit = ['Ativo', 'Inativo']
+with app.app_context():
+    for s in sit:
+        situacao = SituacoesUsuarios(nome_situacao=s)
+        database.session.add(situacao)
+        database.session.commit()
 
 print(datetime.utcnow().date())

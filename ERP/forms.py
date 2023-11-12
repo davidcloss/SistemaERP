@@ -10,7 +10,7 @@ class FormCriarConta(FlaskForm):
     username = StringField('Nome Usuário:', validators=[DataRequired(), Length(5, 100)])
     senha = PasswordField('Senha:', validators=[DataRequired(), Length(8, 100)])
     confirmacao_senha = PasswordField('Confirme sua senha:', validators=[DataRequired(), EqualTo('senha')])
-    acesso = IntegerField('Nível acesso', validators=[DataRequired()])
+    tipo_usuario = SelectField('Tipo Usuario:')
     botao_submit_criar_conta = SubmitField('Criar conta')
 #TODO: tabela acesso
     def validate_username(self, username):
@@ -46,12 +46,13 @@ class FormCadastroCNPJ(FlaskForm):
 
 class FormCadastroCPF(FlaskForm):
     nome_completo = StringField('Nome Completo:', validators=[DataRequired()])
-    cpf = StringField('CPF:', validators=[DataRequired()])
+    cpf = StringField('CPF:', validators=[DataRequired(), Length(11, 15)])
     rua = StringField('Rua:', validators=[DataRequired()])
     complemento = StringField('Complemento:')
     nro = StringField('Nº:', validators=[DataRequired()])
     bairro = StringField('Bairro:', validators=[DataRequired()])
     uf = StringField('UF:', validators=[DataRequired()])
+    cidade = StringField('Cidade:', validators=[DataRequired()])
     cep = StringField('CEP:', validators=[DataRequired()])
     aniversario = DateField('Aniversário:', validators=[DataRequired()])
     telefone = StringField('Telefone:', validators=[DataRequired()])
