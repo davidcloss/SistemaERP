@@ -95,6 +95,12 @@ def clientes_fornecedor_cpf(cliente_fornecedor_id):
     cliente_fornecedor = ClientesFornecedores.query.get(cliente_fornecedor_id)
     return render_template('cliente_fornecedor_cpf.html', cliente_fornecedor=cliente_fornecedor)
 
+@app.route('/clientes_fornecedores/cnpj/<cliente_fornecedor_id>')
+@login_required
+def clientes_fornecedor_cnpj(cliente_fornecedor_id):
+    cliente_fornecedor = ClientesFornecedores.query.get(cliente_fornecedor_id)
+    return render_template('cliente_fornecedor_cnpj.html', cliente_fornecedor=cliente_fornecedor)
+
 @app.route('/clientes_fornecedores/cpf/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_cpf():
