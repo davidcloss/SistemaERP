@@ -156,4 +156,9 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
     cliente_fornecedor = ClientesFornecedores.query.get(cliente_fornecedor_id)
     if tipo_emp == 'cnpj':
         form = FormCadastroCNPJ()
+        form.razao_social = cliente_fornecedor.razao_social
+        form.nome_fantasia = cliente_fornecedor.nome_fantasia
+        form.cnpj = cliente_fornecedor.cnpj
+        form.rua = cliente_fornecedor.rua
+        form.complemento = cliente_fornecedor.complemento
     pass
