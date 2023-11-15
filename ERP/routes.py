@@ -56,7 +56,8 @@ def trata_documento(doc):
     return doc
 
 
-@app.route('/clientes_fornecedores/cnpj/cadastro', methods=['GET', 'POST'])
+#TODO: verificação se valores são ou não unicos quando necessário para nao dar bug quando estiver em produção
+@app.route('/clientesfornecedores/cnpj/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_cnpj():
     form = FormCadastroCNPJ()
@@ -84,24 +85,23 @@ def cadastro_cnpj():
         database.session.commit()
         cliente_fornecedor = ClientesFornecedores.query.filter_by(cnpj=trata_documento(form.cnpj.data)).first()
         flash('Cadastro realizado com sucesso!', 'success')
-        return redirect(url_for('clientes_fornecedor_cpf', cliente_fornecedor_id=cliente_fornecedor.id))
+        if cliente_fornecedor.cnpj:
+            return redirect(url_for('clientes_fornecedor_cpf_cnpj', cliente_fornecedor_id=cliente_fornecedor.id, tipo_emp='cnpj'))
+        else:
+            return redirect(url_for('clientes_fornecedor_cpf_cnpj', cliente_fornecedor_id=cliente_fornecedor.id, tipo_emp='cpf'))
 
     return render_template('cadastro_cnpj.html', form=form)
 
 
-@app.route('/clientes_fornecedores/cpf/<cliente_fornecedor_id>')
+@app.route('/clientesfornecedores/<tipo_emp>/<cliente_fornecedor_id>')
 @login_required
-def clientes_fornecedor_cpf(cliente_fornecedor_id):
+def clientes_fornecedor_cpf_cnpj(cliente_fornecedor_id, tipo_emp):
     cliente_fornecedor = ClientesFornecedores.query.get(cliente_fornecedor_id)
-    return render_template('cliente_fornecedor_cpf.html', cliente_fornecedor=cliente_fornecedor)
-
-@app.route('/clientes_fornecedores/cnpj/<cliente_fornecedor_id>')
-@login_required
-def clientes_fornecedor_cnpj(cliente_fornecedor_id):
-    cliente_fornecedor = ClientesFornecedores.query.get(cliente_fornecedor_id)
-    return render_template('cliente_fornecedor_cnpj.html', cliente_fornecedor=cliente_fornecedor)
-
-@app.route('/clientes_fornecedores/cpf/cadastro', methods=['GET', 'POST'])
+    if tipo_emp == 'cnpj':
+        return render_template('cliente_fornecedor_cnpj.html', cliente_fornecedor=cliente_fornecedor)
+    else:
+        return render_template('cliente_fornecedor_cpf.html', cliente_fornecedor=cliente_fornecedor)
+@app.route('/clientesfornecedores/cpf/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_cpf():
     form = FormCadastroCPF()
@@ -123,11 +123,19 @@ def cadastro_cpf():
                                         id_usuario_cadastro=int(current_user.id))
         database.session.add(cadastro)
         database.session.commit()
+        cliente_fornecedor = ClientesFornecedores.query.filter_by(cpf=trata_documento(form.cpf.data)).first()
         flash('Cadastro realizado com sucesso!', 'success')
-        return redirect(url_for('home'))
+        if cliente_fornecedor.cnpj:
+            return redirect(url_for('clientes_fornecedor_cpf_cnpj', cliente_fornecedor_id=cliente_fornecedor.id, tipo_emp='cnpj'))
+        else:
+            return redirect(url_for('clientes_fornecedor_cpf_cnpj', cliente_fornecedor_id=cliente_fornecedor.id, tipo_emp='cpf'))
     return render_template('cadastro_cpf.html', form=form)
 
-
+@app.route('/clientesfornecedores/lista')
+@login_required
+def lista_clientes_fornecedores():
+    clientes_fornecedores = ClientesFornecedores.query.all()
+    return render_template('lista_clientes_fornecedores.html', clientes_fornecedores=clientes_fornecedores)
 
 @app.route('/cadastroinicial', methods=['GET', 'POST'])
 @login_required
@@ -141,3 +149,11 @@ def cadastro_inicial():
         flash(f"Conta criada para: {form.nome_empresa.data}!", 'alert-success')
         return redirect(url_for('criar_conta'))
     return render_template('cadastro_empresa.html', form=form)
+
+@app.route('/clientesfornecedores/<tipo_emp>/<cliente_fornecedor_id>/edicao', methods=['GET', 'POST'])
+@login_required
+def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
+    cliente_fornecedor = ClientesFornecedores.query.get(cliente_fornecedor_id)
+    if tipo_emp == 'cnpj':
+        form = FormCadastroCNPJ()
+    pass

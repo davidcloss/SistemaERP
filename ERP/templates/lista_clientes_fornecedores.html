@@ -1,0 +1,13 @@
+{% include 'base.html' %}
+
+{% block content %}
+    <div class="container-fluid">
+        {% for cliente in clientes_fornecedores %}
+            {% if cliente.cnpj %}
+                <a href="{{ url_for('clientes_fornecedor_cpf_cnpj' , cliente_fornecedor_id=cliente.id, tipo_emp='cnpj') }}"><h2>{{ cliente.id }} {{ cliente.razao_social }}</h2></a>
+            {% else %}
+                <a href="{{ url_for('clientes_fornecedor_cpf_cnpj' , cliente_fornecedor_id=cliente.id, tipo_emp='cpf') }}"><h2>{{ cliente.id }} {{ cliente.nome }}</h2></a>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endblock %}
