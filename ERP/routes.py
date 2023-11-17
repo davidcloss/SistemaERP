@@ -156,9 +156,25 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
     cliente_fornecedor = ClientesFornecedores.query.get(cliente_fornecedor_id)
     if tipo_emp == 'cnpj':
         form = FormCadastroCNPJ()
-        form.razao_social = cliente_fornecedor.razao_social
-        form.nome_fantasia = cliente_fornecedor.nome_fantasia
-        form.cnpj = cliente_fornecedor.cnpj
-        form.rua = cliente_fornecedor.rua
-        form.complemento = cliente_fornecedor.complemento
-    pass
+        form.razao_social.data = cliente_fornecedor.razao_social
+        form.nome_fantasia.data = cliente_fornecedor.nome_fantasia
+        form.cnpj.data = cliente_fornecedor.cnpj
+        form.rua.data = cliente_fornecedor.rua
+        form.complemento.data = cliente_fornecedor.complemento
+        form.nro.data = cliente_fornecedor.nro
+        form.bairro.data = cliente_fornecedor.bairro
+        form.cidade.data = cliente_fornecedor.cidade
+        form.uf.data = cliente_fornecedor.uf
+        form.cep.data = cliente_fornecedor.cep
+        form.fundacao.data = cliente_fornecedor.data_fundacao
+        form.telefone.data = cliente_fornecedor.telefone
+        form.telefone2.data = cliente_fornecedor.telefone2
+        form.telefone3.data = cliente_fornecedor.telefone3
+        form.email.data = cliente_fornecedor.email
+        form.obs.data = cliente_fornecedor.obs
+        tipo_cadastro = TiposCadastros.query.all()
+        form.tipo_cadastro.choices = [(tipo.id, tipo.nome_tipo) for tipo in tipo_cadastro]
+        form.tipo_cadastro.data = TiposCadastros.query.filter_by(id=cliente_fornecedor.tipo_cadastro)
+        return render_template('cadastro_cnpj.html', form=form)
+    else:
+        pass

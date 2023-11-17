@@ -8,7 +8,7 @@ class Usuarios(database.Model, UserMixin):
     id = database.Column(database.Integer, primary_key=True)
     username = database.Column(database.String(100), unique=True, nullable=False)
     senha = database.Column(database.String(300), nullable=False)
-    data_cadastro = database.Column(database.DateTime, default=datetime.utcnow().date())
+    data_cadastro = database.Column(database.DateTime, default=datetime.utcnow())
     situacao = database.Column(database.Integer, database.ForeignKey('situacoes.id'), default=1)
     tipo_usuario = database.Column(database.Integer, database.ForeignKey('tipos_usuarios.id'), nullable=False)
 
@@ -40,7 +40,7 @@ class ClientesFornecedores(database.Model):
     email = database.Column(database.String(100))
     data_aniversario = database.Column(database.Date)
     obs = database.Column(database.Text)
-    data_cadastro = database.Column(database.DateTime, default=datetime.utcnow().date())
+    data_cadastro = database.Column(database.DateTime, default=datetime.utcnow())
     tipo_cadastro = database.Column(database.Integer, database.ForeignKey('tipos_cadastro.id'), nullable=False)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False)
 
@@ -56,9 +56,31 @@ class TiposUsuarios(database.Model):
     nome_tipo = database.Column(database.String(70), nullable=False, unique=True)
     tipos_usuarios = database.relationship('Usuarios', backref='usuarios_tipo', lazy=True)
 
+
+
 class CadastroEmpresa(database.Model):
     __tablename__ = 'cadastro_empresa'
     id = database.Column(database.Integer, primary_key=True)
     nome_empresa = database.Column(database.String(100), nullable=False)
     email_verificaco = database.Column(database.String(100), nullable=False)
     situacao = database.Column(database.Integer, default='A')
+
+class TiposRoupas(database.Model):
+    __table_name__ = 'tipos_roupas'
+    id = database.Column(database.Integer, primary_key=True)
+    nome_tipo_roupa = database.Column(database.String)
+
+class ItensEstoque(database.Model):
+    __tablename__ = 'itens_estoque'
+    id = database.Column(database.Integer, primary_key=True)
+    id_tipo_roupa = database.Column(database.Integer, database.ForeignKey('tipos_roupas.id'), nullable=False)
+    id_tamanho = database.Column(database.Integer, database.ForeignKey('tamanhos.id'), nullable=False)
+    id_marca = database.Column(database.Integer, database.ForeignKey('marcas.id'), nullable=False)
+    id_cor = database.Column(database.Integer, database.ForeignKey('cores.id'), nullable=False)
+    data_cadastro = database.Column(database.DateTime, default=datetime.utcnow())
+    data_ultima_entrada = database.Column(database.DateTime)
+    data_ultima_saida = database.Column(database.DateTime)
+    qtd = database.Column(database.Float)
+    valor_estoque = database.Column(database.Float)
+    valor_unitario_medio = database.Column(database.Float)
+    qtd_minima = database.Column(database.Float)
