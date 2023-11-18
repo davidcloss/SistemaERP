@@ -112,7 +112,7 @@ class TransacoesEstoque(database.Model):
     id_lote = database.Column(database.Integer, primary_key=True)
     tipo_transacao = database.Column(database.Integer, database.ForeignKey('tipos_transacoes.id'), nullable=False)
     data_transacao = database.Column(database.DateTime)
-    data_registro_transacao = data_transacao.Column(database.DateTime, default=datetime.utcnow())
+    data_registro_transacao = database.Column(database.DateTime, default=datetime.utcnow())
     id_item = database.Column(database.Integer, database.ForeignKey('itens_estoque.id'))
     qtd_transacao = database.Column(database.Integer, nullable=False)
     valor_unitario_medio = database.Column(database.Float, nullable=False)

@@ -150,31 +150,61 @@ def cadastro_inicial():
         return redirect(url_for('criar_conta'))
     return render_template('cadastro_empresa.html', form=form)
 
+def obter_nome_tipo_por_id(id_tipo):
+    tipo = TiposCadastros.query.get(id_tipo)
+
+    if tipo:
+        return tipo.nome_tipo
+    else:
+        return None
+
+
 @app.route('/clientesfornecedores/<tipo_emp>/<cliente_fornecedor_id>/edicao', methods=['GET', 'POST'])
 @login_required
 def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
-    cliente_fornecedor = ClientesFornecedores.query.get(cliente_fornecedor_id)
+    cliente_fornecedor = ClientesFornecedores.query.get_or_404(cliente_fornecedor_id)
+
     if tipo_emp == 'cnpj':
-        form = FormCadastroCNPJ()
-        form.razao_social.data = cliente_fornecedor.razao_social
-        form.nome_fantasia.data = cliente_fornecedor.nome_fantasia
-        form.cnpj.data = cliente_fornecedor.cnpj
-        form.rua.data = cliente_fornecedor.rua
-        form.complemento.data = cliente_fornecedor.complemento
-        form.nro.data = cliente_fornecedor.nro
-        form.bairro.data = cliente_fornecedor.bairro
-        form.cidade.data = cliente_fornecedor.cidade
-        form.uf.data = cliente_fornecedor.uf
-        form.cep.data = cliente_fornecedor.cep
-        form.fundacao.data = cliente_fornecedor.data_fundacao
-        form.telefone.data = cliente_fornecedor.telefone
-        form.telefone2.data = cliente_fornecedor.telefone2
-        form.telefone3.data = cliente_fornecedor.telefone3
-        form.email.data = cliente_fornecedor.email
-        form.obs.data = cliente_fornecedor.obs
-        tipo_cadastro = TiposCadastros.query.all()
-        form.tipo_cadastro.choices = [(tipo.id, tipo.nome_tipo) for tipo in tipo_cadastro]
-        form.tipo_cadastro.data = TiposCadastros.query.filter_by(id=cliente_fornecedor.tipo_cadastro)
+        form = FormCadastroCNPJ(obj=cliente_fornecedor)
+        form.tipo_cadastro.choices = [(tipo.id, tipo.nome_tipo) for tipo in TiposCadastros.query.all()]
+
+        if form.validate_on_submit():
+            # Atualizar campos específicos do formulário CNPJ
+            form.populate_obj(cliente_fornecedor)
+            cliente_fornecedor.razao_social = form.razao_social.data
+            cliente_fornecedor.nome_fantasia = form.nome_fantasia.data
+            cliente_fornecedor.data_fundacao = form.fundacao.data
+
+            # Atualizar o usuário cadastrador
+            cliente_fornecedor.id_usuario_cadastro = current_user.id
+
+            app.logger.debug('Antes de commit')
+            database.session.commit()
+            app.logger.debug('Após commit')
+            flash('Cadastro atualizado com sucesso!', 'success')
+            return redirect(
+                url_for('clientes_fornecedor_cpf_cnpj', cliente_fornecedor_id=cliente_fornecedor.id, tipo_emp='cnpj'))
+
         return render_template('cadastro_cnpj.html', form=form)
-    else:
-        pass
+
+    elif tipo_emp == 'cpf':
+        form = FormCadastroCPF(obj=cliente_fornecedor)
+        form.tipo_cadastro.choices = [(tipo.id, tipo.nome_tipo) for tipo in TiposCadastros.query.all()]
+
+        if form.validate_on_submit():
+            # Atualizar campos específicos do formulário CPF
+            form.populate_obj(cliente_fornecedor)
+            cliente_fornecedor.nome = form.nome_completo.data
+            cliente_fornecedor.data_aniversario = form.aniversario.data
+
+            # Atualizar o usuário cadastrador
+            cliente_fornecedor.id_usuario_cadastro = current_user.id
+
+            app.logger.debug('Antes de commit')
+            database.session.commit()
+            app.logger.debug('Após commit')
+            flash('Cadastro atualizado com sucesso!', 'success')
+            return redirect(
+                url_for('clientes_fornecedor_cpf_cnpj', cliente_fornecedor_id=cliente_fornecedor.id, tipo_emp='cpf'))
+
+        return render_template('cadastro_cpf.html', form=form)

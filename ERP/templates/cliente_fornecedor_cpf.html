@@ -18,5 +18,7 @@
         <p>Telefone 3: {{ cliente_fornecedor.telefone3 }}</p>
         <p>Email: {{ cliente_fornecedor.email }}</p>
         <p>OBS.: {{ cliente_fornecedor.obs }}</p>
+        <a href="{{ url_for('edicao_clientes_fornecedores' , tipo_emp='cpf', cliente_fornecedor_id=cliente_fornecedor.id) }}">Editar</a>
+    </div>
     </div>
 {% endblock %}
