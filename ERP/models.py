@@ -68,7 +68,23 @@ class CadastroEmpresa(database.Model):
 class TiposRoupas(database.Model):
     __table_name__ = 'tipos_roupas'
     id = database.Column(database.Integer, primary_key=True)
-    nome_tipo_roupa = database.Column(database.String)
+    nome_tipo_roupa = database.Column(database.String, nullable=False)
+
+class Cores(database.Model):
+    __tablename__ = 'cores'
+    id = database.Column(database.Integer, primary_key=True)
+    nome_cor = database.Column(database.String, nullable=False)
+
+class Tamanhos(database.Model):
+    __tablename__ = 'tamnhos'
+    id = database.Column(database.Integer, primary_key=True)
+    nome_tamanho = database.Column(database.String, nullable=False)
+
+class Marcas(database.Model):
+    __tablename__ = 'marcas'
+    id = database.Column(database.Integer, primary_key=True)
+    nome_marca = database.Column(database.String, nullable=False)
+
 
 class ItensEstoque(database.Model):
     __tablename__ = 'itens_estoque'
@@ -84,3 +100,20 @@ class ItensEstoque(database.Model):
     valor_estoque = database.Column(database.Float)
     valor_unitario_medio = database.Column(database.Float)
     qtd_minima = database.Column(database.Float)
+
+class TiposTransacoes(database.Model):
+    __tablename__ = 'tipos_transacoes'
+    id = database.Column(database.Integer, primary_key=True)
+    nome_tipo_transacao = database.Column(database.String, nullable=False)
+
+class TransacoesEstoque(database.Model):
+    __tablename__ = 'transacoes_estoque'
+    id = database.Column(database.Integer, primary_key=True)
+    id_lote = database.Column(database.Integer, primary_key=True)
+    tipo_transacao = database.Column(database.Integer, database.ForeignKey('tipos_transacoes.id'), nullable=False)
+    data_transacao = database.Column(database.DateTime)
+    data_registro_transacao = data_transacao.Column(database.DateTime, default=datetime.utcnow())
+    id_item = database.Column(database.Integer, database.ForeignKey('itens_estoque.id'))
+    qtd_transacao = database.Column(database.Integer, nullable=False)
+    valor_unitario_medio = database.Column(database.Float, nullable=False)
+    valor_total_transacao = database.Column(database.Float, nullable=False)
