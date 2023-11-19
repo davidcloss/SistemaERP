@@ -85,6 +85,10 @@ class Marcas(database.Model):
     id = database.Column(database.Integer, primary_key=True)
     nome_marca = database.Column(database.String, nullable=False)
 
+class TiposUnidades(database.Model):
+    __tablename__ = 'tipos_unidades'
+    id = database.Column(database.Integer, primary_key=True)
+    nome_tipo_unidade = database.Column(database.String, nullable=False)
 
 class ItensEstoque(database.Model):
     __tablename__ = 'itens_estoque'
@@ -96,6 +100,7 @@ class ItensEstoque(database.Model):
     data_cadastro = database.Column(database.DateTime, default=datetime.utcnow())
     data_ultima_entrada = database.Column(database.DateTime)
     data_ultima_saida = database.Column(database.DateTime)
+    id_tipo_unidade = database.Column(database.Integer, database.ForeignKey('tipos_unidade.id'), nullable=False)
     qtd = database.Column(database.Float)
     valor_estoque = database.Column(database.Float)
     valor_unitario_medio = database.Column(database.Float)

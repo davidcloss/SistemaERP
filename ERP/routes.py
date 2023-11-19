@@ -208,3 +208,4 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
                 url_for('clientes_fornecedor_cpf_cnpj', cliente_fornecedor_id=cliente_fornecedor.id, tipo_emp='cpf'))
 
         return render_template('cadastro_cpf.html', form=form)
+#TODO: corrigir selectfield

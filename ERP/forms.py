@@ -67,3 +67,33 @@ class FormCadastroEmpresa(FlaskForm):
     nome_empresa = StringField('Nome empresa:', validators=[DataRequired()])
     email_responsavel = StringField('E-mail:', validators=[DataRequired(), Email()])
     botao_submit = SubmitField('Cadastrar')
+
+class FormTiposRoupas(FlaskForm):
+    tipo_roupa = StringField('Tipo Roupa:', validators=[DataRequired()])
+    botao_submit = SubmitField('Cadastrar')
+
+class FormCores(FlaskForm):
+    nome_cor = StringField('Cor:', validators=[DataRequired()])
+    botao_submit = SubmitField('Cadastrar')
+
+class FormTamanhos(FlaskForm):
+    tamanho = StringField('Tamanho:', validators=[DataRequired()])
+    botao_submit = SubmitField('Cadastrar')
+
+class FormMarcas(FlaskForm):
+    marca = StringField('Marca:', validators=[DataRequired()])
+    botao_submit = SubmitField('Cadastrar')
+
+class FormTiposUnidades(FlaskForm):
+    tipo_unidade = StringField('Tipo unidade:', validators=[DataRequired()])
+    botao_submit = SubmitField('Cadastrar')
+class FormItensEstoque(FlaskForm):
+    tipos_roupas = SelectField('Tipo Roupa')
+    cores = SelectField('Cor')
+    marca = SelectField('Marca')
+    tamanho = SelectField('Tamanho')
+    tipo_unidade = SelectField('Tipo Unidade')
+    qtd_inicial = IntegerField('Quantidade Inicial:', validators=[DataRequired()])
+    valor_unitario = StringField('Valor unitário:', validators=[DataRequired()])
+    quantidade_minima = IntegerField('Quantidade mínima:', validators=[DataRequired()])
+    botao_submit = SubmitField('Cadastrar')
