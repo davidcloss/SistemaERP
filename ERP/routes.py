@@ -1,7 +1,9 @@
 from flask import render_template, redirect, url_for, flash, request
 from ERP import app, database, bcrypt, login_manager
 from ERP.forms import FormCriarConta, FormLogin, FormCadastroCNPJ, FormCadastroEmpresa, FormCadastroCPF
+from ERP.forms import FormTiposRoupas, FormCores, FormMarcas, FormTamanhos
 from ERP.models import Usuarios, CadastroEmpresa, TiposCadastros, ClientesFornecedores, TiposUsuarios
+from ERP.models import TiposRoupas
 from flask_login import login_user, logout_user, current_user, login_required
 import secrets
 import os
@@ -209,3 +211,21 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
 
         return render_template('cadastro_cpf.html', form=form)
 #TODO: corrigir selectfield
+
+@app.route('/estoque/cadastro/tiporoupa', methods=['GET', 'POST'])
+@login_required
+def cadastro_tipo_roupa():
+    form = FormTiposRoupas()
+    if form.validate_on_submit():
+        tipo_roupa = TiposRoupas(tipo_roupa=form.tipo_roupa.data)
+        database.session.add(tipo_roupa)
+        database.session.commit()
+        flash(f"Cadastro concluído: {form.tipo_roupa.data}!", 'alert-success')
+        return redirect(
+            url_for('tipo_roupa', tipo_roupa=tipo_roupa.id))
+    return render_template('cadastro_tipo_roupa.html', form=form)
+
+@app.route('/estoque/tiporoupa/<tipo_roupa_id>')
+def tipo_roupa(tipo_roupa_id):
+    tipo_roupa = TiposRoupas.query.get_or_404(tipo_roupa_id)
+    return render_template('tipo_roupa.html', tipo_roupa=tipo_roupa)

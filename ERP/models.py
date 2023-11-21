@@ -9,11 +9,11 @@ class Usuarios(database.Model, UserMixin):
     username = database.Column(database.String(100), unique=True, nullable=False)
     senha = database.Column(database.String(300), nullable=False)
     data_cadastro = database.Column(database.DateTime, default=datetime.utcnow())
-    situacao = database.Column(database.Integer, database.ForeignKey('situacoes.id'), default=1)
+    situacao = database.Column(database.Integer, database.ForeignKey('situacoes_usuarios.id'), default=1)
     tipo_usuario = database.Column(database.Integer, database.ForeignKey('tipos_usuarios.id'), nullable=False)
 
 class SituacoesUsuarios(database.Model):
-    __tablename__ = 'situacoes'
+    __tablename__ = 'situacoes_usuarios'
     id = database.Column(database.Integer, primary_key=True)
     nome_situacao = database.Column(database.String(70))
     situacoes_usuarios = database.relationship('Usuarios', backref='situacoes_usuarios', lazy=True)
@@ -76,7 +76,7 @@ class Cores(database.Model):
     nome_cor = database.Column(database.String, nullable=False)
 
 class Tamanhos(database.Model):
-    __tablename__ = 'tamnhos'
+    __tablename__ = 'tamanhos'
     id = database.Column(database.Integer, primary_key=True)
     nome_tamanho = database.Column(database.String, nullable=False)
 
@@ -100,13 +100,13 @@ class ItensEstoque(database.Model):
     data_cadastro = database.Column(database.DateTime, default=datetime.utcnow())
     data_ultima_entrada = database.Column(database.DateTime)
     data_ultima_saida = database.Column(database.DateTime)
-    id_tipo_unidade = database.Column(database.Integer, database.ForeignKey('tipos_unidade.id'), nullable=False)
+    id_tipo_unidade = database.Column(database.Integer, database.ForeignKey('tipos_unidades.id'), nullable=False)
     qtd = database.Column(database.Float)
     valor_estoque = database.Column(database.Float)
     valor_unitario_medio = database.Column(database.Float)
     qtd_minima = database.Column(database.Float)
 
-class TiposTransacoes(database.Model):
+class TiposTransacoesEstoque(database.Model):
     __tablename__ = 'tipos_transacoes'
     id = database.Column(database.Integer, primary_key=True)
     nome_tipo_transacao = database.Column(database.String, nullable=False)

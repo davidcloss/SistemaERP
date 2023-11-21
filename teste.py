@@ -1,5 +1,6 @@
 from ERP import app, database
-from ERP.models import TiposCadastros, TiposUsuarios, SituacoesUsuarios
+from ERP.models import TiposCadastros, TiposUsuarios, SituacoesUsuarios, TiposRoupas
+from ERP.models import Tamanhos, Cores, Marcas, ItensEstoque, TiposTransacoesEstoque, TiposUnidades
 from datetime import datetime
 import sqlite3 as sql
 
@@ -42,5 +43,41 @@ with app.app_context():
         situacao = SituacoesUsuarios(nome_situacao=s)
         database.session.add(situacao)
         database.session.commit()
+
+cores = ['Laranja', 'Vermelho', 'Azul']
+with app.app_context():
+    for cor in cores:
+        c = Cores(nome_cor=cor)
+        database.session.add(c)
+        database.session.commit()
+
+tipos_roupas = ['Calça', 'Camiseta', 'Jaqueta']
+with app.app_context():
+    for tipo in tipos_roupas:
+        t = TiposRoupas(nome_tipo_roupa=tipo)
+        database.session.add(t)
+        database.session.commit()
+
+marcas = ['Mamô', 'Gardana', 'Biamar']
+with app.app_context():
+    for mar in marcas:
+        m = Marcas(nome_marca=mar)
+        database.session.add(m)
+        database.session.commit()
+
+tamanhos = ['P', 'M', 'G', 'GG']
+with app.app_context():
+    for tam in tamanhos:
+        t = Tamanhos(nome_tamanho=tam)
+        database.session.add(t)
+        database.session.commit()
+
+tipos_transacoes = ['Entrada', 'Saída', 'Ajuste Estoque']
+with app.app_context():
+    for tipo in tipos_transacoes:
+        t = TiposTransacoesEstoque(nome_tipo_transacao=tipo)
+        database.session.add(t)
+        database.session.commit()
+
 
 print(datetime.utcnow().date())
