@@ -180,12 +180,9 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
             # Atualizar o usuário cadastrador
             cliente_fornecedor.id_usuario_cadastro = current_user.id
 
-            app.logger.debug('Antes de commit')
             database.session.commit()
-            app.logger.debug('Após commit')
             flash('Cadastro atualizado com sucesso!', 'success')
-            return redirect(
-                url_for('clientes_fornecedor_cpf_cnpj', cliente_fornecedor_id=cliente_fornecedor.id, tipo_emp='cnpj'))
+            return redirect(url_for('clientes_fornecedor_cpf_cnpj', cliente_fornecedor_id=cliente_fornecedor.id, tipo_emp='cnpj'))
 
         return render_template('cadastro_cnpj.html', form=form)
 
@@ -217,15 +214,32 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
 def cadastro_tipo_roupa():
     form = FormTiposRoupas()
     if form.validate_on_submit():
-        tipo_roupa = TiposRoupas(tipo_roupa=form.tipo_roupa.data)
+        tipo_roupa = TiposRoupas(nome_tipo_roupa=form.tipo_roupa.data)
         database.session.add(tipo_roupa)
         database.session.commit()
         flash(f"Cadastro concluído: {form.tipo_roupa.data}!", 'alert-success')
-        return redirect(
-            url_for('tipo_roupa', tipo_roupa=tipo_roupa.id))
+        tipo_roupa = TiposRoupas.query.filter_by(nome_tipo_roupa=form.tipo_roupa.data).first()
+        return redirect(url_for('tipo_roupa', tipo_roupa_id=tipo_roupa.id))
     return render_template('cadastro_tipo_roupa.html', form=form)
 
 @app.route('/estoque/tiporoupa/<tipo_roupa_id>')
+@login_required
 def tipo_roupa(tipo_roupa_id):
     tipo_roupa = TiposRoupas.query.get_or_404(tipo_roupa_id)
     return render_template('tipo_roupa.html', tipo_roupa=tipo_roupa)
+
+
+@app.route('/estoque/tiporoupa/<tipo_roupa_id>/edicao', methods=['GET', 'POST'])
+@login_required
+def editar_tipo_roupa(tipo_roupa_id):
+    tipo_roupa = TiposRoupas.query.get_or_404(tipo_roupa_id)
+    form = FormTiposRoupas()
+    form.tipo_roupa.data = tipo_roupa.nome_tipo_roupa
+
+    if form.validate_on_submit():
+        form.populate_obj(tipo_roupa)
+        database.session.commit()
+        flash('Cadastro atualizado com sucesso!', 'success')
+        return redirect(url_for('tipo_roupa', tipo_roupa_id=tipo_roupa.id))
+
+    return render_template('cadastro_tipo_roupa.html', tipo_roupa=tipo_roupa, form=form)

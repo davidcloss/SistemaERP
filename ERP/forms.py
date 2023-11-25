@@ -18,11 +18,13 @@ class FormCriarConta(FlaskForm):
         if usuario:
             raise ValidationError('Usuário já cadastrado.')
 
+
 class FormLogin(FlaskForm):
     username = StringField('Usuário:', validators=[DataRequired()])
     senha = PasswordField('Senha:', validators=[DataRequired(), Length(8, 100)])
     lembrar_dados = BooleanField("Manter logado")
     botao_submit_login = SubmitField('Fazer login')
+
 
 class FormCadastroCNPJ(FlaskForm):
     nome_fantasia = StringField('Nome Fantasia:', validators=[DataRequired()])
@@ -44,6 +46,7 @@ class FormCadastroCNPJ(FlaskForm):
     tipo_cadastro = SelectField('Tipo Cadastro:')
     botao_submit = SubmitField('Cadastrar')
 
+
 class FormCadastroCPF(FlaskForm):
     nome_completo = StringField('Nome Completo:', validators=[DataRequired()])
     cpf = StringField('CPF:', validators=[DataRequired(), Length(11, 15)])
@@ -63,30 +66,38 @@ class FormCadastroCPF(FlaskForm):
     tipo_cadastro = SelectField('Tipo Cadastro:')
     botao_submit = SubmitField('Cadastrar')
 
+
 class FormCadastroEmpresa(FlaskForm):
     nome_empresa = StringField('Nome empresa:', validators=[DataRequired()])
     email_responsavel = StringField('E-mail:', validators=[DataRequired(), Email()])
     botao_submit = SubmitField('Cadastrar')
 
+
 class FormTiposRoupas(FlaskForm):
     tipo_roupa = StringField('Tipo Roupa:', validators=[DataRequired()])
     botao_submit = SubmitField('Cadastrar')
+
 
 class FormCores(FlaskForm):
     nome_cor = StringField('Cor:', validators=[DataRequired()])
     botao_submit = SubmitField('Cadastrar')
 
+
 class FormTamanhos(FlaskForm):
     tamanho = StringField('Tamanho:', validators=[DataRequired()])
     botao_submit = SubmitField('Cadastrar')
+
 
 class FormMarcas(FlaskForm):
     marca = StringField('Marca:', validators=[DataRequired()])
     botao_submit = SubmitField('Cadastrar')
 
+
 class FormTiposUnidades(FlaskForm):
     tipo_unidade = StringField('Tipo unidade:', validators=[DataRequired()])
     botao_submit = SubmitField('Cadastrar')
+
+
 class FormItensEstoque(FlaskForm):
     tipos_roupas = SelectField('Tipo Roupa')
     cores = SelectField('Cor')

@@ -69,6 +69,7 @@ class TiposRoupas(database.Model):
     __table_name__ = 'tipos_roupas'
     id = database.Column(database.Integer, primary_key=True)
     nome_tipo_roupa = database.Column(database.String, nullable=False)
+#TODO: atributo unico para os nomes dos models basicos
 
 class Cores(database.Model):
     __tablename__ = 'cores'
