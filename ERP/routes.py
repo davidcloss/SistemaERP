@@ -175,7 +175,19 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
             form.populate_obj(cliente_fornecedor)
             cliente_fornecedor.razao_social = form.razao_social.data
             cliente_fornecedor.nome_fantasia = form.nome_fantasia.data
+            cliente_fornecedor.cnpj = form.cnpj.data
+            cliente_fornecedor.rua = form.rua.data
+            cliente_fornecedor.complemento = form.complemento.data
+            cliente_fornecedor.bairro = form.bairro.data
+            cliente_fornecedor.cidade = form.cidade.data
+            cliente_fornecedor.uf = form.uf.data
+            cliente_fornecedor.cep = form.cep.data
             cliente_fornecedor.data_fundacao = form.fundacao.data
+            cliente_fornecedor.telefone = form.telefone.data
+            cliente_fornecedor.telefone2 = form.telefone2.data
+            cliente_fornecedor.telefone3 = form.telefone3.data
+            cliente_fornecedor.email = form.email.data
+            cliente_fornecedor.obs = form.obs.data
 
             # Atualizar o usuário cadastrador
             cliente_fornecedor.id_usuario_cadastro = current_user.id
@@ -185,23 +197,34 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
             return redirect(url_for('clientes_fornecedor_cpf_cnpj', cliente_fornecedor_id=cliente_fornecedor.id, tipo_emp='cnpj'))
 
         return render_template('cadastro_cnpj.html', form=form)
-
+#TODO: ajustar carregamento datas
     elif tipo_emp == 'cpf':
         form = FormCadastroCPF(obj=cliente_fornecedor)
+        form.nome_completo.data = cliente_fornecedor.nome
         form.tipo_cadastro.choices = [(tipo.id, tipo.nome_tipo) for tipo in TiposCadastros.query.all()]
 
         if form.validate_on_submit():
             # Atualizar campos específicos do formulário CPF
             form.populate_obj(cliente_fornecedor)
             cliente_fornecedor.nome = form.nome_completo.data
+            cliente_fornecedor.cpf = form.cpf.data
+            cliente_fornecedor.rua = form.rua.data
+            cliente_fornecedor.complemento = form.complemento.data
+            cliente_fornecedor.bairro = form.bairro.data
+            cliente_fornecedor.cidade = form.cidade.data
+            cliente_fornecedor.uf = form.uf.data
+            cliente_fornecedor.cep = form.cep.data
             cliente_fornecedor.data_aniversario = form.aniversario.data
+            database.session.commit()
+            cliente_fornecedor.telefone = form.telefone.data
+            cliente_fornecedor.telefone2 = form.telefone2.data
+            cliente_fornecedor.telefone3 = form.telefone3.data
+            cliente_fornecedor.email = form.email.data
+            cliente_fornecedor.obs = form.obs.data
 
             # Atualizar o usuário cadastrador
             cliente_fornecedor.id_usuario_cadastro = current_user.id
 
-            app.logger.debug('Antes de commit')
-            database.session.commit()
-            app.logger.debug('Após commit')
             flash('Cadastro atualizado com sucesso!', 'success')
             return redirect(
                 url_for('clientes_fornecedor_cpf_cnpj', cliente_fornecedor_id=cliente_fornecedor.id, tipo_emp='cpf'))
