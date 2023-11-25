@@ -89,7 +89,7 @@ class FormTamanhos(FlaskForm):
 
 
 class FormMarcas(FlaskForm):
-    marca = StringField('Marca:', validators=[DataRequired()])
+    nome_marca = StringField('Marca:', validators=[DataRequired()])
     botao_submit = SubmitField('Cadastrar')
 
 

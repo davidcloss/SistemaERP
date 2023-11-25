@@ -232,7 +232,7 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
         return render_template('cadastro_cpf.html', form=form)
 #TODO: corrigir selectfield
 
-@app.route('/estoque/cadastro/tiporoupa', methods=['GET', 'POST'])
+@app.route('/estoque/tiporoupa/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_tipo_roupa():
     form = FormTiposRoupas()
@@ -290,11 +290,47 @@ def cor(cor_id):
 @login_required
 def editar_cor(cor_id):
     cor = Cores.query.get_or_404(cor_id)
-    form = FormCores()
+    form = FormCores(obj=cor)
     form.nome_cor.data = cor.nome_cor
     if form.validate_on_submit():
+        form.populate_obj(cor)
         cor.nome_cor = form.nome_cor.data
         database.session.commit()
         flash('Cadastro atualizado com sucesso!', 'success')
         return redirect(url_for('cor', cor_id=cor.id))
-    return render_template('cadastro_cores.html', tipo_roupa=cor, form=form)
+    return render_template('cadastro_cores.html', cor=cor, form=form)
+
+#TODO: Lista de marcas, cores,tipo_roupa e etc
+
+@app.route('/estoque/marcas/cadastro', methods=['GET', 'POST'])
+@login_required
+def cadastro_marcas():
+    form = FormMarcas()
+    if form.validate_on_submit():
+        marca = Marcas(nome_marca=form.nome_marca.data)
+        database.session.add(marca)
+        database.session.commit()
+        flash(f"Cadastro concluído: {form.nome_marca.data}!", 'alert-success')
+        marca = Marcas.query.filter_by(nome_marca=form.nome_marca.data).first()
+        return redirect(url_for('marcas', marca_id=marca.id))
+    return render_template('cadastro_marcas.html', form=form)
+
+@app.route('/estoque/marcas/<marca_id>', methods=['GET', 'POST'])
+@login_required
+def marcas(marca_id):
+    marca = Marcas.query.get_or_404(marca_id)
+    return render_template('marcas.html', marca=marca)
+
+@app.route('/estoque/marcas/<marca_id>/edicao', methods=['GET', 'POST'])
+@login_required
+def editar_marca(marca_id):
+    marca = Marcas.query.get_or_404(marca_id)
+    form = FormMarcas(obj=marca)
+    form.nome_marca.data = marca.nome_marca
+    if form.validate_on_submit():
+        form.populate_obj(marca)
+        marca.nome_marca = form.nome_marca.data
+        database.session.commit()
+        flash('Cadastro atualizado com sucesso!', 'success')
+        return redirect(url_for('marcas', marca_id=marca.id))
+    return render_template('cadastro_marcas.html', tipo_roupa=cor, form=form)
