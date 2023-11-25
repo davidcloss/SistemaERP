@@ -3,7 +3,7 @@ from ERP import app, database, bcrypt, login_manager
 from ERP.forms import FormCriarConta, FormLogin, FormCadastroCNPJ, FormCadastroEmpresa, FormCadastroCPF
 from ERP.forms import FormTiposRoupas, FormCores, FormMarcas, FormTamanhos
 from ERP.models import Usuarios, CadastroEmpresa, TiposCadastros, ClientesFornecedores, TiposUsuarios
-from ERP.models import TiposRoupas
+from ERP.models import TiposRoupas, Cores, Tamanhos, Marcas, TiposUnidades
 from flask_login import login_user, logout_user, current_user, login_required
 import secrets
 import os
@@ -215,12 +215,12 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
             cliente_fornecedor.uf = form.uf.data
             cliente_fornecedor.cep = form.cep.data
             cliente_fornecedor.data_aniversario = form.aniversario.data
-            database.session.commit()
             cliente_fornecedor.telefone = form.telefone.data
             cliente_fornecedor.telefone2 = form.telefone2.data
             cliente_fornecedor.telefone3 = form.telefone3.data
             cliente_fornecedor.email = form.email.data
             cliente_fornecedor.obs = form.obs.data
+            database.session.commit()
 
             # Atualizar o usuário cadastrador
             cliente_fornecedor.id_usuario_cadastro = current_user.id
@@ -266,3 +266,35 @@ def editar_tipo_roupa(tipo_roupa_id):
         return redirect(url_for('tipo_roupa', tipo_roupa_id=tipo_roupa.id))
 
     return render_template('cadastro_tipo_roupa.html', tipo_roupa=tipo_roupa, form=form)
+
+@app.route('/estoque/cores/cadastro', methods=['GET', 'POST'])
+@login_required
+def cadastro_cores():
+    form = FormCores()
+    if form.validate_on_submit():
+        cor = Cores(nome_cor=form.nome_cor.data)
+        database.session.add(cor)
+        database.session.commit()
+        flash(f"Cadastro concluído: {form.nome_cor.data}!", 'alert-success')
+        cor = Cores.query.filter_by(nome_cor=form.nome_cor.data).first()
+        return redirect(url_for('cor', cor_id=cor.id))
+    return render_template('cadastro_cores.html', form=form)
+
+@app.route('/estoque/cores/<cor_id>')
+@login_required
+def cor(cor_id):
+    cor = Cores.query.get_or_404(cor_id)
+    return  render_template('cor.html', cor=cor)
+
+@app.route('/estoque/cores/<cor_id>/edicao', methods=['GET', 'POST'])
+@login_required
+def editar_cor(cor_id):
+    cor = Cores.query.get_or_404(cor_id)
+    form = FormCores()
+    form.nome_cor.data = cor.nome_cor
+    if form.validate_on_submit():
+        cor.nome_cor = form.nome_cor.data
+        database.session.commit()
+        flash('Cadastro atualizado com sucesso!', 'success')
+        return redirect(url_for('cor', cor_id=cor.id))
+    return render_template('cadastro_cores.html', tipo_roupa=cor, form=form)

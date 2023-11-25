@@ -1,0 +1,17 @@
+{% include 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <form method='POST' action="" class="border m-5 p-2">
+            {{ form.csrf_token }}
+            <legend>Cadastro tipos de roupas:</legend>
+            <fieldset>
+                <div class="form-group">
+                    {{ form.nome_cor.label(class="form-control-label") }}
+                    {{ form.nome_cor(class="form-control-label") }}
+                </div>
+            </fieldset>
+            {{ form.botao_submit(class="btn btn-primary m-1") }}
+        </form>
+    </div>
+{% endblock %}
