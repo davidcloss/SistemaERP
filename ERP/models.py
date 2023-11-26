@@ -68,28 +68,28 @@ class CadastroEmpresa(database.Model):
 class TiposRoupas(database.Model):
     __tablename__ = 'tipos_roupas'
     id = database.Column(database.Integer, primary_key=True)
-    nome_tipo_roupa = database.Column(database.String(100), nullable=False)
+    nome_tipo_roupa = database.Column(database.String(100), nullable=False, unique=True)
 #TODO: atributo unico para os nomes dos models basicos
 
 class Cores(database.Model):
     __tablename__ = 'cores'
     id = database.Column(database.Integer, primary_key=True)
-    nome_cor = database.Column(database.String, nullable=False)
+    nome_cor = database.Column(database.String, nullable=False, unique=True)
 
 class Tamanhos(database.Model):
     __tablename__ = 'tamanhos'
     id = database.Column(database.Integer, primary_key=True)
-    nome_tamanho = database.Column(database.String, nullable=False)
+    nome_tamanho = database.Column(database.String, nullable=False, unique=True)
 
 class Marcas(database.Model):
     __tablename__ = 'marcas'
     id = database.Column(database.Integer, primary_key=True)
-    nome_marca = database.Column(database.String, nullable=False)
+    nome_marca = database.Column(database.String, nullable=False, unique=True)
 
 class TiposUnidades(database.Model):
     __tablename__ = 'tipos_unidades'
     id = database.Column(database.Integer, primary_key=True)
-    nome_tipo_unidade = database.Column(database.String, nullable=False)
+    nome_tipo_unidade = database.Column(database.String, nullable=False, unique=True)
 
 class ItensEstoque(database.Model):
     __tablename__ = 'itens_estoque'
@@ -98,6 +98,7 @@ class ItensEstoque(database.Model):
     id_tamanho = database.Column(database.Integer, database.ForeignKey('tamanhos.id'), nullable=False)
     id_marca = database.Column(database.Integer, database.ForeignKey('marcas.id'), nullable=False)
     id_cor = database.Column(database.Integer, database.ForeignKey('cores.id'), nullable=False)
+    codigo_item = database.Column(database.String(100), unique=True)
     data_cadastro = database.Column(database.DateTime, default=datetime.utcnow())
     data_ultima_entrada = database.Column(database.DateTime)
     data_ultima_saida = database.Column(database.DateTime)

@@ -2,10 +2,13 @@ from flask import render_template, redirect, url_for, flash, request
 from ERP import app, database, bcrypt, login_manager
 from ERP.forms import FormCriarConta, FormLogin, FormCadastroCNPJ, FormCadastroEmpresa, FormCadastroCPF
 from ERP.forms import FormTiposRoupas, FormCores, FormMarcas, FormTamanhos, FormTiposUnidades
+from ERP.forms import FormItensEstoque
 from ERP.models import Usuarios, CadastroEmpresa, TiposCadastros, ClientesFornecedores, TiposUsuarios
-from ERP.models import TiposRoupas, Cores, Tamanhos, Marcas, TiposUnidades
+from ERP.models import TiposRoupas, Cores, Tamanhos, Marcas, TiposUnidades, ItensEstoque
+from ERP.models import TransacoesEstoque
 from flask_login import login_user, logout_user, current_user, login_required
 import secrets
+from datetime import datetime
 import os
 from PIL import Image
 
@@ -391,6 +394,62 @@ def cadastro_tiposunidades():
         tipos_unidades = TiposUnidades(nome_tipo_unidade=form.tipo_unidade.data)
         database.session.add(tipos_unidades)
         database.session.commit()
+        flash(f"Cadastro concluído: {form.tipo_unidade.data}!", 'alert-success')
+        tipos_unidades = TiposUnidades.query.filter_by(nome_tipo_unidade=form.tipo_unidade.data).first()
+        return redirect(url_for('tipos_unidades', tipos_unidades_id=tipos_unidades.id))
+    return render_template('cadastro_tipos_unidades.html', form=form)
+
+@app.route('/estoque/tiposunidades/<tipos_unidades_id>', methods=['GET', 'POST'])
+@login_required
+def tipos_unidades(tipos_unidades_id):
+    tipos_unidades = TiposUnidades.query.get_or_404(tipos_unidades_id)
+    return render_template('tipos_unidades.html', tipos_unidades=tipos_unidades)
+
+@app.route('/estoque/tiposunidades/<int:tipos_unidades_id>/edicao', methods=['GET', 'POST'])
+@login_required
+def editar_tipos_unidades(tipos_unidades_id):
+    tipos_unidades = TiposUnidades.query.get_or_404(tipos_unidades_id)
+    form = FormTiposUnidades()
+
+    if form.validate_on_submit():
+        tipos_unidades.nome_tipo_unidade = form.tipo_unidade.data
+        database.session.commit()
+        flash(f"Edição concluída: {form.tipo_unidade.data}!", 'alert-success')
+        return redirect(url_for('tipos_unidades', tipos_unidades_id=tipos_unidades.id))
+
+    elif request.method == 'GET':
+        form.tipo_unidade.data = tipos_unidades.nome_tipo_unidade
+
+    return render_template('cadastro_tipos_unidades.html', form=form, tipos_unidades=tipos_unidades)
+
+@app.route('/estoque/itensestoque/cadastro', methods=['GET', 'POST'])
+@login_required
+def cadastro_itens_estoque():
+    form = FormItensEstoque()
+    form.tipos_roupas.choices = [(tipo.id, tipo.nome_tipo_roupa) for tipo in TiposRoupas.query.all()]
+    form.cores.choices = [(cor.id, cor.nome_cor) for cor in Cores.query.all()]
+    form.tamanho.choices = [(tamanho.id, tamanho.tamanho) for tamanho in Tamanhos.query.all()]
+    form.marca.choices = [(marca.id, marca.nome_marca) for marca in Marcas.query.all()]
+    form.tipo_unidade.choices = [(tipo_unidade.id, tipo_unidade.nome_tipo_unidade) for tipo_unidade in TiposUnidades.query.all()]
+    if form.validate_on_submit():
+        try:
+            valor_unitario_medio = float(form.valor_total.data) / float(form.qtd_inicial.data)
+        except:
+            valor_unitario_medio = 0
+        itens_estoque = ItensEstoque(id_tipo_roupa=form.tipos_roupas.data,
+                                     id_tamanho=form.tamanho.data,
+                                     id_marca=form.marca.data,
+                                     id_cor=form.cores.data,
+                                     codigo_item=form.codigo_item.data,
+                                     id_tipo_unidade=form.tipo_unidade.data,
+                                     # qtd=form.qtd_inicial.data,
+                                     # valor_estoque=form.valor_total,
+                                     qtd_minima=form.quantidade_minima.data) #,
+                                     # valor_unitario_medio=valor_unitario_medio)
+
+        database.session.add(itens_estoque)
+        database.session.commit()
+        transacao_estoque = TransacoesEstoque()
         flash(f"Cadastro concluído: {form.tipo_unidade.data}!", 'alert-success')
         tipos_unidades = TiposUnidades.query.filter_by(nome_tipo_unidade=form.tipo_unidade.data).first()
         return redirect(url_for('tipos_unidades', tipos_unidades_id=tipos_unidades.id))
