@@ -1,0 +1,9 @@
+{% include 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <h2>Dados do Cadastro</h2>
+        <p>Tipo unidade: {{ tipos_unidades.nome_tipo_unidade }}</p>
+        <a href="{{ url_for('editar_tipos_unidades', tipos_unidades_id=tipos_unidades.id) }}">Editar</a>
+    </div>
+{% endblock %}

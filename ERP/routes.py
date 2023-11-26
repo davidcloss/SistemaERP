@@ -1,7 +1,7 @@
 from flask import render_template, redirect, url_for, flash, request
 from ERP import app, database, bcrypt, login_manager
 from ERP.forms import FormCriarConta, FormLogin, FormCadastroCNPJ, FormCadastroEmpresa, FormCadastroCPF
-from ERP.forms import FormTiposRoupas, FormCores, FormMarcas, FormTamanhos
+from ERP.forms import FormTiposRoupas, FormCores, FormMarcas, FormTamanhos, FormTiposUnidades
 from ERP.models import Usuarios, CadastroEmpresa, TiposCadastros, ClientesFornecedores, TiposUsuarios
 from ERP.models import TiposRoupas, Cores, Tamanhos, Marcas, TiposUnidades
 from flask_login import login_user, logout_user, current_user, login_required
@@ -382,3 +382,39 @@ def editar_tamanho(tamanho_id):
         form.tamanho.data = tamanho.nome_tamanho
 
     return render_template('cadastro_tamanhos.html', form=form, tamanho=tamanho)
+
+@app.route('/estoque/tiposunidades/cadastro', methods=['GET', 'POST'])
+@login_required
+def cadastro_tiposunidades():
+    form = FormTiposUnidades()
+    if form.validate_on_submit():
+        tipos_unidades = TiposUnidades(nome_tipo_unidade=form.tipo_unidade.data)
+        database.session.add(tipos_unidades)
+        database.session.commit()
+        flash(f"Cadastro concluído: {form.tipo_unidade.data}!", 'alert-success')
+        tipos_unidades = TiposUnidades.query.filter_by(nome_tipo_unidade=form.tipo_unidade.data).first()
+        return redirect(url_for('tipos_unidades', tipos_unidades_id=tipos_unidades.id))
+    return render_template('cadastro_tipos_unidades.html', form=form)
+
+@app.route('/estoque/tiposunidades/<tipos_unidades_id>', methods=['GET', 'POST'])
+@login_required
+def tipos_unidades(tipos_unidades_id):
+    tipos_unidades = TiposUnidades.query.get_or_404(tipos_unidades_id)
+    return render_template('tipos_unidades.html', tipos_unidades=tipos_unidades)
+
+@app.route('/estoque/tiposunidades/<int:tipos_unidades_id>/edicao', methods=['GET', 'POST'])
+@login_required
+def editar_tipos_unidades(tipos_unidades_id):
+    tipos_unidades = TiposUnidades.query.get_or_404(tipos_unidades_id)
+    form = FormTiposUnidades()
+
+    if form.validate_on_submit():
+        tipos_unidades.nome_tipo_unidade = form.tipo_unidade.data
+        database.session.commit()
+        flash(f"Edição concluída: {form.tipo_unidade.data}!", 'alert-success')
+        return redirect(url_for('tipos_unidades', tipos_unidades_id=tipos_unidades.id))
+
+    elif request.method == 'GET':
+        form.tipo_unidade.data = tipos_unidades.nome_tipo_unidade
+
+    return render_template('cadastro_tipos_unidades.html', form=form, tipos_unidades=tipos_unidades)
