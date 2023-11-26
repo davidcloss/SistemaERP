@@ -74,7 +74,7 @@ class FormCadastroEmpresa(FlaskForm):
 
 
 class FormTiposRoupas(FlaskForm):
-    tipo_roupa = StringField('Tipo Roupa:', validators=[DataRequired()])
+    nome_tipo_roupa = StringField('Tipo Roupa:', validators=[DataRequired()])
     botao_submit = SubmitField('Cadastrar')
 
 

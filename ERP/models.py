@@ -66,9 +66,9 @@ class CadastroEmpresa(database.Model):
     situacao = database.Column(database.Integer, default='A')
 
 class TiposRoupas(database.Model):
-    __table_name__ = 'tipos_roupas'
+    __tablename__ = 'tipos_roupas'
     id = database.Column(database.Integer, primary_key=True)
-    nome_tipo_roupa = database.Column(database.String, nullable=False)
+    nome_tipo_roupa = database.Column(database.String(100), nullable=False)
 #TODO: atributo unico para os nomes dos models basicos
 
 class Cores(database.Model):

@@ -252,18 +252,23 @@ def tipo_roupa(tipo_roupa_id):
     return render_template('tipo_roupa.html', tipo_roupa=tipo_roupa)
 
 
-@app.route('/estoque/tiporoupa/<tipo_roupa_id>/edicao', methods=['GET', 'POST'])
+@app.route('/estoque/tiporoupa/<int:tipo_roupa_id>/edicao', methods=['GET', 'POST'])
 @login_required
 def editar_tipo_roupa(tipo_roupa_id):
     tipo_roupa = TiposRoupas.query.get_or_404(tipo_roupa_id)
     form = FormTiposRoupas()
-    form.tipo_roupa.data = tipo_roupa.nome_tipo_roupa
 
     if form.validate_on_submit():
-        form.populate_obj(tipo_roupa)
+        tipo_roupa.nome_tipo_roupa = form.nome_tipo_roupa.data
         database.session.commit()
-        flash('Cadastro atualizado com sucesso!', 'success')
+        flash(f"Edição concluída: {form.nome_tipo_roupa.data}!", 'alert-success')
         return redirect(url_for('tipo_roupa', tipo_roupa_id=tipo_roupa.id))
+
+    # Certifique-se de passar o objeto `tipo_roupa` para o formulário para preenchimento inicial
+    elif request.method == 'GET':
+        form.nome_tipo_roupa.data = tipo_roupa.nome_tipo_roupa
+
+        return render_template('cadastro_tipo_roupa.html', form=form, tipo_roupa=tipo_roupa)
 
     return render_template('cadastro_tipo_roupa.html', tipo_roupa=tipo_roupa, form=form)
 
@@ -286,20 +291,24 @@ def cor(cor_id):
     cor = Cores.query.get_or_404(cor_id)
     return  render_template('cor.html', cor=cor)
 
-@app.route('/estoque/cores/<cor_id>/edicao', methods=['GET', 'POST'])
+@app.route('/estoque/cor/<int:cor_id>/edicao', methods=['GET', 'POST'])
 @login_required
 def editar_cor(cor_id):
     cor = Cores.query.get_or_404(cor_id)
-    form = FormCores(obj=cor)
-    form.nome_cor.data = cor.nome_cor
+    form = FormCores()
+
     if form.validate_on_submit():
-        form.populate_obj(cor)
         cor.nome_cor = form.nome_cor.data
         database.session.commit()
-        flash('Cadastro atualizado com sucesso!', 'success')
+        flash(f"Edição concluída: {form.nome_cor.data}!", 'alert-success')
         return redirect(url_for('cor', cor_id=cor.id))
-    return render_template('cadastro_cores.html', cor=cor, form=form)
 
+    elif request.method == 'GET':
+        form.nome_cor.data = cor.nome_cor
+
+        return render_template('cadastro_cores.html', form=form, cor=cor)
+
+    return render_template('cadastro_cores.html', form=form, cor=cor)
 #TODO: Lista de marcas, cores,tipo_roupa e etc
 
 @app.route('/estoque/marcas/cadastro', methods=['GET', 'POST'])
@@ -321,16 +330,55 @@ def marcas(marca_id):
     marca = Marcas.query.get_or_404(marca_id)
     return render_template('marcas.html', marca=marca)
 
-@app.route('/estoque/marcas/<marca_id>/edicao', methods=['GET', 'POST'])
+@app.route('/estoque/marca/editar/<int:marca_id>', methods=['GET', 'POST'])
 @login_required
 def editar_marca(marca_id):
     marca = Marcas.query.get_or_404(marca_id)
-    form = FormMarcas(obj=marca)
-    form.nome_marca.data = marca.nome_marca
+    form = FormMarcas()
+
     if form.validate_on_submit():
-        form.populate_obj(marca)
         marca.nome_marca = form.nome_marca.data
         database.session.commit()
-        flash('Cadastro atualizado com sucesso!', 'success')
+        flash(f"Edição concluída: {form.nome_marca.data}!", 'alert-success')
         return redirect(url_for('marcas', marca_id=marca.id))
-    return render_template('cadastro_marcas.html', tipo_roupa=cor, form=form)
+
+    elif request.method == 'GET':
+        form.nome_marca.data = marca.nome_marca
+
+    return render_template('cadastro_marcas.html', form=form, marca=marca)
+
+@app.route('/estoque/tamanhos/cadastro', methods=['GET', 'POST'])
+@login_required
+def cadastro_tamanhos():
+    form = FormTamanhos()
+    if form.validate_on_submit():
+        tamanho = Tamanhos(nome_tamanho=form.tamanho.data)
+        database.session.add(tamanho)
+        database.session.commit()
+        flash(f"Cadastro concluído: {form.tamanho.data}!", 'alert-success')
+        tamanho = Tamanhos.query.filter_by(nome_tamanho=form.tamanho.data).first()
+        return redirect(url_for('tamanhos', tamanho_id=tamanho.id))
+    return render_template('cadastro_tamanhos.html', form=form)
+
+@app.route('/estoque/tamanhos/<tamanho_id>', methods=['GET', 'POST'])
+@login_required
+def tamanhos(tamanho_id):
+    tamanho = Tamanhos.query.get_or_404(tamanho_id)
+    return render_template('tamanhos.html', tamanho=tamanho)
+
+@app.route('/estoque/tamanho/editar/<int:tamanho_id>', methods=['GET', 'POST'])
+@login_required
+def editar_tamanho(tamanho_id):
+    tamanho = Tamanhos.query.get_or_404(tamanho_id)
+    form = FormTamanhos()
+
+    if form.validate_on_submit():
+        tamanho.nome_tamanho = form.tamanho.data
+        database.session.commit()
+        flash(f"Edição concluída: {form.tamanho.data}!", 'alert-success')
+        return redirect(url_for('tamanhos', tamanho_id=tamanho.id))
+
+    elif request.method == 'GET':
+        form.tamanho.data = tamanho.nome_tamanho
+
+    return render_template('cadastro_tamanhos.html', form=form, tamanho=tamanho)

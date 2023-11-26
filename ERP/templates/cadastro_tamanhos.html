@@ -4,11 +4,11 @@
     <div class="container">
         <form method='POST' action="" class="border m-5 p-2">
             {{ form.csrf_token }}
-            <legend>Cadastro tipos de roupas:</legend>
+            <legend>Cadastro tamanhos:</legend>
             <fieldset>
                 <div class="form-group">
-                    {{ form.nome_tipo_roupa.label(class="form-control-label") }}
-                    {{ form.nome_tipo_roupa(class="form-control-label") }}
+                    {{ form.tamanho.label(class="form-control-label") }}
+                    {{ form.tamanho(class="form-control-label") }}
                 </div>
             </fieldset>
             {{ form.botao_submit(class="btn btn-primary m-1") }}
