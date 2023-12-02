@@ -99,14 +99,14 @@ class FormTiposUnidades(FlaskForm):
 
 
 class FormItensEstoque(FlaskForm):
-    tipos_roupas = SelectField('Tipo Roupa')
-    cores = SelectField('Cor')
-    marca = SelectField('Marca')
-    tamanho = SelectField('Tamanho')
-    tipo_unidade = SelectField('Tipo Unidade')
+    id_tipo_roupa = SelectField('Tipo Roupa')
+    id_cor = SelectField('Cor')
+    id_marca = SelectField('Marca')
+    id_tamanho = SelectField('Tamanho')
+    id_tipo_unidade = SelectField('Tipo Unidade')
     codigo_item = StringField('Código de Barras:', validators=[DataRequired()])
     qtd_inicial = IntegerField('Quantidade Inicial:', validators=[DataRequired()])
     valor_total_custo = StringField('Valor total: (custo)', validators=[DataRequired()])
     valor_unitario_venda = StringField('Valor unitário: (venda)', validators=[DataRequired()])
-    quantidade_minima = IntegerField('Quantidade mínima:', validators=[DataRequired()])
+    qtd_minima = IntegerField('Quantidade mínima:', validators=[DataRequired()])
     botao_submit = SubmitField('Cadastrar')
