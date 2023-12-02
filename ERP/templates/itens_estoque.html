@@ -5,5 +5,14 @@
         <h2>Dados do Cadastro</h2>
         <p>Produto: {{ nome_roupa }}</p>
         <p>Código produto: {{ itens_estoque.codigo_item }}</p>
+        <p>Data última entrada: {{ itens_estoque.data_ultima_entrada }}</p>
+        <p>Data última saída: {{ itens_estoque.data_ultima_saida }}</p>
+        <p>Quantidade estoque: {{ itens_estoque.qtd }}</p>
+        <p>Quantidade mínima: {{ itens_estoque.qtd_minima }}</p>
+        <p>Valor Unitário Médio (custo): R$ {{ itens_estoque.valor_unitario_medio_custo }}</p>
+        <p>Valor total (custo): R$ {{ itens_estoque.valor_estoque_custo }}</p>
+        <p>Valor Unitário Médio (venda): R$ {{ itens_estoque.valor_unitario_medio_venda }}</p>
+        <p>Valor total (venda): R$ {{ itens_estoque.valor_estoque_venda }}</p>
+
     </div>
 {% endblock %}

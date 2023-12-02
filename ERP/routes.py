@@ -61,7 +61,7 @@ def trata_documento(doc):
     return doc
 
 
-#TODO: verificação se valores são ou não unicos quando necessário para nao dar bug quando estiver em produção
+#TODO: TRazer datas ajustadas para horário local
 @app.route('/clientesfornecedores/cnpj/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_cnpj():
@@ -505,12 +505,13 @@ def cadastro_itens_estoque():
         database.session.add(transacao_estoque)
         database.session.commit()
         tran_estoque = TransacoesEstoque.query.filter_by(id_lote=id_lote).first()
-        item_estoque.data_entrada = tran_estoque.data_transacao
+        setattr(item_estoque, 'data_ultima_entrada', tran_estoque.data_transacao)
         database.session.commit()
         flash(f"Cadastro concluído!", 'alert-success')
         return redirect(url_for('itens_estoque_', itens_estoque_id=item_estoque.id))
     return render_template('cadastro_itens_estoque.html', form=form)
 
+#TODO: Fazer verificação de dados que precisam ser unicos antes de mandar pra bd em todos
 def cria_nome_item_estoque(itens_estoque):
     tipo_roupa = TiposRoupas.query.filter_by(id=itens_estoque.id_tipo_roupa).first()
     tamanho = Tamanhos.query.filter_by(id=itens_estoque.id_tamanho).first()
@@ -519,7 +520,7 @@ def cria_nome_item_estoque(itens_estoque):
     nome_produto = tipo_roupa.nome_tipo_roupa + ' ' + cor.nome_cor + ' ' + marca.nome_marca + ' ' + tamanho.nome_tamanho
     return nome_produto
 
-@app.route('/estoque/itens_estoque/<itens_estoque_id>', methods=['GET', 'POST'])
+@app.route('/estoque/itensestoque/<itens_estoque_id>', methods=['GET', 'POST'])
 @login_required
 def itens_estoque_(itens_estoque_id):
     itens_estoque = ItensEstoque.query.get_or_404(itens_estoque_id)
