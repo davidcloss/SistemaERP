@@ -104,23 +104,27 @@ class ItensEstoque(database.Model):
     data_ultima_saida = database.Column(database.DateTime)
     id_tipo_unidade = database.Column(database.Integer, database.ForeignKey('tipos_unidades.id'), nullable=False)
     qtd = database.Column(database.Float)
-    valor_estoque = database.Column(database.Float)
-    valor_unitario_medio = database.Column(database.Float)
+    valor_estoque_custo = database.Column(database.Float)
+    valor_unitario_medio_custo = database.Column(database.Float)
+    valor_estoque_venda = database.Column(database.Float)
+    valor_unitario_medio_venda = database.Column(database.Float)
     qtd_minima = database.Column(database.Float)
 
 class TiposTransacoesEstoque(database.Model):
     __tablename__ = 'tipos_transacoes'
     id = database.Column(database.Integer, primary_key=True)
-    nome_tipo_transacao = database.Column(database.String, nullable=False)
+    nome_tipo_transacao = database.Column(database.String, nullable=False, unique=True)
 
 class TransacoesEstoque(database.Model):
     __tablename__ = 'transacoes_estoque'
     id = database.Column(database.Integer, primary_key=True)
-    id_lote = database.Column(database.Integer, primary_key=True)
+    id_lote = database.Column(database.Integer)
     tipo_transacao = database.Column(database.Integer, database.ForeignKey('tipos_transacoes.id'), nullable=False)
     data_transacao = database.Column(database.DateTime)
     data_registro_transacao = database.Column(database.DateTime, default=datetime.utcnow())
     id_item = database.Column(database.Integer, database.ForeignKey('itens_estoque.id'))
     qtd_transacao = database.Column(database.Integer, nullable=False)
-    valor_unitario_medio = database.Column(database.Float, nullable=False)
-    valor_total_transacao = database.Column(database.Float, nullable=False)
+    valor_unitario_medio_custo = database.Column(database.Float, nullable=False)
+    valor_total_transacao_custo = database.Column(database.Float, nullable=False)
+    valor_unitario_medio_venda = database.Column(database.Float, nullable=False)
+    valor_total_transacao_venda = database.Column(database.Float, nullable=False)

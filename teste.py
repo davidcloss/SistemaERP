@@ -1,5 +1,5 @@
 from ERP import app, database
-from ERP.models import TiposCadastros, TiposUsuarios, SituacoesUsuarios, TiposRoupas
+from ERP.models import TiposCadastros, TiposUsuarios, SituacoesUsuarios, TiposRoupas, Usuarios
 from ERP.models import Tamanhos, Cores, Marcas, ItensEstoque, TiposTransacoesEstoque, TiposUnidades
 from datetime import datetime
 import sqlite3 as sql
@@ -72,12 +72,20 @@ with app.app_context():
         database.session.add(t)
         database.session.commit()
 
-tipos_transacoes = ['Entrada', 'Saída', 'Ajuste Estoque']
+tipos_transacoes = ['Entrada', 'Saída', 'Ajuste Estoque +', 'Ajuste Estoque -']
 with app.app_context():
     for tipo in tipos_transacoes:
         t = TiposTransacoesEstoque(nome_tipo_transacao=tipo)
         database.session.add(t)
         database.session.commit()
+
+tipos_unidades = ['Unidade', 'Metro', 'Centimetro +', 'Kilos', 'Gramas']
+with app.app_context():
+    for tipo in tipos_unidades:
+        t = TiposUnidades(nome_tipo_unidade=tipo)
+        database.session.add(t)
+        database.session.commit()
+
 
 
 print(datetime.utcnow().date())

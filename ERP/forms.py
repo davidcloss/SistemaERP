@@ -106,6 +106,7 @@ class FormItensEstoque(FlaskForm):
     tipo_unidade = SelectField('Tipo Unidade')
     codigo_item = StringField('Código de Barras:', validators=[DataRequired()])
     qtd_inicial = IntegerField('Quantidade Inicial:', validators=[DataRequired()])
-    valor_total = StringField('Valor total:', validators=[DataRequired()])
+    valor_total_custo = StringField('Valor total: (custo)', validators=[DataRequired()])
+    valor_unitario_venda = StringField('Valor unitário: (venda)', validators=[DataRequired()])
     quantidade_minima = IntegerField('Quantidade mínima:', validators=[DataRequired()])
     botao_submit = SubmitField('Cadastrar')

@@ -3,7 +3,7 @@
 {% block content %}
     <div class="container">
         <h2>Dados do Cadastro</h2>
-        <p>Cor: {{ cor.nome_cor }}</p>
-        <a href="{{ url_for('editar_cor', cor_id=cor.id) }}">Editar</a>
+        <p>Produto: {{ nome_roupa }}</p>
+        <p>Código produto: {{ itens_estoque.codigo_item }}</p>
     </div>
 {% endblock %}

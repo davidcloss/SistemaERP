@@ -5,7 +5,7 @@ from ERP.forms import FormTiposRoupas, FormCores, FormMarcas, FormTamanhos, Form
 from ERP.forms import FormItensEstoque
 from ERP.models import Usuarios, CadastroEmpresa, TiposCadastros, ClientesFornecedores, TiposUsuarios
 from ERP.models import TiposRoupas, Cores, Tamanhos, Marcas, TiposUnidades, ItensEstoque
-from ERP.models import TransacoesEstoque
+from ERP.models import TransacoesEstoque, TiposTransacoesEstoque
 from flask_login import login_user, logout_user, current_user, login_required
 import secrets
 from datetime import datetime
@@ -240,11 +240,11 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
 def cadastro_tipo_roupa():
     form = FormTiposRoupas()
     if form.validate_on_submit():
-        tipo_roupa = TiposRoupas(nome_tipo_roupa=form.tipo_roupa.data)
+        tipo_roupa = TiposRoupas(nome_tipo_roupa=form.nome_tipo_roupa.data)
         database.session.add(tipo_roupa)
         database.session.commit()
-        flash(f"Cadastro concluído: {form.tipo_roupa.data}!", 'alert-success')
-        tipo_roupa = TiposRoupas.query.filter_by(nome_tipo_roupa=form.tipo_roupa.data).first()
+        flash(f"Cadastro concluído: {form.nome_tipo_roupa.data}!", 'alert-success')
+        tipo_roupa = TiposRoupas.query.filter_by(nome_tipo_roupa=form.nome_tipo_roupa.data).first()
         return redirect(url_for('tipo_roupa', tipo_roupa_id=tipo_roupa.id))
     return render_template('cadastro_tipo_roupa.html', form=form)
 
@@ -422,48 +422,16 @@ def editar_tipos_unidades(tipos_unidades_id):
 
     return render_template('cadastro_tipos_unidades.html', form=form, tipos_unidades=tipos_unidades)
 
-@app.route('/estoque/itensestoque/cadastro', methods=['GET', 'POST'])
-@login_required
-def cadastro_itens_estoque():
-    form = FormItensEstoque()
-    form.tipos_roupas.choices = [(tipo.id, tipo.nome_tipo_roupa) for tipo in TiposRoupas.query.all()]
-    form.cores.choices = [(cor.id, cor.nome_cor) for cor in Cores.query.all()]
-    form.tamanho.choices = [(tamanho.id, tamanho.tamanho) for tamanho in Tamanhos.query.all()]
-    form.marca.choices = [(marca.id, marca.nome_marca) for marca in Marcas.query.all()]
-    form.tipo_unidade.choices = [(tipo_unidade.id, tipo_unidade.nome_tipo_unidade) for tipo_unidade in TiposUnidades.query.all()]
-    if form.validate_on_submit():
-        try:
-            valor_unitario_medio = float(form.valor_total.data) / float(form.qtd_inicial.data)
-        except:
-            valor_unitario_medio = 0
-        itens_estoque = ItensEstoque(id_tipo_roupa=form.tipos_roupas.data,
-                                     id_tamanho=form.tamanho.data,
-                                     id_marca=form.marca.data,
-                                     id_cor=form.cores.data,
-                                     codigo_item=form.codigo_item.data,
-                                     id_tipo_unidade=form.tipo_unidade.data,
-                                     # qtd=form.qtd_inicial.data,
-                                     # valor_estoque=form.valor_total,
-                                     qtd_minima=form.quantidade_minima.data) #,
-                                     # valor_unitario_medio=valor_unitario_medio)
-
-        database.session.add(itens_estoque)
-        database.session.commit()
-        transacao_estoque = TransacoesEstoque()
-        flash(f"Cadastro concluído: {form.tipo_unidade.data}!", 'alert-success')
-        tipos_unidades = TiposUnidades.query.filter_by(nome_tipo_unidade=form.tipo_unidade.data).first()
-        return redirect(url_for('tipos_unidades', tipos_unidades_id=tipos_unidades.id))
-    return render_template('cadastro_tipos_unidades.html', form=form)
-
-@app.route('/estoque/tiposunidades/<tipos_unidades_id>', methods=['GET', 'POST'])
-@login_required
-def tipos_unidades(tipos_unidades_id):
-    tipos_unidades = TiposUnidades.query.get_or_404(tipos_unidades_id)
-    return render_template('tipos_unidades.html', tipos_unidades=tipos_unidades)
+def busca_ultima_transacao_estoque():
+    busca = TransacoesEstoque.query.order_by(TransacoesEstoque.id_lote.desc()).first()
+    if busca:
+        return busca.id + 1
+    else:
+        return 1
 
 @app.route('/estoque/tiposunidades/<int:tipos_unidades_id>/edicao', methods=['GET', 'POST'])
 @login_required
-def editar_tipos_unidades(tipos_unidades_id):
+def editar_tipos_unidades_(tipos_unidades_id):
     tipos_unidades = TiposUnidades.query.get_or_404(tipos_unidades_id)
     form = FormTiposUnidades()
 
@@ -477,3 +445,85 @@ def editar_tipos_unidades(tipos_unidades_id):
         form.tipo_unidade.data = tipos_unidades.nome_tipo_unidade
 
     return render_template('cadastro_tipos_unidades.html', form=form, tipos_unidades=tipos_unidades)
+
+def string_to_float(flo):
+    if type(flo) is str:
+        flo = flo.replace('.', '_')
+        flo = flo.replace(',', '.')
+        flo = flo.replace('_', ',')
+        return float(flo)
+    else:
+        return flo
+
+@app.route('/estoque/itensestoque/cadastro', methods=['GET', 'POST'])
+@login_required
+def cadastro_itens_estoque():
+    form = FormItensEstoque()
+    form.tipos_roupas.choices = [(tipo.id, tipo.nome_tipo_roupa) for tipo in TiposRoupas.query.all()]
+    form.cores.choices = [(cor.id, cor.nome_cor) for cor in Cores.query.all()]
+    form.tamanho.choices = [(tamanho.id, tamanho.nome_tamanho) for tamanho in Tamanhos.query.all()]
+    form.marca.choices = [(marca.id, marca.nome_marca) for marca in Marcas.query.all()]
+    form.tipo_unidade.choices = [(tipo_unidade.id, tipo_unidade.nome_tipo_unidade) for tipo_unidade in TiposUnidades.query.all()]
+    if form.validate_on_submit():
+        vlr_estoque_custo = string_to_float(form.valor_total_custo.data)
+        vlr_medio_venda = string_to_float(form.valor_unitario_venda.data)
+        try:
+            valor_unitario_medio_custo = string_to_float(form.valor_total_custo.data) / string_to_float(form.qtd_inicial.data)
+        except:
+            valor_unitario_medio_custo = 0
+        try:
+            valor_total_medio_venda = string_to_float(form.valor_unitario_venda.data) * string_to_float(form.qtd_inicial.data)
+        except:
+            valor_total_medio_venda = 0
+        itens_estoque = ItensEstoque(id_tipo_roupa=int(form.tipos_roupas.data),
+                                     id_tamanho=int(form.tamanho.data),
+                                     id_marca=int(form.marca.data),
+                                     id_cor=int(form.cores.data),
+                                     codigo_item=form.codigo_item.data,
+                                     id_tipo_unidade=int(form.tipo_unidade.data),
+                                     qtd=int(form.qtd_inicial.data),
+                                     valor_estoque_custo=vlr_estoque_custo,
+                                     valor_unitario_medio_venda=vlr_medio_venda,
+                                     qtd_minima=string_to_float(form.quantidade_minima.data),
+                                     valor_unitario_medio_custo=string_to_float(valor_unitario_medio_custo),
+                                     valor_estoque_venda=string_to_float(valor_total_medio_venda))
+
+        database.session.add(itens_estoque)
+        database.session.commit()
+        item_estoque = ItensEstoque.query.filter_by(codigo_item=form.codigo_item.data).first()
+        tipo_transacao = TiposTransacoesEstoque.query.filter_by(nome_tipo_transacao='Entrada').first()
+        id_lote = busca_ultima_transacao_estoque()
+        transacao_estoque = TransacoesEstoque(id_lote=int(id_lote),
+                                              tipo_transacao=int(tipo_transacao.id),
+                                              data_transacao=datetime.utcnow(),
+                                              id_item=int(item_estoque.id),
+                                              qtd_transacao=int(form.qtd_inicial.data),
+                                              valor_total_transacao_custo=vlr_estoque_custo,
+                                              valor_total_transacao_venda=valor_total_medio_venda,
+                                              valor_unitario_medio_custo=valor_unitario_medio_custo,
+                                              valor_unitario_medio_venda=vlr_medio_venda)
+        database.session.add(transacao_estoque)
+        database.session.commit()
+        tran_estoque = TransacoesEstoque.query.filter_by(id_lote=id_lote).first()
+        item_estoque.data_entrada = tran_estoque.data_transacao
+        database.session.commit()
+        flash(f"Cadastro concluído!", 'alert-success')
+        return redirect(url_for('itens_estoque_', itens_estoque_id=item_estoque.id))
+    return render_template('cadastro_itens_estoque.html', form=form)
+
+def cria_nome_item_estoque(itens_estoque):
+    tipo_roupa = TiposRoupas.query.filter_by(id=itens_estoque.id_tipo_roupa).first()
+    tamanho = Tamanhos.query.filter_by(id=itens_estoque.id_tamanho).first()
+    marca = Marcas.query.filter_by(id=itens_estoque.id_marca).first()
+    cor = Cores.query.filter_by(id=itens_estoque.id_cor).first()
+    nome_produto = tipo_roupa.nome_tipo_roupa + ' ' + cor.nome_cor + ' ' + marca.nome_marca + ' ' + tamanho.nome_tamanho
+    return nome_produto
+
+@app.route('/estoque/itens_estoque/<itens_estoque_id>', methods=['GET', 'POST'])
+@login_required
+def itens_estoque_(itens_estoque_id):
+    itens_estoque = ItensEstoque.query.get_or_404(itens_estoque_id)
+    nome_roupa = cria_nome_item_estoque(itens_estoque)
+    return render_template('itens_estoque.html', itens_estoque=itens_estoque, nome_roupa=nome_roupa)
+
+
