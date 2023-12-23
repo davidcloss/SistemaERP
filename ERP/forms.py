@@ -108,5 +108,39 @@ class FormItensEstoque(FlaskForm):
     valor_total_custo = StringField('Valor total: (custo)')
     valor_unitario_venda = StringField('Valor unitário: (venda)')
     qtd_minima = StringField('Quantidade mínima:')
-    botao_submit = SubmitField('Cadastrar')
     qtd_inicial = IntegerField('Quantidade Inicial:')
+    botao_submit = SubmitField('Cadastrar')
+
+
+class FormBancos(FlaskForm):
+    cod_banco = StringField('Código Banco', validators=[DataRequired(message='Favor incluir código banco')])
+    nome_banco = StringField('Nome Banco', validators=[DataRequired(message='Favor incluir nome banco')])
+    botao_submit = SubmitField('Cadastrar')
+
+class FormAgenciaBanco(FlaskForm):
+    agencia = StringField('Agência Banco', validators=[DataRequired(message='Favor incluir código agencia')])
+    digito_agencia = StringField('Dígito agência', validators=[DataRequired(message='Favor incluir dígito agencia')])
+    id_banco = SelectField('Banco')
+    apelido_agencia = StringField('Apelido agência', validators=[DataRequired(message='Favor incluir apelido agencia')])
+    #TODO: Busca clientefornecedor
+    botao_submit = SubmitField('Cadastrar')
+
+class FormContaBancaria(FlaskForm):
+    id_agencia = SelectField('Agência')
+    apelido_conta = StringField('Apelido conta', validators=[DataRequired(message='Favor incluir apelido conta')])
+    nro_conta = StringField('Número conta', validators=[DataRequired(message='Favor incluir número conta')])
+    digito_conta = StringField('Dígito conta', validators=[DataRequired(message='Favor incluir dígito conta')])
+    id_titular_conta = SelectField('Titular conta')
+    cheque_especial = StringField('Valor cheque especial')
+    saldo_conta = StringField('Saldo inicial conta', validators=[DataRequired(message='Favor incluir saldo inicial da conta')])
+    botao_submit = SubmitField('Cadastrar')
+
+
+class FormCartaoCredito(FlaskForm):
+    id_conta_bancaria = SelectField('Conta bancária')
+    apelido_cartao = StringField('Apelido cartão de crédito', validators=[DataRequired(message='Favor incluir apelido cartão de crédito')])
+    dia_inicial = IntegerField('Dia inicial fatura', validators=[DataRequired(message='Favor incluir dia inicial fatura')])
+    dia_final = IntegerField('Dia final fatura', validators=[DataRequired(message='Favor incluir dia final fatura')])
+    dia_pgto = IntegerField('Dia de vencimento da fatura', validators=[DataRequired(message='Favor incluir dia de vencimento da fatura')])
+    valor_limite = StringField('Limite cartão de crédito', validators=[DataRequired(message='Favor incluir o valor limite de seu cartão de crédito')])
+    botao_submit = SubmitField('Cadastrar')
