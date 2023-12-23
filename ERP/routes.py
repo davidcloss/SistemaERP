@@ -2,10 +2,11 @@ from flask import render_template, redirect, url_for, flash, request
 from ERP import app, database, bcrypt, login_manager
 from ERP.forms import FormCriarConta, FormLogin, FormCadastroCNPJ, FormCadastroEmpresa, FormCadastroCPF
 from ERP.forms import FormTiposRoupas, FormCores, FormMarcas, FormTamanhos, FormTiposUnidades
-from ERP.forms import FormItensEstoque
+from ERP.forms import FormItensEstoque, FormBancos, FormAgenciaBanco, FormContaBancaria
 from ERP.models import Usuarios, CadastroEmpresa, TiposCadastros, ClientesFornecedores, TiposUsuarios
 from ERP.models import TiposRoupas, Cores, Tamanhos, Marcas, TiposUnidades, ItensEstoque
-from ERP.models import TransacoesEstoque, TiposTransacoesEstoque
+from ERP.models import TransacoesEstoque, TiposTransacoesEstoque, Bancos, AgenciaBanco, ContasBancarias
+from ERP.models import CartaoCredito, FaturaCartaoCredito
 from flask_login import login_user, logout_user, current_user, login_required
 import secrets
 from datetime import datetime
@@ -174,7 +175,7 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
         form.tipo_cadastro.choices = [(tipo.id, tipo.nome_tipo) for tipo in TiposCadastros.query.all()]
 
         if form.validate_on_submit():
-            # Atualizar campos específicos do formulário CNPJ
+
             form.populate_obj(cliente_fornecedor)
             cliente_fornecedor.razao_social = form.razao_social.data
             cliente_fornecedor.nome_fantasia = form.nome_fantasia.data
@@ -192,7 +193,7 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
             cliente_fornecedor.email = form.email.data
             cliente_fornecedor.obs = form.obs.data
 
-            # Atualizar o usuário cadastrador
+
             cliente_fornecedor.id_usuario_cadastro = current_user.id
 
             database.session.commit()
@@ -226,7 +227,7 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
             cliente_fornecedor.obs = form.obs.data
             database.session.commit()
 
-            # Atualizar o usuário cadastrador
+
             cliente_fornecedor.id_usuario_cadastro = current_user.id
 
             flash('Cadastro atualizado com sucesso!', 'success')
@@ -268,7 +269,7 @@ def editar_tipo_roupa(tipo_roupa_id):
         flash(f"Edição concluída: {form.nome_tipo_roupa.data}!", 'alert-success')
         return redirect(url_for('tipo_roupa', tipo_roupa_id=tipo_roupa.id))
 
-    # Certifique-se de passar o objeto `tipo_roupa` para o formulário para preenchimento inicial
+
     elif request.method == 'GET':
         form.nome_tipo_roupa.data = tipo_roupa.nome_tipo_roupa
 
@@ -542,7 +543,6 @@ def edicao_itens_estoque(itens_estoque_id):
     form.id_tipo_unidade.choices = [(tipo.id, tipo.nome_tipo_unidade) for tipo in TiposUnidades.query.all()]
 
     if form.validate_on_submit():
-        print('oi')
         itens_estoque = ItensEstoque.query.get_or_404(itens_estoque_id)
         itens_estoque.id_tipo_roupa = form.id_tipo_roupa.data
         itens_estoque.id_cor = form.id_cor.data
@@ -555,3 +555,51 @@ def edicao_itens_estoque(itens_estoque_id):
         return redirect(url_for('itens_estoque_', itens_estoque_id=itens_estoque.id))
 
     return render_template('edicao_itens_estoque.html', form=form, itens_estoque=itens_estoque.id)
+
+@app.route('/financeiro/bancos/cadastro', methods=['GET', 'POST'])
+@login_required
+def cadastro_banco():
+    form = FormBancos()
+    if form.validate_on_submit():
+        verifica_cod = Bancos.query.filter_by(cod_banco=form.cod_banco.data).first()
+        verifica_nome = Bancos.query.filter_by(nome_banco=form.nome_banco.data).first()
+        if verifica_cod:
+            flash("Código do banco já utilizado em outro cadastro!", 'alert-danger')
+
+        elif verifica_nome:
+            flash("Nome do banco já utilizado em outro cadastro!", 'alert-danger')
+        else:
+            banco = Bancos(cod_banco=form.cod_banco.data,
+                           nome_banco=form.nome_banco.data)
+            database.session.add(banco)
+            database.session.commit()
+            banco = Bancos.query.filter_by(cod_banco=form.cod_banco.data).first()
+            flash("Cadastro concluído!", 'alert-success')
+            return redirect(url_for('bancos', banco_id=banco.id))
+    return render_template('cadastro_bancos.html', form=form)
+
+@app.route('/financeiro/bancos/<banco_id>', methods=['GET', 'POST'])
+@login_required
+def bancos(banco_id):
+    banco = Bancos.query.filter_by(id=banco_id).first()
+    return render_template('bancos.html', banco=banco)
+
+@app.route('/financeiro/bancos/<banco_id>/editar', methods=['GET', 'POST'])
+@login_required
+def editar_bancos(banco_id):
+    banco = Bancos.query.get_or_404(banco_id)
+    form = FormBancos(obj=banco)
+    if form.validate_on_submit():
+        verifica_cod = Bancos.query.filter((Bancos.cod_banco == form.cod_banco.data) & (Bancos.id != banco.id)).first()
+        verifica_nome = Bancos.query.filter(
+            (Bancos.nome_banco == form.nome_banco.data) & (Bancos.id != banco.id)).first()
+        if verifica_cod:
+            flash("Código do banco já utilizado em outro cadastro!", 'alert-danger')
+        elif verifica_nome:
+            flash("Nome do banco já utilizado em outro cadastro!", 'alert-danger')
+        else:
+            form.populate_obj(banco)
+            database.session.commit()
+            flash("Cadastro atualizado!", 'alert-success')
+            return redirect(url_for('bancos', banco_id=banco.id))
+    return render_template('cadastro_bancos.html', form=form)

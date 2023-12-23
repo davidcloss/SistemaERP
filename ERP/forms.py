@@ -122,7 +122,8 @@ class FormAgenciaBanco(FlaskForm):
     digito_agencia = StringField('Dígito agência', validators=[DataRequired(message='Favor incluir dígito agencia')])
     id_banco = SelectField('Banco')
     apelido_agencia = StringField('Apelido agência', validators=[DataRequired(message='Favor incluir apelido agencia')])
-    #TODO: Busca clientefornecedor
+    id_cliente = StringField('Cadastro Banco')
+    botao_pesquisar = SubmitField('Pesquisar')
     botao_submit = SubmitField('Cadastrar')
 
 class FormContaBancaria(FlaskForm):

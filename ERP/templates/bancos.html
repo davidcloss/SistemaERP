@@ -1,0 +1,10 @@
+{% include 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <h2>Dados do Cadastro</h2>
+        <p>Código banco: {{ banco.cod_banco }}</p>
+            <p>Nome banco: {{ banco.nome_banco }}</p>
+        <a href="{{ url_for('editar_bancos', banco_id=banco.id) }}">Editar</a>
+    </div>
+{% endblock %}
