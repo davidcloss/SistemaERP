@@ -540,7 +540,7 @@ def edicao_itens_estoque(itens_estoque_id):
     form.id_marca.choices = [(marca.id, marca.nome_marca) for marca in Marcas.query.all()]
     form.id_tamanho.choices = [(tamanho.id, tamanho.nome_tamanho) for tamanho in Tamanhos.query.all()]
     form.id_tipo_unidade.choices = [(tipo.id, tipo.nome_tipo_unidade) for tipo in TiposUnidades.query.all()]
-    print(form.errors)
+
     if form.validate_on_submit():
         print('oi')
         itens_estoque = ItensEstoque.query.get_or_404(itens_estoque_id)

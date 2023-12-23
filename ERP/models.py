@@ -69,7 +69,6 @@ class TiposRoupas(database.Model):
     __tablename__ = 'tipos_roupas'
     id = database.Column(database.Integer, primary_key=True)
     nome_tipo_roupa = database.Column(database.String(100), nullable=False, unique=True)
-#TODO: atributo unico para os nomes dos models basicos
 
 class Cores(database.Model):
     __tablename__ = 'cores'
@@ -128,3 +127,59 @@ class TransacoesEstoque(database.Model):
     valor_total_transacao_custo = database.Column(database.Float, nullable=False)
     valor_unitario_medio_venda = database.Column(database.Float, nullable=False)
     valor_total_transacao_venda = database.Column(database.Float, nullable=False)
+
+class Bancos(database.Model):
+    __tablename__ = 'bancos'
+    id = database.Column(database.Integer, primary_key=True)
+    cod_banco = database.Column(database.Integer, unique=True, nullable=False)
+    nome_banco = database.Column(database.String, unique=True, nullable=False)
+
+class AgenciaBanco(database.Model):
+    __tablename__ = 'agencia_bancos'
+    id = database.Column(database.Integer, primary_key=True)
+    agencia = database.Column(database.Integer, unique=True)
+    digito_agencia = database.Column(database.Integer)
+    id_banco = database.Column(database.Integer, database.ForeignKey('bancos.id'))
+    apelido_agencia = database.Column(database.String, unique=True)
+    id_cliente = database.Column(database.Integer, database.ForeignKey('clientes_fornecedores.id'))
+
+class ContasBancarias(database.Model):
+    __tablename__ = 'contas_bancarias'
+    id = database.Column(database.Integer, primary_key=True)
+    id_agencia = database.Column(database.Integer, database.ForeignKey('agencia_bancos.id'))
+    apelido_conta = database.Column(database.String, unique=True)
+    nro_conta = database.Column(database.Integer)
+    digito_conta = database.Column(database.Integer)
+    id_titular_conta = database.Column(database.Integer, database.ForeignKey('agencia_bancos.id'))
+    cheque_especial = database.Column(database.Float, default=0)
+    cheque_especial_utilizado = database.Column(database.Float, default=0)
+    cheque_especial_disponivel = database.Column(database.Float, default=0)
+    saldo_conta = database.Column(database.Float, default=0)
+    situacao_conta = database.Column(database.Integer, default=1) #1- Ativo, 2 - Arquivada
+
+class CartaoCredito(database.Model):
+    __tablename__ = 'cartao_credito'
+    id = database.Column(database.Integer, primary_key=True)
+    id_conta_bancaria = database.Column(database.Integer, database.ForeignKey('agencia_bancos.id'))
+    apelido_cartao = database.Column(database.String, unique=True)
+    dia_inicial = database.Column(database.Integer, nullable=False)
+    dia_final = database.Column(database.Integer, nullable=False)
+    dia_pgto = database.Column(database.Integer, nullable=False)
+    valor_limite = database.Column(database.Float, nullable=False)
+    valor_gasto = database.Column(database.Float, default=0)
+    valor_disponivel = database.Column(database.Float)
+
+class FaturaCartaoCredito(database.Model):
+    __tablename__ = 'fatura_cartao_credito'
+    id = database.Column(database.Integer, primary_key=True)
+    id_cartao_credito = database.Column(database.Integer, database.ForeignKey('cartao_credito.id'))
+    valor_fatura = database.Column(database.Float, default=0)
+    data_inicial = database.Column(database.Date)
+    data_final = database.Column(database.Date)
+    data_vcto = database.Column(database.Date)
+    data_pgto = database.Column(database.Date)
+    descontos_recebidos = database.Column(database.Float, default=0)
+    juros_pagos = database.Column(database.Float, default=0)
+    valor_pago = database.Column(database.Float)
+    situacao_fatura = database.Column(database.Integer, default=0)# 0 - Em aberto, 1 - Pago,
+    # 2 - Em atraso, 3 - Pago em atraso
