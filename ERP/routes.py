@@ -430,32 +430,6 @@ def busca_ultima_transacao_estoque():
     else:
         return 1
 
-@app.route('/estoque/tiposunidades/<int:tipos_unidades_id>/edicao', methods=['GET', 'POST'])
-@login_required
-def editar_tipos_unidades_(tipos_unidades_id):
-    tipos_unidades = TiposUnidades.query.get_or_404(tipos_unidades_id)
-    form = FormTiposUnidades()
-
-    if form.validate_on_submit():
-        tipos_unidades.nome_tipo_unidade = form.tipo_unidade.data
-        database.session.commit()
-        flash(f"Edição concluída: {form.tipo_unidade.data}!", 'alert-success')
-        return redirect(url_for('tipos_unidades', tipos_unidades_id=tipos_unidades.id))
-
-    elif request.method == 'GET':
-        form.tipo_unidade.data = tipos_unidades.nome_tipo_unidade
-
-    return render_template('cadastro_tipos_unidades.html', form=form, tipos_unidades=tipos_unidades)
-
-def string_to_float(flo):
-    if type(flo) is str:
-        flo = flo.replace('.', '_')
-        flo = flo.replace(',', '.')
-        flo = flo.replace('_', ',')
-        return float(flo)
-    else:
-        return flo
-
 @app.route('/estoque/itensestoque/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_itens_estoque():
@@ -471,11 +445,11 @@ def cadastro_itens_estoque():
         try:
             valor_unitario_medio_custo = string_to_float(form.valor_total_custo.data) / string_to_float(form.qtd_inicial.data)
         except:
-            valor_unitario_medio_custo = 0
+            valor_unitario_medio_custo = float(0)
         try:
             valor_total_medio_venda = string_to_float(form.valor_unitario_venda.data) * string_to_float(form.qtd_inicial.data)
         except:
-            valor_total_medio_venda = 0
+            valor_total_medio_venda = float(0)
         itens_estoque = ItensEstoque(id_tipo_roupa=int(form.id_tipo_roupa.data),
                                      id_tamanho=int(form.id_tamanho.data),
                                      id_marca=int(form.id_marca.data),
@@ -512,6 +486,23 @@ def cadastro_itens_estoque():
         return redirect(url_for('itens_estoque_', itens_estoque_id=item_estoque.id))
     return render_template('cadastro_itens_estoque.html', form=form)
 
+@app.route('/estoque/tiposunidades/<int:tipos_unidades_id>/edicao', methods=['GET', 'POST'])
+@login_required
+def editar_tipos_unidades_(tipos_unidades_id):
+    tipos_unidades = TiposUnidades.query.get_or_404(tipos_unidades_id)
+    form = FormTiposUnidades()
+
+    if form.validate_on_submit():
+        tipos_unidades.nome_tipo_unidade = form.tipo_unidade.data
+        database.session.commit()
+        flash(f"Edição concluída: {form.tipo_unidade.data}!", 'alert-success')
+        return redirect(url_for('tipos_unidades', tipos_unidades_id=tipos_unidades.id))
+
+    elif request.method == 'GET':
+        form.tipo_unidade.data = tipos_unidades.nome_tipo_unidade
+
+    return render_template('cadastro_tipos_unidades.html', form=form, tipos_unidades=tipos_unidades)
+
 #TODO: Fazer verificação de dados que precisam ser unicos antes de mandar pra bd em todos
 def cria_nome_item_estoque(itens_estoque):
     tipo_roupa = TiposRoupas.query.filter_by(id=itens_estoque.id_tipo_roupa).first()
@@ -520,6 +511,16 @@ def cria_nome_item_estoque(itens_estoque):
     cor = Cores.query.filter_by(id=itens_estoque.id_cor).first()
     nome_produto = tipo_roupa.nome_tipo_roupa + ' ' + cor.nome_cor + ' ' + marca.nome_marca + ' ' + tamanho.nome_tamanho
     return nome_produto
+
+def string_to_float(flo):
+    if flo == 0:
+        return float(0)
+    elif type(flo) is str:
+        flo = flo.replace('.', '')
+        flo = flo.replace(',', '.')
+        return float(flo)
+    else:
+        return flo
 
 @app.route('/estoque/itensestoque/<itens_estoque_id>', methods=['GET', 'POST'])
 @login_required
@@ -539,23 +540,18 @@ def edicao_itens_estoque(itens_estoque_id):
     form.id_marca.choices = [(marca.id, marca.nome_marca) for marca in Marcas.query.all()]
     form.id_tamanho.choices = [(tamanho.id, tamanho.nome_tamanho) for tamanho in Tamanhos.query.all()]
     form.id_tipo_unidade.choices = [(tipo.id, tipo.nome_tipo_unidade) for tipo in TiposUnidades.query.all()]
-
+    print(form.errors)
     if form.validate_on_submit():
-        itens_estoque.id_tipo_roupa = int(form.id_tipo_roupa.data)
-        itens_estoque.id_cor = int(form.id_cor.data)
-        itens_estoque.id_marca = int(form.id_marca.data)
-        itens_estoque.id_tamanho = int(form.id_tamanho.data)
-        itens_estoque.id_tipo_unidade = int(form.id_tipo_unidade.data)
-        itens_estoque.codigo_item = form.codigo_item.data
+        print('oi')
+        itens_estoque = ItensEstoque.query.get_or_404(itens_estoque_id)
+        itens_estoque.id_tipo_roupa = form.id_tipo_roupa.data
+        itens_estoque.id_cor = form.id_cor.data
+        itens_estoque.id_marca = form.id_marca.data
+        itens_estoque.id_tamanho = form.id_tamanho.data
+        itens_estoque.id_tipo_unidade = form.id_tipo_unidade.data
         itens_estoque.qtd_minima = string_to_float(form.qtd_minima.data)
-
-        # Verifique se a conversão do valor de qtd_minima foi bem-sucedida
-        if itens_estoque.qtd_minima is None:
-            flash('Erro ao converter o valor da quantidade mínima.', 'alert-danger')
-            return redirect(url_for('edicao_itens_estoque', itens_estoque_id=itens_estoque.id))
-
         database.session.commit()
         flash("Edição concluída!", 'alert-success')
         return redirect(url_for('itens_estoque_', itens_estoque_id=itens_estoque.id))
 
-    return render_template('edicao_itens_estoque.html', form=form)
+    return render_template('edicao_itens_estoque.html', form=form, itens_estoque=itens_estoque.id)

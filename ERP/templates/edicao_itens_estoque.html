@@ -8,34 +8,30 @@
             <fieldset>
                 <div class="form-group">
                     {{ form.id_tipo_roupa.label(class="form-control-label") }}
-                    {{ form.id_tipo_roupa(class="form-control-label") }}
+                    {{ form.id_tipo_roupa(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.id_cor.label(class="form-control-label") }}
-                    {{ form.id_cor(class="form-control-label") }}
+                    {{ form.id_cor(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.id_marca.label(class="form-control-label") }}
-                    {{ form.id_marca(class="form-control-label") }}
+                    {{ form.id_marca(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.id_tamanho.label(class="form-control-label") }}
-                    {{ form.id_tamanho(class="form-control-label") }}
+                    {{ form.id_tamanho(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.id_tipo_unidade.label(class="form-control-label") }}
-                    {{ form.id_tipo_unidade(class="form-control-label") }}
-                </div>
-                <div class="form-group">
-                    {{ form.codigo_item.label(class="form-control-label") }}
-                    {{ form.codigo_item(class="form-control-label") }}
+                    {{ form.id_tipo_unidade(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.qtd_minima.label(class="form-control-label") }}
-                    {{ form.qtd_minima(class="form-control-label") }}
+                    {{ form.qtd_minima(class="form-control") }}
                 </div>
             </fieldset>
-            {{ form.botao_submit(class="btn btn-primary m-1") }}
+            {{ form.botao_submit(class="btn btn-primary") }}
         </form>
     </div>
 {% endblock %}
