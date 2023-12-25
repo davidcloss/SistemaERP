@@ -1,0 +1,108 @@
+<br>
+<br>
+{% block content %}
+    <div class="container">
+        <form method='POST' action="" class="border m-5 p-2">
+            {{ form.csrf_token }}
+            <legend>Cadastro Cliente/Fornecedores CNPJ:</legend>
+            <fieldset>
+                {% for field, errors in form.errors.items() %}
+                    {% for error in errors %}
+                        <div class="alert alert-danger">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+                <div class="form-group">
+                    {{ form.nome_fantasia.label(class="form-control-label") }}
+                    {{ form.nome_fantasia(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.razao_social.label(class="form-control-label") }}
+                    {{ form.razao_social(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.cnpj.label(class="form-control-label") }}
+                    {% if form.cnpj.errors %}
+
+                        {{ form.cnpj(class="form-control is-invalid") }}
+
+                        <div class="invalid_feedback">
+
+                            {% for erro in form.cnpj.errors %}
+
+                                {{ erro }}
+
+                            {% endfor %}
+
+                        </div>
+
+                        {% else %}
+
+                            {{ form.cnpj(class="form-control") }}
+
+                        {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.rua.label(class="form-control-label") }}
+                    {{ form.rua(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.complemento.label(class="form-control-label") }}
+                    {{ form.complemento(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.nro.label(class="form-control-label") }}
+                    {{ form.nro(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.bairro.label(class="form-control-label") }}
+                    {{ form.bairro(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.cidade.label(class="form-control-label") }}
+                    {{ form.cidade(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.uf.label(class="form-control-label") }}
+                    {{ form.uf(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.cep.label(class="form-control-label") }}
+                    {{ form.cep(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.fundacao.label(class="form-control-label") }}
+                    {{ form.fundacao(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.telefone.label(class="form-control-label") }}
+                    {{ form.telefone(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.telefone2.label(class="form-control-label") }}
+                    {{ form.telefone2(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.telefone3.label(class="form-control-label") }}
+                    {{ form.telefone3(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.email.label(class="form-control-label") }}
+                    {{ form.email(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.obs.label(class="form-control-label") }}
+                    {{ form.obs(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.tipo_cadastro.label(class="form-control-label") }}
+                    {{ form.tipo_cadastro(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.botao_submit(class="btn btn-primary") }}
+                </div>
+            </fieldset>
+        </form>
+    </div>
+{% endblock %}

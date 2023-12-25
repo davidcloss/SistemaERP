@@ -64,6 +64,7 @@ class CadastroEmpresa(database.Model):
     nome_empresa = database.Column(database.String(100), nullable=False)
     email_verificaco = database.Column(database.String(100), nullable=False)
     situacao = database.Column(database.Integer, default='A')
+#TODO: Criar gênero roupa
 
 class TiposRoupas(database.Model):
     __tablename__ = 'tipos_roupas'

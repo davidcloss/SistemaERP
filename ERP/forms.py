@@ -27,24 +27,24 @@ class FormLogin(FlaskForm):
 
 
 class FormCadastroCNPJ(FlaskForm):
-    nome_fantasia = StringField('Nome Fantasia:', validators=[DataRequired()])
-    razao_social = StringField('Razão Social:', validators=[DataRequired()])
-    cnpj = StringField('CNPJ:', validators=[DataRequired(), Length(14,18)])
-    rua = StringField('Rua:', validators=[DataRequired()])
+    nome_fantasia = StringField('Nome Fantasia:', validators=[DataRequired('Favor incluir um nome fantasia')])
+    razao_social = StringField('Razão Social:', validators=[DataRequired('Favor incluir a Razão Social')])
+    cnpj = StringField('CNPJ:', validators=[DataRequired('Favor incluir um CNPJ'), Length(14,18)])
+    rua = StringField('Rua:', validators=[DataRequired('Favor incluir uma rua')])
     complemento = StringField('Complemento:')
-    nro = StringField('Nº:', validators=[DataRequired()])
-    bairro = StringField('Bairro:', validators=[DataRequired()])
-    cidade = StringField('Cidade:', validators=[DataRequired()])
-    uf = StringField('UF:', validators=[DataRequired()])
-    cep = StringField('CEP:', validators=[DataRequired()])
+    nro = StringField('Nº:', validators=[DataRequired('Favor incluir um nro residencial')])
+    bairro = StringField('Bairro:', validators=[DataRequired('Favor incluir um bairro')])
+    cidade = StringField('Cidade:', validators=[DataRequired('Favor incluir uma cidade')])
+    uf = StringField('UF:', validators=[DataRequired('Favor incluir uma UF')])
+    cep = StringField('CEP:', validators=[DataRequired('Favor incluir um CEP')])
     fundacao = DateField('Data Fundação Empresa:')
-    telefone = StringField('Telefone:', validators=[DataRequired()])
+    telefone = StringField('Telefone:', validators=[DataRequired(message='Favor incluir pelo menos um telefone')])
     telefone2 = StringField('Telefone 2:')
     telefone3 = StringField('Telefone 3:')
-    email = StringField('E-mail:', validators=[DataRequired(), Email()])
+    email = StringField('E-mail:', validators=[DataRequired(message='Favor incluir e-mail'), Email()])
     obs = StringField('Observações:')
     tipo_cadastro = SelectField('Tipo Cadastro:')
-    botao_submit = SubmitField('Cadastrar')
+    botao_submit = SubmitField('Cadastrar', name='cadastro_cnpj')
 
 
 class FormCadastroCPF(FlaskForm):
@@ -122,9 +122,10 @@ class FormAgenciaBanco(FlaskForm):
     digito_agencia = StringField('Dígito agência', validators=[DataRequired(message='Favor incluir dígito agencia')])
     id_banco = SelectField('Banco')
     apelido_agencia = StringField('Apelido agência', validators=[DataRequired(message='Favor incluir apelido agencia')])
-    id_cliente = StringField('Cadastro Banco')
-    botao_pesquisar = SubmitField('Pesquisar')
-    botao_submit = SubmitField('Cadastrar')
+    id_cliente = IntegerField('Cadastro Banco')
+    campo_pesquisa = StringField('Nome fornecedor a pesquisar')
+    botao_pesquisar = SubmitField('Pesquisar cliente/fornecedor banco', name='pesquisar')
+    botao_cadastrar = SubmitField('Cadastrar cliente/fornecedor banco', name='cadastrar')
 
 class FormContaBancaria(FlaskForm):
     id_agencia = SelectField('Agência')
