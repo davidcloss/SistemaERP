@@ -1,3 +1,5 @@
+import time
+
 from flask import render_template, redirect, url_for, flash, request, session
 from ERP import app, database, bcrypt, login_manager
 from ERP.forms import FormCriarConta, FormLogin, FormCadastroCNPJ, FormCadastroEmpresa, FormCadastroCPF
@@ -604,6 +606,20 @@ def editar_bancos(banco_id):
             return redirect(url_for('bancos', banco_id=banco.id))
     return render_template('cadastro_bancos.html', form=form)
 
+# @app.route('/financeiro/bancos/agencias/cadastro', methods=['GET', 'POST'])
+# @login_required
+# def cadastro_agencias_bancos():
+#     form_agencia = FormAgenciaBanco()
+#     form_agencia.id_banco.choices = [(banco.id, banco.nome_banco) for banco in Bancos.query.all()]
+#     if form_agencia.validate_on_submit():
+#         if 'cadastrar' in request.form:
+#             session['agencia'] = form_agencia.agencia.data
+#             session['digito_agencia'] = form_agencia.digito_agencia.data
+#             session['id_banco'] = form_agencia.id_banco.data
+#             session['apelido_agencia'] = form_agencia.apelido_agencia.data
+#             return redirect(url_for('cadastro_fornecedor_banco'))
+#     return render_template('cadastro_agencias_bancos.html', form_agencia=form_agencia)
+
 @app.route('/financeiro/bancos/agencias/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_agencias_bancos():
@@ -628,32 +644,34 @@ def cadastro_fornecedor_banco():
     form = FormCadastroCNPJ()
     form.tipo_cadastro.choices = [(tipo.id, tipo.nome_tipo) for tipo in TiposCadastros.query.all()]
     form_agencia.id_banco.choices = [(banco.id, banco.nome_banco) for banco in Bancos.query.all()]
-    if form.validate_on_submit():
+    if form.validate_on_submit() and form_agencia.validate_on_submit():
+        cadastro_agencia = AgenciaBanco(agencia=form_agencia.agencia.data,
+                                        digito_agencia=form_agencia.digito_agencia.data,
+                                        id_banco=form_agencia.id_banco.data,
+                                        apelido_agencia=form_agencia.apelido_agencia.data)
+        database.session.add(cadastro_agencia)
+        database.session.commit()
         cad_banco = ClientesFornecedores(nome_fantasia=form.nome_fantasia.data,
-            razao_social=form.razao_social.data,
-            cnpj=trata_documento(form.cnpj.data),
-            rua=form.rua.data, nro=form.nro.data,
-            complemento=form.complemento.data,
-            cidade=form.cidade.data,
-            bairro=form.bairro.data,
-            uf=form.uf.data, cep=form.cep.data,
-            data_fundacao=form.fundacao.data,
-            telefone=form.telefone.data,
-            telefone2=form.telefone2.data,
-            telefone3=form.telefone3.data,
-            email=form.email.data, obs=form.obs.data,
-            tipo_cadastro=int(form.tipo_cadastro.data),
-            id_usuario_cadastro=int(current_user.id))
+                                        razao_social=form.razao_social.data,
+                                        cnpj=trata_documento(form.cnpj.data),
+                                        rua=form.rua.data, nro=form.nro.data,
+                                        complemento=form.complemento.data,
+                                        cidade=form.cidade.data,
+                                        bairro=form.bairro.data,
+                                        uf=form.uf.data, cep=form.cep.data,
+                                        data_fundacao=form.fundacao.data,
+                                        telefone=form.telefone.data,
+                                        telefone2=form.telefone2.data,
+                                        telefone3=form.telefone3.data,
+                                        email=form.email.data, obs=form.obs.data,
+                                        tipo_cadastro=int(form.tipo_cadastro.data),
+                                        id_usuario_cadastro=int(current_user.id))
         database.session.add(cad_banco)
         database.session.commit()
-        banco_cadastrado = ClientesFornecedores.query.get_or_404(form.cnpj.data).first()
+        banco_cadastrado = ClientesFornecedores.query.filter_by(cnpj=trata_documento(form.cnpj.data)).first()
         if banco_cadastrado:
-            cadastro_agencia = AgenciaBanco(agencia=form_agencia.agencia.data,
-                                            digito_agencia=form_agencia.digito_agencia.data,
-                                            id_banco=form_agencia.id_banco.data,
-                                            apelido_agencia=form.nome_fantasia.data,
-                                            id_cliente=banco_cadastrado.id)
-            database.session.add(cadastro_agencia)
+            agencia_cadastrada = AgenciaBanco.query.filter_by(agencia=form_agencia.agencia.data).first()
+            agencia_cadastrada.id_cliente = banco_cadastrado.id
             database.session.commit()
             flash("Agencia cadastrada com sucesso!", 'alert-success')
             return redirect(url_for('home'))
