@@ -117,13 +117,22 @@ class FormBancos(FlaskForm):
     nome_banco = StringField('Nome Banco', validators=[DataRequired(message='Favor incluir nome banco')])
     botao_submit = SubmitField('Cadastrar')
 
-class FormAgenciaBanco(FlaskForm):
+class FormAgenciaBancoCadastro(FlaskForm):
     agencia = StringField('Agência Banco', validators=[DataRequired(message='Favor incluir código agencia')])
     digito_agencia = StringField('Dígito agência', validators=[DataRequired(message='Favor incluir dígito agencia')])
     id_banco = SelectField('Banco')
-    id_fornecedor = SelectField('Fornecedor')
     apelido_agencia = StringField('Apelido agência', validators=[DataRequired(message='Favor incluir apelido agencia')])
-    id_cliente = IntegerField('Cadastro Banco')
+    campo_pesquisa = StringField('Nome fornecedor a pesquisar')
+    botao_pesquisar = SubmitField('Pesquisar cliente/fornecedor banco', name='pesquisar')
+    botao_cadastrar = SubmitField('Cadastrar cliente/fornecedor banco', name='cadastrar')
+    botao_finalizar = SubmitField('Finalizar cadastro', name='finalizar')
+
+class FormAgenciaBancoEdicao(FlaskForm):
+    agencia = StringField('Agência Banco', validators=[DataRequired(message='Favor incluir código agencia')])
+    digito_agencia = StringField('Dígito agência', validators=[DataRequired(message='Favor incluir dígito agencia')])
+    id_banco = SelectField('Banco')
+    apelido_agencia = StringField('Apelido agência', validators=[DataRequired(message='Favor incluir apelido agencia')])
+    id_cliente = SelectField('Cliente/Fornecedor Banco')  # Adicionando o campo id_cliente
     campo_pesquisa = StringField('Nome fornecedor a pesquisar')
     botao_pesquisar = SubmitField('Pesquisar cliente/fornecedor banco', name='pesquisar')
     botao_cadastrar = SubmitField('Cadastrar cliente/fornecedor banco', name='cadastrar')

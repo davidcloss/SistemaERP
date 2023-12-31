@@ -2,7 +2,7 @@ from flask import render_template, redirect, url_for, flash, request, session
 from ERP import app, database, bcrypt, login_manager
 from ERP.forms import FormCriarConta, FormLogin, FormCadastroCNPJ, FormCadastroEmpresa, FormCadastroCPF
 from ERP.forms import FormTiposRoupas, FormCores, FormMarcas, FormTamanhos, FormTiposUnidades
-from ERP.forms import FormItensEstoque, FormBancos, FormAgenciaBanco, FormContaBancaria
+from ERP.forms import FormItensEstoque, FormBancos, FormAgenciaBancoCadastro, FormAgenciaBancoEdicao, FormContaBancaria
 from ERP.models import Usuarios, CadastroEmpresa, TiposCadastros, ClientesFornecedores, TiposUsuarios
 from ERP.models import TiposRoupas, Cores, Tamanhos, Marcas, TiposUnidades, ItensEstoque
 from ERP.models import TransacoesEstoque, TiposTransacoesEstoque, Bancos, AgenciaBanco, ContasBancarias
@@ -622,7 +622,7 @@ def editar_bancos(banco_id):
 @app.route('/financeiro/bancos/agencias/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_agencias_bancos():
-    form_agencia = FormAgenciaBanco()
+    form_agencia = FormAgenciaBancoCadastro()
     form_agencia.id_banco.choices = [(banco.id, banco.nome_banco) for banco in Bancos.query.all()]
     if form_agencia.validate_on_submit():
         if 'cadastrar' in request.form:
@@ -665,31 +665,37 @@ def buscar_agencia_bancaria(busca):
 @app.route('/financeiro/bancos/agencias/cadastro/<id_banco>', methods=['GET', 'POST'])
 @login_required
 def cadastro_fornecedor_selecionado_agencia(id_banco):
-    form_agencia = FormAgenciaBanco(agencia=session.get('agencia'),
-                                    digito_agencia=session.get('digito_agencia'),
-                                    id_banco=session.get('id_banco'),
-                                    id_fornecedor=id_banco,
-                                    apelido_agencia=session.get('apelido_agencia'))
-    form_agencia.id_banco.choices = [(banco.id, banco.nome_banco) for banco in Bancos.query.all()]
-    form_agencia.id_fornecedor.choices = [(fornecedor.id, fornecedor.razao_social) for fornecedor in buscar_agencia_bancaria(session.get('pesquisa_bancos'))]
-    if form_agencia.validate_on_submit():
-        agencia = AgenciaBanco(agencia=session.get('agencia'),
+    form_agencia = FormAgenciaBancoEdicao(agencia=session.get('agencia'),
                                     digito_agencia=session.get('digito_agencia'),
                                     id_banco=session.get('id_banco'),
                                     id_cliente=id_banco,
                                     apelido_agencia=session.get('apelido_agencia'))
-        database.session.add(agencia)
-        database.session.commit()
-        flash("Agencia cadastrada com sucesso!", 'alert-success')
-        return redirect(url_for('home'))
+    form_agencia.id_banco.choices = [(banco.id, banco.nome_banco) for banco in Bancos.query.all()]
+    form_agencia.id_cliente.choices = [(fornecedor.id, fornecedor.razao_social) for fornecedor in buscar_agencia_bancaria(session.get('pesquisa_bancos'))]
+    if form_agencia.validate_on_submit():
+        pesquisa_agencia = AgenciaBanco.query.filter_by(agencia=form_agencia.agencia.data).first()
+        pesquisa_apelido = AgenciaBanco.query.filter_by(apelido_agencia=form_agencia.apelido_agencia.data).first()
+        if pesquisa_agencia:
+            flash('Agência já existe em outro cadastro.', 'alert-danger')
+        elif pesquisa_apelido:
+            flash('Apelido agência já existe em outro cadastro.', 'alert-danger')
+        else:
+            agencia = AgenciaBanco(agencia=session.get('agencia'),
+                                        digito_agencia=session.get('digito_agencia'),
+                                        id_banco=session.get('id_banco'),
+                                        id_cliente=id_banco,
+                                        apelido_agencia=session.get('apelido_agencia'))
+            database.session.add(agencia)
+            database.session.commit()
+            flash("Agencia cadastrada com sucesso!", 'alert-success')
+            return redirect(url_for('agencias_bancarias', id_agencia=agencia.id))
     return render_template('cadastro_fornecedor_selecionado_agencia.html', form_agencia=form_agencia)
 
 @app.route('/financeiro/bancos/agencias/pesquisafornecedor/', methods=['GET', 'POST'])
 @login_required
 def busca_fornecedor_banco():
     search = buscar_agencia_bancaria(session.get('pesquisa_bancos'))
-    print(type(search), search)
-    form_agencia = FormAgenciaBanco(agencia=session.get('agencia'),
+    form_agencia = FormAgenciaBancoCadastro(agencia=session.get('agencia'),
                                     digito_agencia=session.get('digito_agencia'),
                                     id_banco=session.get('id_banco'),
                                     apelido_agencia=session.get('apelido_agencia'))
@@ -699,7 +705,7 @@ def busca_fornecedor_banco():
 @app.route('/financeiro/bancos/agencias/cadastro/cnpj', methods=['GET', 'POST'])
 @login_required
 def cadastro_fornecedor_banco():
-    form_agencia = FormAgenciaBanco(agencia=session.get('agencia'),
+    form_agencia = FormAgenciaBancoCadastro(agencia=session.get('agencia'),
                                     digito_agencia=session.get('digito_agencia'),
                                     id_banco=session.get('id_banco'),
                                     apelido_agencia=session.get('apelido_agencia'))
@@ -736,7 +742,30 @@ def cadastro_fornecedor_banco():
             agencia_cadastrada.id_cliente = banco_cadastrado.id
             database.session.commit()
             flash("Agencia cadastrada com sucesso!", 'alert-success')
-            return redirect(url_for('home'))
+            return redirect(url_for('editar_agencias_bancarias', id_agencia=agencia_cadastrada.id))
         else:
             flash("Cadastro não encontrado!", 'alert-danger')
     return render_template('cadastro_cnpj_agencia_bancaria.html', form_agencia=form_agencia, form=form)
+
+@app.route('/financeiro/bancos/agencias/<id_agencia>')
+@login_required
+def agencias_bancarias(id_agencia):
+    agencia = AgenciaBanco.query.get_or_404(id_agencia)
+    banco = Bancos.query.get_or_404(agencia.id_banco)
+    fornecedor = ClientesFornecedores.query.get_or_404(agencia.id_cliente)
+    return render_template('agencia_bancaria.html', agencia=agencia, banco=banco, fornecedor=fornecedor)
+
+@app.route('/financeiro/bancos/agencias/<id_agencia>/edicao', methods=['GET', 'POST'])
+@login_required
+def editar_agencias_bancarias(id_agencia):
+    agencia = AgenciaBanco.query.get_or_404(id_agencia)
+    form_agencia = FormAgenciaBancoEdicao(obj=agencia)
+    form_agencia.id_cliente.choices = [(cnpj.id, cnpj.razao_social) for cnpj in ClientesFornecedores.query.filter(ClientesFornecedores.cnpj.isnot(None)).all()]
+    form_agencia.id_banco.choices = [(banco.id, banco.nome_banco) for banco in Bancos.query.all()]
+    if form_agencia.validate_on_submit():
+        if 'finalizar' in request.form:
+            form_agencia.populate_obj(agencia)
+            agencia.id_cliente = form_agencia.id_cliente.data
+            database.session.commit()
+            return redirect(url_for('agencias_bancarias', id_agencia=id_agencia))
+    return render_template('edicao_agencias_bancos.html', form_agencia=form_agencia)

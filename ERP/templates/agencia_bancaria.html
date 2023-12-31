@@ -1,0 +1,14 @@
+{% include 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <h2>Dados do Cadastro</h2>
+        <p>Agencia: {{ agencia.agencia }}</p>
+        <p>Dígito agência: {{ agencia.digito_agencia }}</p>
+        <p>Banco: {{ banco.id }} - {{ banco.nome_banco }}</p>
+        <p>Apelido Agencia: {{ agencia.apelido_agencia }}</p>
+        <p>Fornecedor: {{ fornecedor.id }} - {{ fornecedor.razao_social }}</p>
+        <p><a href="{{ url_for('editar_agencias_bancarias', id_agencia=agencia.id) }}">Editar</a></p>
+
+    </div>
+{% endblock %}
