@@ -1,5 +1,3 @@
-import time
-
 from flask import render_template, redirect, url_for, flash, request, session
 from ERP import app, database, bcrypt, login_manager
 from ERP.forms import FormCriarConta, FormLogin, FormCadastroCNPJ, FormCadastroEmpresa, FormCadastroCPF
@@ -14,6 +12,7 @@ import secrets
 from datetime import datetime
 import os
 from PIL import Image
+from sqlalchemy import or_, and_
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -632,7 +631,70 @@ def cadastro_agencias_bancos():
             session['id_banco'] = form_agencia.id_banco.data
             session['apelido_agencia'] = form_agencia.apelido_agencia.data
             return redirect(url_for('cadastro_fornecedor_banco'))
+        elif 'pesquisar' in request.form:
+            session['agencia'] = form_agencia.agencia.data
+            session['digito_agencia'] = form_agencia.digito_agencia.data
+            session['id_banco'] = form_agencia.id_banco.data
+            session['apelido_agencia'] = form_agencia.apelido_agencia.data
+            if form_agencia.campo_pesquisa.data:
+                session['campo_pesquisa'] = form_agencia.campo_pesquisa.data
+                session['pesquisa_bancos'] = form_agencia.campo_pesquisa.data
+                return redirect(url_for('busca_fornecedor_banco'))
+            else:
+                flash('Por favor preencha campo pesquisa', 'alert-danger')
+        else:
+            flash('Verifique', 'alert-warning')
     return render_template('cadastro_agencias_bancos.html', form_agencia=form_agencia)
+
+def buscar_agencia_bancaria(busca):
+    resultados = (
+        ClientesFornecedores.query
+        .filter(
+            and_(
+                ClientesFornecedores.cnpj.isnot(None),
+                or_(
+                ClientesFornecedores.razao_social.ilike(f'%{busca}%'),
+                ClientesFornecedores.nome_fantasia.ilike(f'%{busca}%')
+                )
+            )
+        )
+        .all()
+    )
+    return resultados
+
+@app.route('/financeiro/bancos/agencias/cadastro/<id_banco>', methods=['GET', 'POST'])
+@login_required
+def cadastro_fornecedor_selecionado_agencia(id_banco):
+    form_agencia = FormAgenciaBanco(agencia=session.get('agencia'),
+                                    digito_agencia=session.get('digito_agencia'),
+                                    id_banco=session.get('id_banco'),
+                                    id_fornecedor=id_banco,
+                                    apelido_agencia=session.get('apelido_agencia'))
+    form_agencia.id_banco.choices = [(banco.id, banco.nome_banco) for banco in Bancos.query.all()]
+    form_agencia.id_fornecedor.choices = [(fornecedor.id, fornecedor.razao_social) for fornecedor in buscar_agencia_bancaria(session.get('pesquisa_bancos'))]
+    if form_agencia.validate_on_submit():
+        agencia = AgenciaBanco(agencia=session.get('agencia'),
+                                    digito_agencia=session.get('digito_agencia'),
+                                    id_banco=session.get('id_banco'),
+                                    id_cliente=id_banco,
+                                    apelido_agencia=session.get('apelido_agencia'))
+        database.session.add(agencia)
+        database.session.commit()
+        flash("Agencia cadastrada com sucesso!", 'alert-success')
+        return redirect(url_for('home'))
+    return render_template('cadastro_fornecedor_selecionado_agencia.html', form_agencia=form_agencia)
+
+@app.route('/financeiro/bancos/agencias/pesquisafornecedor/', methods=['GET', 'POST'])
+@login_required
+def busca_fornecedor_banco():
+    search = buscar_agencia_bancaria(session.get('pesquisa_bancos'))
+    print(type(search), search)
+    form_agencia = FormAgenciaBanco(agencia=session.get('agencia'),
+                                    digito_agencia=session.get('digito_agencia'),
+                                    id_banco=session.get('id_banco'),
+                                    apelido_agencia=session.get('apelido_agencia'))
+    form_agencia.id_banco.choices = [(banco.id, banco.nome_banco) for banco in Bancos.query.all()]
+    return render_template('pesquisa_fornecedor_banco.html', form_agencia=form_agencia, search=search)
 
 @app.route('/financeiro/bancos/agencias/cadastro/cnpj', methods=['GET', 'POST'])
 @login_required

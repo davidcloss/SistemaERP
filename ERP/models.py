@@ -44,6 +44,10 @@ class ClientesFornecedores(database.Model):
     tipo_cadastro = database.Column(database.Integer, database.ForeignKey('tipos_cadastro.id'), nullable=False)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False)
 
+    def __str__(self):
+        return f"<ClientesFornecedores(id={self.id}, nome_fantasia={self.nome_fantasia}, razao_social={self.razao_social}, cnpj={self.cnpj})>"
+
+
 class TiposCadastros(database.Model):
     __tablename__ = 'tipos_cadastro'
     id = database.Column(database.Integer, primary_key=True)
