@@ -129,6 +129,7 @@ class ItensEstoque(database.Model):
     id_tamanho = database.Column(database.Integer, database.ForeignKey('tamanhos.id'), nullable=False)
     id_marca = database.Column(database.Integer, database.ForeignKey('marcas.id'), nullable=False)
     id_cor = database.Column(database.Integer, database.ForeignKey('cores.id'), nullable=False)
+    id_genero = database.Column(database.Integer, database.ForeignKey('genero_roupa.id'), nullable=False)
     codigo_item = database.Column(database.String(100), unique=True)
     data_cadastro = database.Column(database.DateTime, default=datetime.utcnow())
     data_ultima_entrada = database.Column(database.DateTime)

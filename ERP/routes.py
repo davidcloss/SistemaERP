@@ -338,7 +338,8 @@ def editar_cor(cor_id):
 def cadastro_marcas():
     form = FormMarcas()
     if form.validate_on_submit():
-        marca = Marcas(nome_marca=form.nome_marca.data)
+        marca = Marcas(nome_marca=form.nome_marca.data,
+                       id_usuario_cadastro=current_user.id)
         database.session.add(marca)
         database.session.commit()
         flash(f"Cadastro concluído: {form.nome_marca.data}!", 'alert-success')
@@ -468,6 +469,8 @@ def cadastro_tiposunidades():
 def tipos_unidades(tipos_unidades_id):
     tipos_unidades = TiposUnidades.query.get_or_404(tipos_unidades_id)
     return render_template('tipos_unidades.html', tipos_unidades=tipos_unidades)
+#TODO: ajustar usuarios edição
+
 
 @app.route('/estoque/tiposunidades/<int:tipos_unidades_id>/edicao', methods=['GET', 'POST'])
 @login_required
@@ -497,6 +500,7 @@ def busca_ultima_transacao_estoque():
 @login_required
 def cadastro_itens_estoque():
     form = FormItensEstoque()
+    form.id_genero.choices = [(genero.id, genero.nome_genero) for genero in GeneroRoupa.query.all()]
     form.id_tipo_roupa.choices = [(tipo.id, tipo.nome_tipo_roupa) for tipo in TiposRoupas.query.all()]
     form.id_cor.choices = [(cor.id, cor.nome_cor) for cor in Cores.query.all()]
     form.id_tamanho.choices = [(tamanho.id, tamanho.nome_tamanho) for tamanho in Tamanhos.query.all()]
@@ -515,6 +519,7 @@ def cadastro_itens_estoque():
             valor_total_medio_venda = float(0)
         itens_estoque = ItensEstoque(id_tipo_roupa=int(form.id_tipo_roupa.data),
                                      id_tamanho=int(form.id_tamanho.data),
+                                     id_genero = int(form.id_genero.data),
                                      id_marca=int(form.id_marca.data),
                                      id_cor=int(form.id_cor.data),
                                      codigo_item=form.codigo_item.data,
@@ -571,8 +576,9 @@ def cria_nome_item_estoque(itens_estoque):
     tipo_roupa = TiposRoupas.query.filter_by(id=itens_estoque.id_tipo_roupa).first()
     tamanho = Tamanhos.query.filter_by(id=itens_estoque.id_tamanho).first()
     marca = Marcas.query.filter_by(id=itens_estoque.id_marca).first()
+    genero = GeneroRoupa.query.filter_by(id=itens_estoque.id_genero).first()
     cor = Cores.query.filter_by(id=itens_estoque.id_cor).first()
-    nome_produto = tipo_roupa.nome_tipo_roupa + ' ' + cor.nome_cor + ' ' + marca.nome_marca + ' ' + tamanho.nome_tamanho
+    nome_produto = tipo_roupa.nome_tipo_roupa + ' ' + genero.nome_genero +  ' ' + cor.nome_cor + ' ' + marca.nome_marca + ' ' + tamanho.nome_tamanho
     return nome_produto
 
 def string_to_float(flo):
@@ -598,6 +604,7 @@ def itens_estoque_(itens_estoque_id):
 def edicao_itens_estoque(itens_estoque_id):
     itens_estoque = ItensEstoque.query.get_or_404(itens_estoque_id)
     form = FormItensEstoque(obj=itens_estoque)
+    form.id_genero.choices = [(genero.id, genero.nome_genero) for genero in GeneroRoupa.query.all()]
     form.id_tipo_roupa.choices = [(tipo.id, tipo.nome_tipo_roupa) for tipo in TiposRoupas.query.all()]
     form.id_cor.choices = [(cor.id, cor.nome_cor) for cor in Cores.query.all()]
     form.id_marca.choices = [(marca.id, marca.nome_marca) for marca in Marcas.query.all()]
@@ -611,6 +618,7 @@ def edicao_itens_estoque(itens_estoque_id):
         itens_estoque.id_marca = form.id_marca.data
         itens_estoque.id_tamanho = form.id_tamanho.data
         itens_estoque.id_tipo_unidade = form.id_tipo_unidade.data
+        itens_estoque.id_genero = form.id_genero.data
         itens_estoque.qtd_minima = string_to_float(form.qtd_minima.data)
         database.session.commit()
         flash("Edição concluída!", 'alert-success')
@@ -813,7 +821,7 @@ def cadastro_fornecedor_banco():
                                             cidade=form.cidade.data,
                                             bairro=form.bairro.data,
                                             uf=form.uf.data, cep=form.cep.data,
-                                            data_fundacao=form.fundacao.data,
+                                            data_fundacao=form.data_fundacao.data,
                                             telefone=form.telefone.data,
                                             telefone2=form.telefone2.data,
                                             telefone3=form.telefone3.data,

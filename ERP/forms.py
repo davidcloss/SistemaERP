@@ -105,6 +105,7 @@ class FormTiposUnidades(FlaskForm):
 
 class FormItensEstoque(FlaskForm):
     id_tipo_roupa = SelectField('Tipo Roupa')
+    id_genero = SelectField('Genero')
     id_cor = SelectField('Cor')
     id_marca = SelectField('Marca')
     id_tamanho = SelectField('Tamanho')
