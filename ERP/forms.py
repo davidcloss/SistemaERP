@@ -37,7 +37,7 @@ class FormCadastroCNPJ(FlaskForm):
     cidade = StringField('Cidade:', validators=[DataRequired('Favor incluir uma cidade')])
     uf = StringField('UF:', validators=[DataRequired('Favor incluir uma UF')])
     cep = StringField('CEP:', validators=[DataRequired('Favor incluir um CEP')])
-    fundacao = DateField('Data Fundação Empresa:')
+    data_fundacao = DateField('Data Fundação Empresa:')
     telefone = StringField('Telefone:', validators=[DataRequired(message='Favor incluir pelo menos um telefone')])
     telefone2 = StringField('Telefone 2:')
     telefone3 = StringField('Telefone 3:')

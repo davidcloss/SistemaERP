@@ -86,7 +86,7 @@ def cadastro_cnpj():
             cidade=form.cidade.data,
             bairro=form.bairro.data,
             uf=form.uf.data, cep=form.cep.data,
-            data_fundacao=form.fundacao.data,
+            data_fundacao=form.data_fundacao.data,
             telefone=form.telefone.data,
             telefone2=form.telefone2.data,
             telefone3=form.telefone3.data,
@@ -198,7 +198,7 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
             cliente_fornecedor.cidade = form.cidade.data
             cliente_fornecedor.uf = form.uf.data
             cliente_fornecedor.cep = form.cep.data
-            cliente_fornecedor.data_fundacao = form.fundacao.data
+            cliente_fornecedor.data_fundacao = form.data_fundacao.data
             cliente_fornecedor.telefone = form.telefone.data
             cliente_fornecedor.telefone2 = form.telefone2.data
             cliente_fornecedor.telefone3 = form.telefone3.data
@@ -237,10 +237,10 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
             cliente_fornecedor.telefone3 = form.telefone3.data
             cliente_fornecedor.email = form.email.data
             cliente_fornecedor.obs = form.obs.data
+            cliente_fornecedor.id_usuario_cadastro = current_user.id
+            cliente_fornecedor.data_cadastro = datetime.utcnow()
             database.session.commit()
 
-
-            cliente_fornecedor.id_usuario_cadastro = current_user.id
 
             flash('Cadastro atualizado com sucesso!', 'alert-success')
             return redirect(
