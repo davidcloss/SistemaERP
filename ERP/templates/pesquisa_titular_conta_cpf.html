@@ -1,0 +1,65 @@
+{% include 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <form method='POST' action="" class="border m-5 p-2">
+            {{ form.csrf_token }}
+            <legend>Cadastro conta bancária:</legend>
+            <fieldset>
+                <div class="form-group">
+                    {{ form.id_agencia.label(class="form-control-label") }}
+                    {{ form.id_agencia(class="form-control-label") }}
+                </div>
+                <div class="form-group">
+                    {{ form.apelido_conta.label(class="form-control-label") }}
+                    {{ form.apelido_conta(class="form-control-label") }}
+                </div>
+                <div class="form-group">
+                    {{ form.nro_conta.label(class="form-control-label") }}
+                    {{ form.nro_conta(class="form-control-label") }}
+                </div>
+                <div class="form-group">
+                    {{ form.digito_conta.label(class="form-control-label") }}
+                    {{ form.digito_conta(class="form-control-label") }}
+                </div>
+                <div class="form-group">
+                    {{ form.cheque_especial.label(class="form-control-label") }}
+                    {{ form.cheque_especial(class="form-control-label") }}
+                </div>
+                <div class="form-group">
+                    {{ form.saldo_conta.label(class="form-control-label") }}
+                    {{ form.saldo_conta(class="form-control-label") }}
+                </div>
+                <div class="form-group">
+                    {{ form.campo_pesquisa.label(class="form-control-label") }}
+                    {{ form.campo_pesquisa(class="form-control-label") }}
+                </div>
+            </fieldset>
+
+        </form>
+        <table class="table table-striped table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>CPF</th>
+                    <th>Telefone</th>
+                    <th>E-mail</th>
+                    <th>Cidade</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ser in search %}
+                <tr>
+                    <td><a href="{{ url_for('cadastro_titular_selecionado_conta', id_titular=ser.id) }}">{{ ser.id }}</a></td>
+                    <td> {{ ser.nome }}</td>
+                    <td> {{ ser.cpf }}</td>
+                    <td> {{ ser.telefone }}</td>
+                    <td> {{ ser.email }}</td>
+                    <td> {{ ser.cidade }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

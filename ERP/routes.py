@@ -2,11 +2,12 @@ from flask import render_template, redirect, url_for, flash, request, session
 from ERP import app, database, bcrypt, login_manager
 from ERP.forms import FormCriarConta, FormLogin, FormCadastroCNPJ, FormCadastroEmpresa, FormCadastroCPF
 from ERP.forms import FormTiposRoupas, FormCores, FormMarcas, FormTamanhos, FormTiposUnidades
-from ERP.forms import FormItensEstoque, FormBancos, FormAgenciaBancoCadastro, FormAgenciaBancoEdicao, FormContaBancaria
+from ERP.forms import FormItensEstoque, FormBancos, FormAgenciaBancoCadastro, FormAgenciaBancoEdicao
+from ERP.forms import FormContaBancariaCadastro, FormContaBancariaEdicao, FormGeneros
 from ERP.models import Usuarios, CadastroEmpresa, TiposCadastros, ClientesFornecedores, TiposUsuarios
 from ERP.models import TiposRoupas, Cores, Tamanhos, Marcas, TiposUnidades, ItensEstoque
 from ERP.models import TransacoesEstoque, TiposTransacoesEstoque, Bancos, AgenciaBanco, ContasBancarias
-from ERP.models import CartaoCredito, FaturaCartaoCredito
+from ERP.models import CartaoCredito, FaturaCartaoCredito, GeneroRoupa
 from flask_login import login_user, logout_user, current_user, login_required
 import secrets
 from datetime import datetime
@@ -14,14 +15,17 @@ import os
 from PIL import Image
 from sqlalchemy import or_, and_
 
+
 @login_manager.user_loader
 def load_user(user_id):
     return Usuarios.query.get(int(user_id))
+
 
 @app.route('/')
 @login_required
 def home():
     return render_template('home.html')
+
 
 @app.route('/criarconta', methods=['GET', 'POST'])
 def criar_conta():
@@ -30,13 +34,14 @@ def criar_conta():
     if form.validate_on_submit():
         senha_crip = bcrypt.generate_password_hash(form.senha.data)
         usuario = Usuarios(username=form.username.data,
-                          senha=senha_crip,
+                           senha=senha_crip,
                            tipo_usuario=int(form.tipo_usuario.data))
         database.session.add(usuario)
         database.session.commit()
         flash(f"Conta criada para: {form.username.data}!", 'alert-success')
         return redirect(url_for('home'))
     return render_template('criar_conta.html', form_criar_conta=form)
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -54,6 +59,7 @@ def login():
         else:
             flash(f"Usuário ou senha incorretos ou não cadastrados!", 'alert-danger')
     return render_template('login.html', form=form)
+
 
 def trata_documento(doc):
     doc = doc.replace('.', '')
@@ -91,7 +97,7 @@ def cadastro_cnpj():
         database.session.add(cadastro)
         database.session.commit()
         cliente_fornecedor = ClientesFornecedores.query.filter_by(cnpj=trata_documento(form.cnpj.data)).first()
-        flash('Cadastro realizado com sucesso!', 'success')
+        flash('Cadastro realizado com sucesso!', 'alert-success')
         if cliente_fornecedor.cnpj:
             return redirect(url_for('clientes_fornecedor_cpf_cnpj', cliente_fornecedor_id=cliente_fornecedor.id, tipo_emp='cnpj'))
         else:
@@ -108,6 +114,8 @@ def clientes_fornecedor_cpf_cnpj(cliente_fornecedor_id, tipo_emp):
         return render_template('cliente_fornecedor_cnpj.html', cliente_fornecedor=cliente_fornecedor)
     else:
         return render_template('cliente_fornecedor_cpf.html', cliente_fornecedor=cliente_fornecedor)
+
+
 @app.route('/clientesfornecedores/cpf/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_cpf():
@@ -131,18 +139,20 @@ def cadastro_cpf():
         database.session.add(cadastro)
         database.session.commit()
         cliente_fornecedor = ClientesFornecedores.query.filter_by(cpf=trata_documento(form.cpf.data)).first()
-        flash('Cadastro realizado com sucesso!', 'success')
+        flash('Cadastro realizado com sucesso!', 'alert-success')
         if cliente_fornecedor.cnpj:
             return redirect(url_for('clientes_fornecedor_cpf_cnpj', cliente_fornecedor_id=cliente_fornecedor.id, tipo_emp='cnpj'))
         else:
             return redirect(url_for('clientes_fornecedor_cpf_cnpj', cliente_fornecedor_id=cliente_fornecedor.id, tipo_emp='cpf'))
     return render_template('cadastro_cpf.html', form=form)
 
+
 @app.route('/clientesfornecedores/lista')
 @login_required
 def lista_clientes_fornecedores():
     clientes_fornecedores = ClientesFornecedores.query.all()
     return render_template('lista_clientes_fornecedores.html', clientes_fornecedores=clientes_fornecedores)
+
 
 @app.route('/cadastroinicial', methods=['GET', 'POST'])
 @login_required
@@ -156,6 +166,7 @@ def cadastro_inicial():
         flash(f"Conta criada para: {form.nome_empresa.data}!", 'alert-success')
         return redirect(url_for('criar_conta'))
     return render_template('cadastro_empresa.html', form=form)
+
 
 def obter_nome_tipo_por_id(id_tipo):
     tipo = TiposCadastros.query.get(id_tipo)
@@ -198,7 +209,7 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
             cliente_fornecedor.id_usuario_cadastro = current_user.id
 
             database.session.commit()
-            flash('Cadastro atualizado com sucesso!', 'success')
+            flash('Cadastro atualizado com sucesso!', 'alert-success')
             return redirect(
                 url_for('clientes_fornecedor_cpf_cnpj', cliente_fornecedor_id=cliente_fornecedor.id, tipo_emp='cnpj'))
         return render_template('cadastro_cnpj.html', form=form)
@@ -231,12 +242,13 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
 
             cliente_fornecedor.id_usuario_cadastro = current_user.id
 
-            flash('Cadastro atualizado com sucesso!', 'success')
+            flash('Cadastro atualizado com sucesso!', 'alert-success')
             return redirect(
                 url_for('clientes_fornecedor_cpf_cnpj', cliente_fornecedor_id=cliente_fornecedor.id, tipo_emp='cpf'))
 
         return render_template('cadastro_cpf.html', form=form)
 #TODO: corrigir selectfield
+
 
 @app.route('/estoque/tiporoupa/cadastro', methods=['GET', 'POST'])
 @login_required
@@ -278,6 +290,7 @@ def editar_tipo_roupa(tipo_roupa_id):
 
     return render_template('cadastro_tipo_roupa.html', tipo_roupa=tipo_roupa, form=form)
 
+
 @app.route('/estoque/cores/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_cores():
@@ -291,11 +304,13 @@ def cadastro_cores():
         return redirect(url_for('cor', cor_id=cor.id))
     return render_template('cadastro_cores.html', form=form)
 
+
 @app.route('/estoque/cores/<cor_id>')
 @login_required
 def cor(cor_id):
     cor = Cores.query.get_or_404(cor_id)
     return  render_template('cor.html', cor=cor)
+
 
 @app.route('/estoque/cor/<int:cor_id>/edicao', methods=['GET', 'POST'])
 @login_required
@@ -317,6 +332,7 @@ def editar_cor(cor_id):
     return render_template('cadastro_cores.html', form=form, cor=cor)
 #TODO: Lista de marcas, cores,tipo_roupa e etc
 
+
 @app.route('/estoque/marcas/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_marcas():
@@ -330,11 +346,13 @@ def cadastro_marcas():
         return redirect(url_for('marcas', marca_id=marca.id))
     return render_template('cadastro_marcas.html', form=form)
 
+
 @app.route('/estoque/marcas/<marca_id>', methods=['GET', 'POST'])
 @login_required
 def marcas(marca_id):
     marca = Marcas.query.get_or_404(marca_id)
     return render_template('marcas.html', marca=marca)
+
 
 @app.route('/estoque/marca/editar/<int:marca_id>', methods=['GET', 'POST'])
 @login_required
@@ -353,6 +371,7 @@ def editar_marca(marca_id):
 
     return render_template('cadastro_marcas.html', form=form, marca=marca)
 
+
 @app.route('/estoque/tamanhos/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_tamanhos():
@@ -366,11 +385,13 @@ def cadastro_tamanhos():
         return redirect(url_for('tamanhos', tamanho_id=tamanho.id))
     return render_template('cadastro_tamanhos.html', form=form)
 
+
 @app.route('/estoque/tamanhos/<tamanho_id>', methods=['GET', 'POST'])
 @login_required
 def tamanhos(tamanho_id):
     tamanho = Tamanhos.query.get_or_404(tamanho_id)
     return render_template('tamanhos.html', tamanho=tamanho)
+
 
 @app.route('/estoque/tamanho/editar/<int:tamanho_id>', methods=['GET', 'POST'])
 @login_required
@@ -388,6 +409,46 @@ def editar_tamanho(tamanho_id):
         form.tamanho.data = tamanho.nome_tamanho
 
     return render_template('cadastro_tamanhos.html', form=form, tamanho=tamanho)
+
+
+@app.route('/estoque/generos/cadastro', methods=['GET', 'POST'])
+@login_required
+def cadastro_generos():
+    form = FormGeneros()
+    if form.validate_on_submit():
+        genero = GeneroRoupa(nome_genero=form.nome_genero.data)
+        database.session.add(genero)
+        database.session.commit()
+        flash(f"Cadastro concluído: {form.nome_genero.data}!", 'alert-success')
+        genero = GeneroRoupa.query.filter_by(nome_genero=form.nome_genero.data).first()
+        return redirect(url_for('generos', genero_id=genero.id))
+    return render_template('cadastro_generos.html', form=form)
+
+
+@app.route('/estoque/generos/<genero_id>', methods=['GET', 'POST'])
+@login_required
+def generos(genero_id):
+    genero = GeneroRoupa.query.get_or_404(genero_id)
+    return render_template('generos.html', genero=genero)
+
+
+@app.route('/estoque/generos/editar/<int:genero_id>', methods=['GET', 'POST'])
+@login_required
+def editar_genero(genero_id):
+    genero = GeneroRoupa.query.get_or_404(genero_id)
+    form = FormGeneros()
+
+    if form.validate_on_submit():
+        genero.nome_genero = form.nome_genero.data
+        database.session.commit()
+        flash(f"Edição concluída: {form.nome_genero.data}!", 'alert-success')
+        return redirect(url_for('generos', genero_id=genero.id))
+
+    elif request.method == 'GET':
+        form.nome_genero.data = genero.nome_genero
+
+    return render_template('cadastro_generos.html', form=form, genero=genero)
+
 
 @app.route('/estoque/tiposunidades/cadastro', methods=['GET', 'POST'])
 @login_required
@@ -557,6 +618,7 @@ def edicao_itens_estoque(itens_estoque_id):
 
     return render_template('edicao_itens_estoque.html', form=form, itens_estoque=itens_estoque.id)
 
+
 @app.route('/financeiro/bancos/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_banco():
@@ -579,11 +641,13 @@ def cadastro_banco():
             return redirect(url_for('bancos', banco_id=banco.id))
     return render_template('cadastro_bancos.html', form=form)
 
+
 @app.route('/financeiro/bancos/<banco_id>', methods=['GET', 'POST'])
 @login_required
 def bancos(banco_id):
     banco = Bancos.query.filter_by(id=banco_id).first()
     return render_template('bancos.html', banco=banco)
+
 
 @app.route('/financeiro/bancos/<banco_id>/editar', methods=['GET', 'POST'])
 @login_required
@@ -605,19 +669,6 @@ def editar_bancos(banco_id):
             return redirect(url_for('bancos', banco_id=banco.id))
     return render_template('cadastro_bancos.html', form=form)
 
-# @app.route('/financeiro/bancos/agencias/cadastro', methods=['GET', 'POST'])
-# @login_required
-# def cadastro_agencias_bancos():
-#     form_agencia = FormAgenciaBanco()
-#     form_agencia.id_banco.choices = [(banco.id, banco.nome_banco) for banco in Bancos.query.all()]
-#     if form_agencia.validate_on_submit():
-#         if 'cadastrar' in request.form:
-#             session['agencia'] = form_agencia.agencia.data
-#             session['digito_agencia'] = form_agencia.digito_agencia.data
-#             session['id_banco'] = form_agencia.id_banco.data
-#             session['apelido_agencia'] = form_agencia.apelido_agencia.data
-#             return redirect(url_for('cadastro_fornecedor_banco'))
-#     return render_template('cadastro_agencias_bancos.html', form_agencia=form_agencia)
 
 @app.route('/financeiro/bancos/agencias/cadastro', methods=['GET', 'POST'])
 @login_required
@@ -646,15 +697,21 @@ def cadastro_agencias_bancos():
             flash('Verifique', 'alert-warning')
     return render_template('cadastro_agencias_bancos.html', form_agencia=form_agencia)
 
-def buscar_agencia_bancaria(busca):
+def buscar_cliente_fornecedor_cnpj(busca):
     resultados = (
         ClientesFornecedores.query
         .filter(
             and_(
                 ClientesFornecedores.cnpj.isnot(None),
                 or_(
-                ClientesFornecedores.razao_social.ilike(f'%{busca}%'),
-                ClientesFornecedores.nome_fantasia.ilike(f'%{busca}%')
+                    ClientesFornecedores.razao_social.ilike(f'%{busca}%'),
+                    ClientesFornecedores.nome_fantasia.ilike(f'%{busca}%'),
+                    ClientesFornecedores.email.ilike(f'%{busca}%'),
+                    ClientesFornecedores.cidade.ilike(f'%{busca}%'),
+                    ClientesFornecedores.bairro.ilike(f'%{busca}%'),
+                    ClientesFornecedores.rua.ilike(f'%{busca}%'),
+                    ClientesFornecedores.complemento.ilike(f'%{busca}%'),
+                    ClientesFornecedores.uf.ilike(f'%{busca}%')
                 )
             )
         )
@@ -662,16 +719,45 @@ def buscar_agencia_bancaria(busca):
     )
     return resultados
 
+def buscar_cliente_fornecedor_cpf(busca):
+    resultados = (
+        ClientesFornecedores.query
+        .filter(
+            and_(
+                ClientesFornecedores.cpf.isnot(None),
+                or_(
+                    ClientesFornecedores.nome.ilike(f'%{busca}%'),
+                    ClientesFornecedores.email.ilike(f'%{busca}%'),
+                    ClientesFornecedores.cidade.ilike(f'%{busca}%'),
+                    ClientesFornecedores.bairro.ilike(f'%{busca}%'),
+                    ClientesFornecedores.rua.ilike(f'%{busca}%'),
+                    ClientesFornecedores.complemento.ilike(f'%{busca}%'),
+                    ClientesFornecedores.uf.ilike(f'%{busca}%')
+                )
+            )
+        )
+        .all()
+    )
+    return resultados
+
+def busca_todos_clientes_fornecedores_cpf():
+    resultado = ClientesFornecedores.query.filter(ClientesFornecedores.cpf.isnot(None)).all()
+    return resultado
+
+def busca_todos_clientes_fornecedores_cnpj():
+    resultado = ClientesFornecedores.query.filter(ClientesFornecedores.cnpj.isnot(None)).all()
+    return resultado
+
 @app.route('/financeiro/bancos/agencias/cadastro/<id_banco>', methods=['GET', 'POST'])
 @login_required
 def cadastro_fornecedor_selecionado_agencia(id_banco):
     form_agencia = FormAgenciaBancoEdicao(agencia=session.get('agencia'),
-                                    digito_agencia=session.get('digito_agencia'),
-                                    id_banco=session.get('id_banco'),
-                                    id_cliente=id_banco,
-                                    apelido_agencia=session.get('apelido_agencia'))
+                                          digito_agencia=session.get('digito_agencia'),
+                                          id_banco=session.get('id_banco'),
+                                          id_cliente=id_banco,
+                                          apelido_agencia=session.get('apelido_agencia'))
     form_agencia.id_banco.choices = [(banco.id, banco.nome_banco) for banco in Bancos.query.all()]
-    form_agencia.id_cliente.choices = [(fornecedor.id, fornecedor.razao_social) for fornecedor in buscar_agencia_bancaria(session.get('pesquisa_bancos'))]
+    form_agencia.id_cliente.choices = [(fornecedor.id, fornecedor.razao_social) for fornecedor in buscar_cliente_fornecedor_cnpj(session.get('pesquisa_bancos'))]
     if form_agencia.validate_on_submit():
         pesquisa_agencia = AgenciaBanco.query.filter_by(agencia=form_agencia.agencia.data).first()
         pesquisa_apelido = AgenciaBanco.query.filter_by(apelido_agencia=form_agencia.apelido_agencia.data).first()
@@ -681,24 +767,24 @@ def cadastro_fornecedor_selecionado_agencia(id_banco):
             flash('Apelido agência já existe em outro cadastro.', 'alert-danger')
         else:
             agencia = AgenciaBanco(agencia=session.get('agencia'),
-                                        digito_agencia=session.get('digito_agencia'),
-                                        id_banco=session.get('id_banco'),
-                                        id_cliente=id_banco,
-                                        apelido_agencia=session.get('apelido_agencia'))
+                                   digito_agencia=session.get('digito_agencia'),
+                                   id_banco=session.get('id_banco'),
+                                   id_cliente=id_banco,
+                                   apelido_agencia=session.get('apelido_agencia'))
             database.session.add(agencia)
             database.session.commit()
             flash("Agencia cadastrada com sucesso!", 'alert-success')
             return redirect(url_for('agencias_bancarias', id_agencia=agencia.id))
     return render_template('cadastro_fornecedor_selecionado_agencia.html', form_agencia=form_agencia)
 
-@app.route('/financeiro/bancos/agencias/pesquisafornecedor/', methods=['GET', 'POST'])
+@app.route('/financeiro/bancos/agencias/pesquisafornecedor', methods=['GET', 'POST'])
 @login_required
 def busca_fornecedor_banco():
-    search = buscar_agencia_bancaria(session.get('pesquisa_bancos'))
+    search = buscar_cliente_fornecedor_cnpj(session.get('pesquisa_bancos'))
     form_agencia = FormAgenciaBancoCadastro(agencia=session.get('agencia'),
-                                    digito_agencia=session.get('digito_agencia'),
-                                    id_banco=session.get('id_banco'),
-                                    apelido_agencia=session.get('apelido_agencia'))
+                                            digito_agencia=session.get('digito_agencia'),
+                                            id_banco=session.get('id_banco'),
+                                            apelido_agencia=session.get('apelido_agencia'))
     form_agencia.id_banco.choices = [(banco.id, banco.nome_banco) for banco in Bancos.query.all()]
     return render_template('pesquisa_fornecedor_banco.html', form_agencia=form_agencia, search=search)
 
@@ -706,9 +792,9 @@ def busca_fornecedor_banco():
 @login_required
 def cadastro_fornecedor_banco():
     form_agencia = FormAgenciaBancoCadastro(agencia=session.get('agencia'),
-                                    digito_agencia=session.get('digito_agencia'),
-                                    id_banco=session.get('id_banco'),
-                                    apelido_agencia=session.get('apelido_agencia'))
+                                            digito_agencia=session.get('digito_agencia'),
+                                            id_banco=session.get('id_banco'),
+                                            apelido_agencia=session.get('apelido_agencia'))
     form = FormCadastroCNPJ()
     form.tipo_cadastro.choices = [(tipo.id, tipo.nome_tipo) for tipo in TiposCadastros.query.all()]
     form_agencia.id_banco.choices = [(banco.id, banco.nome_banco) for banco in Bancos.query.all()]
@@ -720,20 +806,20 @@ def cadastro_fornecedor_banco():
         database.session.add(cadastro_agencia)
         database.session.commit()
         cad_banco = ClientesFornecedores(nome_fantasia=form.nome_fantasia.data,
-                                        razao_social=form.razao_social.data,
-                                        cnpj=trata_documento(form.cnpj.data),
-                                        rua=form.rua.data, nro=form.nro.data,
-                                        complemento=form.complemento.data,
-                                        cidade=form.cidade.data,
-                                        bairro=form.bairro.data,
-                                        uf=form.uf.data, cep=form.cep.data,
-                                        data_fundacao=form.fundacao.data,
-                                        telefone=form.telefone.data,
-                                        telefone2=form.telefone2.data,
-                                        telefone3=form.telefone3.data,
-                                        email=form.email.data, obs=form.obs.data,
-                                        tipo_cadastro=int(form.tipo_cadastro.data),
-                                        id_usuario_cadastro=int(current_user.id))
+                                            razao_social=form.razao_social.data,
+                                            cnpj=trata_documento(form.cnpj.data),
+                                            rua=form.rua.data, nro=form.nro.data,
+                                            complemento=form.complemento.data,
+                                            cidade=form.cidade.data,
+                                            bairro=form.bairro.data,
+                                            uf=form.uf.data, cep=form.cep.data,
+                                            data_fundacao=form.fundacao.data,
+                                            telefone=form.telefone.data,
+                                            telefone2=form.telefone2.data,
+                                            telefone3=form.telefone3.data,
+                                            email=form.email.data, obs=form.obs.data,
+                                            tipo_cadastro=int(form.tipo_cadastro.data),
+                                            id_usuario_cadastro=int(current_user.id))
         database.session.add(cad_banco)
         database.session.commit()
         banco_cadastrado = ClientesFornecedores.query.filter_by(cnpj=trata_documento(form.cnpj.data)).first()
@@ -767,5 +853,94 @@ def editar_agencias_bancarias(id_agencia):
             form_agencia.populate_obj(agencia)
             agencia.id_cliente = form_agencia.id_cliente.data
             database.session.commit()
+            flash("Agencia editada com sucesso!", 'alert-success')
             return redirect(url_for('agencias_bancarias', id_agencia=id_agencia))
     return render_template('edicao_agencias_bancos.html', form_agencia=form_agencia)
+
+@app.route('/financeiro/bancos/agencias/contas/cadastro', methods=['GET', 'POST'])
+@login_required
+def cadastro_conta_bancaria():
+    form = FormContaBancariaCadastro()
+    form.id_agencia.choices = [(agencia.id, agencia.apelido_agencia) for agencia in AgenciaBanco.query.all()]
+    if form.validate_on_submit():
+        session['id_agencia'] = form.id_agencia.data
+        session['apelido_conta'] = form.apelido_conta.data
+        session['nro_conta'] = form.nro_conta.data
+        session['digito_conta'] = form.digito_conta.data
+        session['campo_pesquisa'] = form.campo_pesquisa.data
+        session['cheque_especial'] = form.cheque_especial.data
+        session['saldo_conta'] = form.saldo_conta.data
+        if 'cpf' in request.form:
+            return redirect(url_for('busca_titular_conta_cpf'))
+        elif 'cnpj' in request.form:
+            return redirect(url_for('busca_titular_conta_cnpj'))
+    return render_template('cadastro_contas.html', form=form)
+
+@app.route('/financeiro/bancos/agencias/contas/buscatitularcpf', methods=['GET', 'POST'])
+@login_required
+def busca_titular_conta_cpf():
+    search = buscar_cliente_fornecedor_cpf(session.get('campo_pesquisa'))
+    form = FormContaBancariaCadastro(id_agencia=session.get('id_agencia'),
+                                     apelido_conta=session.get('apelido_conta'),
+                                     nro_conta=session.get('nro_conta'),
+                                     digito_conta=session.get('digito_conta'),
+                                     campo_pesquisa=session.get('campo_pesquisa'),
+                                     cheque_especial=session.get('cheque_especial'),
+                                     saldo_conta=session.get('saldo_conta'))
+    form.id_agencia.choices = [(agencia.id, agencia.apelido_agencia) for agencia in AgenciaBanco.query.all()]
+    return render_template('pesquisa_titular_conta_cpf.html', form=form, search=search)
+
+@app.route('/financeiro/bancos/agencias/contas/buscatitularcnpj', methods=['GET', 'POST'])
+@login_required
+def busca_titular_conta_cnpj():
+    search = buscar_cliente_fornecedor_cnpj(session.get('campo_pesquisa'))
+    form = FormContaBancariaCadastro(id_agencia=session.get('id_agencia'),
+                                     apelido_conta=session.get('apelido_conta'),
+                                     nro_conta=session.get('nro_conta'),
+                                     digito_conta=session.get('digito_conta'),
+                                     campo_pesquisa=session.get('campo_pesquisa'),
+                                     cheque_especial=session.get('cheque_especial'),
+                                     saldo_conta=session.get('saldo_conta'))
+    form.id_agencia.choices = [(agencia.id, agencia.apelido_agencia) for agencia in AgenciaBanco.query.all()]
+    return render_template('pesquisa_titular_conta_cnpj.html', form=form, search=search)
+
+def string_to_integer(string):
+    string = string.replace('-', '')
+    string = string.replace('.', '')
+    string = string.replace(',', '')
+    string = string.replace(' ', '')
+    return int(string)
+
+@app.route('/financeiro/bancos/agencias/contas/cadastro/<id_titular>', methods=['GET', 'POST'])
+@login_required
+def cadastro_titular_selecionado_conta(id_titular):
+    titular = ClientesFornecedores.query.get_or_404(id_titular)
+    form = FormContaBancariaEdicao(id_agencia=session.get('id_agencia'),
+                                   apelido_conta=session.get('apelido_conta'),
+                                   nro_conta=session.get('nro_conta'),
+                                   digito_conta=session.get('digito_conta'),
+                                   id_titular_conta=id_titular,
+                                   cheque_especial=session.get('cheque_especial'),
+                                   saldo_conta=session.get('saldo_conta'))
+    form.id_agencia.choices = [(agencia.id, agencia.apelido_agencia) for agencia in AgenciaBanco.query.all()]
+    if titular.cpf:
+        form.id_titular_conta.choices = [(titular_cpf.id, titular_cpf.nome) for titular_cpf in busca_todos_clientes_fornecedores_cpf()]
+    else:
+        form.id_titular_conta.choices = [(titular_cnpj.id, titular_cnpj.razao_social) for titular_cnpj in busca_todos_clientes_fornecedores_cnpj()]
+    if form.validate_on_submit():
+        conta_bancaria = ContasBancarias(id_agencia=form.id_agencia.data,
+                                         apelido_conta=form.apelido_conta.data,
+                                         nro_conta=string_to_integer(form.nro_conta.data),
+                                         digito_conta=string_to_integer(form.digito_conta.data),
+                                         id_titular_conta=form.id_titular_conta.data,
+                                         cheque_especial=string_to_float(form.cheque_especial.data),
+                                         cheque_especial_disponivel=string_to_float(form.cheque_especial.data),
+                                         saldo_conta=string_to_float(form.saldo_conta.data))
+        database.session.add(conta_bancaria)
+        database.session.commit()
+        #TODO: transação financeira de saldo atual
+        flash("Conta cadastrada com sucesso!", 'alert-success')
+        return redirect(url_for('home'))
+    return render_template('cadastro_titular_selecionado_conta.html', form=form)
+
+

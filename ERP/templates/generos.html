@@ -1,0 +1,9 @@
+{% include 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <h2>Dados do Cadastro</h2>
+        <p>Genero: {{ genero.nome_genero }}</p>
+        <a href="{{ url_for('editar_genero', genero_id=genero.id) }}">Editar</a>
+    </div>
+{% endblock %}

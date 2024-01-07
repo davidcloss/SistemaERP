@@ -1,6 +1,7 @@
-from ERP import app, database
+from ERP import app, database, bcrypt
 from ERP.models import TiposCadastros, TiposUsuarios, SituacoesUsuarios, TiposRoupas, Usuarios
 from ERP.models import Tamanhos, Cores, Marcas, ItensEstoque, TiposTransacoesEstoque, TiposUnidades
+from ERP.models import GeneroRoupa
 from datetime import datetime
 import sqlite3 as sql
 
@@ -17,6 +18,20 @@ criar_deletar_db(2)
 criar_deletar_db(1)
 
 
+tipos_usuario = ['Gerente', 'Financeiro(a)', 'Vendedor(a)', 'Administrador(a)', 'Supervisor(a)', 'Coordenador(a)']
+with app.app_context():
+    for tipo in tipos_usuario:
+        tipo_usu = TiposUsuarios(nome_tipo=tipo)
+        database.session.add(tipo_usu)
+        database.session.commit()
+
+with app.app_context():
+    usuario = Usuarios(username='GERENTE',
+                       senha=bcrypt.generate_password_hash('1234567890'),
+                       tipo_usuario=1)
+    database.session.add(usuario)
+    database.session.commit()
+
 
 lista_tipos_cadastro = ['Cliente', 'Fornecedor', 'Cliente/Fornecedor', 'Empresa Própria']
 
@@ -30,12 +45,6 @@ with app.app_context():
     retorno = TiposCadastros.query.all()
     print(retorno)
 
-tipos_usuario = ['Gerente', 'Financeiro(a)', 'Vendedor(a)', 'Administrador(a)', 'Supervisor(a)', 'Coordenador(a)']
-with app.app_context():
-    for tipo in tipos_usuario:
-        tipo_usu = TiposUsuarios(nome_tipo=tipo)
-        database.session.add(tipo_usu)
-        database.session.commit()
 
 sit = ['Ativo', 'Inativo']
 with app.app_context():
@@ -86,6 +95,11 @@ with app.app_context():
         database.session.add(t)
         database.session.commit()
 
-
+tipos_generos = ['Masculino', 'Feminino', 'Unissex']
+with app.app_context():
+    for tipo in tipos_generos:
+        t = GeneroRoupa(nome_genero=tipo)
+        database.session.add(t)
+        database.session.commit()
 
 print(datetime.utcnow().date())

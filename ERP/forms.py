@@ -93,6 +93,11 @@ class FormMarcas(FlaskForm):
     botao_submit = SubmitField('Cadastrar')
 
 
+class FormGeneros(FlaskForm):
+    nome_genero = StringField('Genero:', validators=[DataRequired()])
+    botao_submit = SubmitField('Cadastrar')
+
+
 class FormTiposUnidades(FlaskForm):
     tipo_unidade = StringField('Tipo unidade:', validators=[DataRequired()])
     botao_submit = SubmitField('Cadastrar')
@@ -117,6 +122,7 @@ class FormBancos(FlaskForm):
     nome_banco = StringField('Nome Banco', validators=[DataRequired(message='Favor incluir nome banco')])
     botao_submit = SubmitField('Cadastrar')
 
+
 class FormAgenciaBancoCadastro(FlaskForm):
     agencia = StringField('Agência Banco', validators=[DataRequired(message='Favor incluir código agencia')])
     digito_agencia = StringField('Dígito agência', validators=[DataRequired(message='Favor incluir dígito agencia')])
@@ -126,6 +132,7 @@ class FormAgenciaBancoCadastro(FlaskForm):
     botao_pesquisar = SubmitField('Pesquisar cliente/fornecedor banco', name='pesquisar')
     botao_cadastrar = SubmitField('Cadastrar cliente/fornecedor banco', name='cadastrar')
     botao_finalizar = SubmitField('Finalizar cadastro', name='finalizar')
+
 
 class FormAgenciaBancoEdicao(FlaskForm):
     agencia = StringField('Agência Banco', validators=[DataRequired(message='Favor incluir código agencia')])
@@ -138,15 +145,28 @@ class FormAgenciaBancoEdicao(FlaskForm):
     botao_cadastrar = SubmitField('Cadastrar cliente/fornecedor banco', name='cadastrar')
     botao_finalizar = SubmitField('Finalizar cadastro', name='finalizar')
 
-class FormContaBancaria(FlaskForm):
+
+class FormContaBancariaCadastro(FlaskForm):
     id_agencia = SelectField('Agência')
     apelido_conta = StringField('Apelido conta', validators=[DataRequired(message='Favor incluir apelido conta')])
     nro_conta = StringField('Número conta', validators=[DataRequired(message='Favor incluir número conta')])
     digito_conta = StringField('Dígito conta', validators=[DataRequired(message='Favor incluir dígito conta')])
-    id_titular_conta = SelectField('Titular conta')
+    campo_pesquisa = StringField('Nome titular conta a pesquisar')
     cheque_especial = StringField('Valor cheque especial')
     saldo_conta = StringField('Saldo inicial conta', validators=[DataRequired(message='Favor incluir saldo inicial da conta')])
-    botao_submit = SubmitField('Cadastrar')
+    botao_pesquisar_cpf = SubmitField('Pesquisar CPF', name='cpf')
+    botao_pesquisar_cnpj = SubmitField('Pesquisar CNPJ', name='cnpj')
+
+
+class FormContaBancariaEdicao(FlaskForm):
+    id_agencia = SelectField('Agência')
+    apelido_conta = StringField('Apelido conta', validators=[DataRequired(message='Favor incluir apelido conta')])
+    nro_conta = StringField('Número conta', validators=[DataRequired(message='Favor incluir número conta')])
+    digito_conta = StringField('Dígito conta', validators=[DataRequired(message='Favor incluir dígito conta')])
+    id_titular_conta = SelectField('Titular')
+    cheque_especial = StringField('Valor cheque especial')
+    saldo_conta = StringField('Saldo inicial conta', validators=[DataRequired(message='Favor incluir saldo inicial da conta')])
+    botao_finalizar = SubmitField('Cadastrar', name='finalizar')
 
 
 class FormCartaoCredito(FlaskForm):
