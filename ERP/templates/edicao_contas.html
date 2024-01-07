@@ -4,7 +4,7 @@
     <div class="container">
         <form method='POST' action="" class="border m-5 p-2">
             {{ form.csrf_token }}
-            <legend>Cadastro bancos:</legend>
+            <legend>Cadastro conta bancária:</legend>
             <fieldset>
                 <div class="form-group">
                     {{ form.id_agencia.label(class="form-control-label") }}
@@ -23,16 +23,16 @@
                     {{ form.digito_conta(class="form-control-label") }}
                 </div>
                 <div class="form-group">
-                    {{ form.id_titular.label(class="form-control-label") }}
-                    {{ form.id_titular(class="form-control-label") }}
-                </div>
-                <div class="form-group">
                     {{ form.cheque_especial.label(class="form-control-label") }}
                     {{ form.cheque_especial(class="form-control-label") }}
                 </div>
                 <div class="form-group">
                     {{ form.saldo_conta.label(class="form-control-label") }}
                     {{ form.saldo_conta(class="form-control-label") }}
+                </div>
+                <div class="form-group">
+                    {{ form.id_titular.label(class="form-control-label") }}
+                    {{ form.id_titular(class="form-control-label") }}
                 </div>
             </fieldset>
             {{ form.botao_finalizar(class="btn btn-primary m-1") }}

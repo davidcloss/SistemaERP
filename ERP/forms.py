@@ -164,7 +164,7 @@ class FormContaBancariaEdicao(FlaskForm):
     apelido_conta = StringField('Apelido conta', validators=[DataRequired(message='Favor incluir apelido conta')])
     nro_conta = StringField('Número conta', validators=[DataRequired(message='Favor incluir número conta')])
     digito_conta = StringField('Dígito conta', validators=[DataRequired(message='Favor incluir dígito conta')])
-    id_titular_conta = SelectField('Titular')
+    id_titular = SelectField('Titular')
     cheque_especial = StringField('Valor cheque especial')
     saldo_conta = StringField('Saldo inicial conta', validators=[DataRequired(message='Favor incluir saldo inicial da conta')])
     botao_finalizar = SubmitField('Cadastrar', name='finalizar')

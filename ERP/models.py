@@ -198,7 +198,7 @@ class ContasBancarias(database.Model):
     apelido_conta = database.Column(database.String, unique=True)
     nro_conta = database.Column(database.String)
     digito_conta = database.Column(database.String)
-    id_titular_conta = database.Column(database.Integer, database.ForeignKey('agencia_bancos.id'))
+    id_titular = database.Column(database.Integer, database.ForeignKey('agencia_bancos.id'))
     cheque_especial = database.Column(database.Float, default=0)
     cheque_especial_utilizado = database.Column(database.Float, default=0)
     cheque_especial_disponivel = database.Column(database.Float, default=0)

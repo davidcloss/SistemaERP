@@ -705,6 +705,7 @@ def cadastro_agencias_bancos():
             flash('Verifique', 'alert-warning')
     return render_template('cadastro_agencias_bancos.html', form_agencia=form_agencia)
 
+
 def buscar_cliente_fornecedor_cnpj(busca):
     resultados = (
         ClientesFornecedores.query
@@ -727,6 +728,7 @@ def buscar_cliente_fornecedor_cnpj(busca):
     )
     return resultados
 
+
 def buscar_cliente_fornecedor_cpf(busca):
     resultados = (
         ClientesFornecedores.query
@@ -748,13 +750,16 @@ def buscar_cliente_fornecedor_cpf(busca):
     )
     return resultados
 
+
 def busca_todos_clientes_fornecedores_cpf():
     resultado = ClientesFornecedores.query.filter(ClientesFornecedores.cpf.isnot(None)).all()
     return resultado
 
+
 def busca_todos_clientes_fornecedores_cnpj():
     resultado = ClientesFornecedores.query.filter(ClientesFornecedores.cnpj.isnot(None)).all()
     return resultado
+
 
 @app.route('/financeiro/bancos/agencias/cadastro/<id_banco>', methods=['GET', 'POST'])
 @login_required
@@ -785,6 +790,7 @@ def cadastro_fornecedor_selecionado_agencia(id_banco):
             return redirect(url_for('agencias_bancarias', id_agencia=agencia.id))
     return render_template('cadastro_fornecedor_selecionado_agencia.html', form_agencia=form_agencia)
 
+
 @app.route('/financeiro/bancos/agencias/pesquisafornecedor', methods=['GET', 'POST'])
 @login_required
 def busca_fornecedor_banco():
@@ -795,6 +801,7 @@ def busca_fornecedor_banco():
                                             apelido_agencia=session.get('apelido_agencia'))
     form_agencia.id_banco.choices = [(banco.id, banco.nome_banco) for banco in Bancos.query.all()]
     return render_template('pesquisa_fornecedor_banco.html', form_agencia=form_agencia, search=search)
+
 
 @app.route('/financeiro/bancos/agencias/cadastro/cnpj', methods=['GET', 'POST'])
 @login_required
@@ -841,6 +848,7 @@ def cadastro_fornecedor_banco():
             flash("Cadastro não encontrado!", 'alert-danger')
     return render_template('cadastro_cnpj_agencia_bancaria.html', form_agencia=form_agencia, form=form)
 
+
 @app.route('/financeiro/bancos/agencias/<id_agencia>')
 @login_required
 def agencias_bancarias(id_agencia):
@@ -848,6 +856,7 @@ def agencias_bancarias(id_agencia):
     banco = Bancos.query.get_or_404(agencia.id_banco)
     fornecedor = ClientesFornecedores.query.get_or_404(agencia.id_cliente)
     return render_template('agencia_bancaria.html', agencia=agencia, banco=banco, fornecedor=fornecedor)
+
 
 @app.route('/financeiro/bancos/agencias/<id_agencia>/edicao', methods=['GET', 'POST'])
 @login_required
@@ -932,15 +941,15 @@ def cadastro_titular_selecionado_conta(id_titular):
                                    saldo_conta=session.get('saldo_conta'))
     form.id_agencia.choices = [(agencia.id, agencia.apelido_agencia) for agencia in AgenciaBanco.query.all()]
     if titular.cpf:
-        form.id_titular_conta.choices = [(titular_cpf.id, titular_cpf.nome) for titular_cpf in busca_todos_clientes_fornecedores_cpf()]
+        form.id_titular.choices = [(titular_cpf.id, titular_cpf.nome) for titular_cpf in busca_todos_clientes_fornecedores_cpf()]
     else:
-        form.id_titular_conta.choices = [(titular_cnpj.id, titular_cnpj.razao_social) for titular_cnpj in busca_todos_clientes_fornecedores_cnpj()]
+        form.id_titular.choices = [(titular_cnpj.id, titular_cnpj.razao_social) for titular_cnpj in busca_todos_clientes_fornecedores_cnpj()]
     if form.validate_on_submit():
         conta_bancaria = ContasBancarias(id_agencia=form.id_agencia.data,
                                          apelido_conta=form.apelido_conta.data,
                                          nro_conta=string_to_integer(form.nro_conta.data),
                                          digito_conta=string_to_integer(form.digito_conta.data),
-                                         id_titular_conta=form.id_titular_conta.data,
+                                         id_titular=form.id_titular.data,
                                          cheque_especial=string_to_float(form.cheque_especial.data),
                                          cheque_especial_disponivel=string_to_float(form.cheque_especial.data),
                                          saldo_conta=string_to_float(form.saldo_conta.data))
@@ -948,7 +957,42 @@ def cadastro_titular_selecionado_conta(id_titular):
         database.session.commit()
         #TODO: transação financeira de saldo atual
         flash("Conta cadastrada com sucesso!", 'alert-success')
-        return redirect(url_for('home'))
+        return redirect(url_for('contas_bancarias', id_conta=conta_bancaria.id))
     return render_template('cadastro_titular_selecionado_conta.html', form=form)
 
 
+@app.route('/financeiro/bancos/agencias/contas/<id_conta>')
+@login_required
+def contas_bancarias(id_conta):
+    conta = ContasBancarias.query.get_or_404(id_conta)
+    titular = ClientesFornecedores.query.get_or_404(conta.id_titular)
+    agencia = AgenciaBanco.query.get_or_404(conta.id_agencia)
+    banco = Bancos.query.get_or_404(agencia.id_banco)
+    fornecedor = ClientesFornecedores.query.get_or_404(agencia.id_cliente)
+    return render_template('conta_bancaria.html', conta=conta, titular=titular, agencia=agencia, banco=banco, fornecedor=fornecedor)
+
+
+@app.route('/financeiro/bancos/agencias/contas/<int:id_conta>/editar', methods=['GET', 'POST'])
+@login_required
+def editar_contas(id_conta):
+    conta = ContasBancarias.query.get_or_404(id_conta)
+    form = FormContaBancariaEdicao(obj=conta)
+    titular = ClientesFornecedores.query.get_or_404(conta.id_titular)
+    form.id_agencia.choices = [(agencia.id, agencia.apelido_agencia) for agencia in AgenciaBanco.query.all()]
+    if titular.cpf:
+        form.id_titular.choices = [(titularr.id, titularr.nome) for titularr in
+                                         ClientesFornecedores.query.filter(ClientesFornecedores.cpf.isnot(None)).all()]
+    else:
+        form.id_titular.choices = [(titularr.id, titularr.razao_social) for titularr in
+                                    ClientesFornecedores.query.filter(
+                                    ClientesFornecedores.cnpj.isnot(None)).all()]
+    if form.validate_on_submit():
+        verifica_apelido = ContasBancarias.query.filter(and_(ContasBancarias.apelido_conta == form.apelido_conta.data, ContasBancarias.id != conta.id)).first()
+        if verifica_apelido:
+            flash("Apelido conta já utilizado em outro cadastro!", 'alert-danger')
+        else:
+            form.populate_obj(conta)
+            database.session.commit()
+            flash("Cadastro atualizado!", 'alert-success')
+            return redirect(url_for('contas_bancarias', id_conta=conta.id))
+    return render_template('edicao_contas.html', form=form)
