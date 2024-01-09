@@ -4,6 +4,7 @@ from ERP.forms import FormCriarConta, FormLogin, FormCadastroCNPJ, FormCadastroE
 from ERP.forms import FormTiposRoupas, FormCores, FormMarcas, FormTamanhos, FormTiposUnidades
 from ERP.forms import FormItensEstoque, FormBancos, FormAgenciaBancoCadastro, FormAgenciaBancoEdicao
 from ERP.forms import FormContaBancariaCadastro, FormContaBancariaEdicao, FormGeneros
+from ERP.forms import FormCartaoCredito
 from ERP.models import Usuarios, CadastroEmpresa, TiposCadastros, ClientesFornecedores, TiposUsuarios
 from ERP.models import TiposRoupas, Cores, Tamanhos, Marcas, TiposUnidades, ItensEstoque
 from ERP.models import TransacoesEstoque, TiposTransacoesEstoque, Bancos, AgenciaBanco, ContasBancarias
@@ -996,3 +997,52 @@ def editar_contas(id_conta):
             flash("Cadastro atualizado!", 'alert-success')
             return redirect(url_for('contas_bancarias', id_conta=conta.id))
     return render_template('edicao_contas.html', form=form)
+
+
+@app.route('/financeiro/bancos/agencias/contas/cartaocredito/cadastrar', methods=['GET', 'POST'])
+@login_required
+def cadastrar_cartao_credito():
+    form = FormCartaoCredito()
+    form.id_conta_bancaria.choices = [(conta.id, conta.apelido_conta) for conta in ContasBancarias.query.all()]
+    if form.validate_on_submit():
+        if form.dia_inicial.data > 31 or form.dia_inicial.data < 1:
+            flash('Dia inicial deve ser um dia entre 1 e 31', 'alert-danger')
+        elif form.dia_final.data > 31 or form.dia_final.data < 1:
+            flash('Dia final deve ser um dia entre 1 e 31', 'alert-danger')
+        elif form.dia_pgto.data > 31 or form.dia_pgto.data < 1:
+            flash('Dia pagamento deve ser um dia entre 1 e 31', 'alert-danger')
+        else:
+            cartao = CartaoCredito(id_conta_bancaria=form.id_conta_bancaria.data,
+                                   apelido_cartao=form.apelido_cartao.data,
+                                   dia_inicial=form.dia_inicial.data,
+                                   dia_final=form.dia_final.data,
+                                   dia_pgto=form.dia_pgto.data,
+                                   valor_limite=form.valor_limite.data,
+                                   valor_disponivel=form.valor_limite.data,
+                                   id_usuario_cadastro=current_user.id)
+            database.session.add(cartao)
+            database.session.commit()
+            cartao2 = CartaoCredito.query.filter_by(apelido_cartao=form.apelido_cartao.data).first()
+            flash('Cartão cadastrado com sucesso!', 'alert-success')
+            return redirect(url_for('cartao_credito', id_cartao=cartao2.id))
+    return render_template('cadastro_cartao_credito.html', form=form)
+
+
+@app.route('/financeiro/bancos/agencias/contas/cartaocredito/<id_cartao>')
+@login_required
+def cartao_credito(id_cartao):
+    cartao = CartaoCredito.query.get_or_404(id_cartao)
+    return render_template('cartao_credito.html', cartao=cartao, conta=ContasBancarias())
+
+@app.route('/financeiro/bancos/agencias/contas/cartaocredito/<id_cartao>/edicao', methods=['GET', 'POST'])
+@login_required
+def editar_cartao(id_cartao):
+    cartao = CartaoCredito.query.get_or_404(id_cartao)
+    form = FormCartaoCredito(obj=cartao)
+    form.id_conta_bancaria.choices = [(conta.id, conta.apelido_conta) for conta in ContasBancarias.query.all()]
+    if form.validate_on_submit():
+        form.populate_obj(cartao)
+        database.session.commit()
+        flash('Cartão atualizado com sucesso!', 'alert-success')
+        return redirect(url_for('cartao_credito', id_cartao=cartao.id))
+    return render_template('cadastro_cartao_credito.html', form=form)

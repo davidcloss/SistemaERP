@@ -208,6 +208,7 @@ class ContasBancarias(database.Model):
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
 
+
 class CartaoCredito(database.Model):
     __tablename__ = 'cartao_credito'
     id = database.Column(database.Integer, primary_key=True)
@@ -222,6 +223,7 @@ class CartaoCredito(database.Model):
     data_cadastro = database.Column(database.DateTime, default=datetime.utcnow())
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
+
 
 class FaturaCartaoCredito(database.Model):
     __tablename__ = 'fatura_cartao_credito'

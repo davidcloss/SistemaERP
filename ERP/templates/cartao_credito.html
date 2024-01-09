@@ -1,0 +1,9 @@
+{% include 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <h2>Dados do Cadastro</h2>
+        <p>Conta bancária: {{ cartao.id_conta_bancaria }}</p>
+        <a href="{{ url_for('editar_cartao', id_cartao=cartao.id) }}">Editar</a>
+    </div>
+{% endblock %}
