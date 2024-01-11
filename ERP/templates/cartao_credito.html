@@ -3,7 +3,16 @@
 {% block content %}
     <div class="container">
         <h2>Dados do Cadastro</h2>
-        <p>Conta bancária: {{ cartao.id_conta_bancaria }}</p>
+        <p>Conta bancária: {{ conta.apelido_conta  }}</p>
+        <p>Cartão de crédito: {{ cartao.apelido_cartao  }}</p>
+        <p>Dia inicial: {{ cartao.dia_inicial  }}</p>
+        <p>Dia final: {{ cartao.dia_final  }}</p>
+        <p>Dia pagamento: {{ cartao.dia_pgto  }}</p>
+        <p>Valor limite: {{ cartao.valor_limite  }}</p>
+        <p>Valor gasto: {{ cartao.valor_gasto  }}</p>
+        <p>Valor disponível: {{ cartao.valor_disponivel  }}</p>
+        <p>Data cadastro: {{ cartao.data_cadastro  }}</p>
+        <p>Usuario cadastro: {{ usuario.username  }}</p>
         <a href="{{ url_for('editar_cartao', id_cartao=cartao.id) }}">Editar</a>
     </div>
 {% endblock %}

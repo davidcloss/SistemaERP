@@ -1032,7 +1032,9 @@ def cadastrar_cartao_credito():
 @login_required
 def cartao_credito(id_cartao):
     cartao = CartaoCredito.query.get_or_404(id_cartao)
-    return render_template('cartao_credito.html', cartao=cartao, conta=ContasBancarias())
+    conta = ContasBancarias.query.get_or_404(cartao.id_conta_bancaria)
+    usuario = Usuarios.query.get_or_404(cartao.id_usuario_cadastro)
+    return render_template('cartao_credito.html', cartao=cartao, conta=conta, usuario=usuario)
 
 @app.route('/financeiro/bancos/agencias/contas/cartaocredito/<id_cartao>/edicao', methods=['GET', 'POST'])
 @login_required
@@ -1042,6 +1044,7 @@ def editar_cartao(id_cartao):
     form.id_conta_bancaria.choices = [(conta.id, conta.apelido_conta) for conta in ContasBancarias.query.all()]
     if form.validate_on_submit():
         form.populate_obj(cartao)
+        cartao.data_cadastro = datetime.utcnow()
         database.session.commit()
         flash('Cartão atualizado com sucesso!', 'alert-success')
         return redirect(url_for('cartao_credito', id_cartao=cartao.id))
