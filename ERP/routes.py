@@ -621,6 +621,7 @@ def edicao_itens_estoque(itens_estoque_id):
         itens_estoque.id_tipo_unidade = form.id_tipo_unidade.data
         itens_estoque.id_genero = form.id_genero.data
         itens_estoque.qtd_minima = string_to_float(form.qtd_minima.data)
+        itens_estoque.id_usuario_cadastro = current_user.id
         database.session.commit()
         flash("Edição concluída!", 'alert-success')
         return redirect(url_for('itens_estoque_', itens_estoque_id=itens_estoque.id))
@@ -642,7 +643,9 @@ def cadastro_banco():
             flash("Nome do banco já utilizado em outro cadastro!", 'alert-danger')
         else:
             banco = Bancos(cod_banco=form.cod_banco.data,
-                           nome_banco=form.nome_banco.data)
+                           nome_banco=form.nome_banco.data,
+                           data_cadastro=datetime.utcnow(),
+                           id_usuario_cadastro=current_user.id)
             database.session.add(banco)
             database.session.commit()
             banco = Bancos.query.filter_by(cod_banco=form.cod_banco.data).first()
@@ -673,6 +676,8 @@ def editar_bancos(banco_id):
             flash("Nome do banco já utilizado em outro cadastro!", 'alert-danger')
         else:
             form.populate_obj(banco)
+            banco.data_cadastro = datetime.utcnow()
+            banco.id_usuario_cadastro = current_user.id
             database.session.commit()
             flash("Cadastro atualizado!", 'alert-success')
             return redirect(url_for('bancos', banco_id=banco.id))
@@ -784,7 +789,9 @@ def cadastro_fornecedor_selecionado_agencia(id_banco):
                                    digito_agencia=session.get('digito_agencia'),
                                    id_banco=session.get('id_banco'),
                                    id_cliente=id_banco,
-                                   apelido_agencia=session.get('apelido_agencia'))
+                                   apelido_agencia=session.get('apelido_agencia'),
+                                   data_cadastro=datetime.utcnow(),
+                                   id_usuario_cadstro=current_user.id)
             database.session.add(agencia)
             database.session.commit()
             flash("Agencia cadastrada com sucesso!", 'alert-success')
@@ -818,7 +825,9 @@ def cadastro_fornecedor_banco():
         cadastro_agencia = AgenciaBanco(agencia=form_agencia.agencia.data,
                                         digito_agencia=form_agencia.digito_agencia.data,
                                         id_banco=form_agencia.id_banco.data,
-                                        apelido_agencia=form_agencia.apelido_agencia.data)
+                                        apelido_agencia=form_agencia.apelido_agencia.data,
+                                        data_cadastro=datetime.utcnow(),
+                                        id_usuario_cadastro=current_user.id)
         database.session.add(cadastro_agencia)
         database.session.commit()
         cad_banco = ClientesFornecedores(nome_fantasia=form.nome_fantasia.data,
@@ -835,7 +844,8 @@ def cadastro_fornecedor_banco():
                                             telefone3=form.telefone3.data,
                                             email=form.email.data, obs=form.obs.data,
                                             tipo_cadastro=int(form.tipo_cadastro.data),
-                                            id_usuario_cadastro=int(current_user.id))
+                                            id_usuario_cadastro=int(current_user.id),
+                                            data_cadastro=datetime.utcnow())
         database.session.add(cad_banco)
         database.session.commit()
         banco_cadastrado = ClientesFornecedores.query.filter_by(cnpj=trata_documento(form.cnpj.data)).first()
@@ -870,6 +880,8 @@ def editar_agencias_bancarias(id_agencia):
         if 'finalizar' in request.form:
             form_agencia.populate_obj(agencia)
             agencia.id_cliente = form_agencia.id_cliente.data
+            agencia.id_usuario_cadastro = datetime.utcnow()
+            agencia.id_usuario_cadastro = current_user.id
             database.session.commit()
             flash("Agencia editada com sucesso!", 'alert-success')
             return redirect(url_for('agencias_bancarias', id_agencia=id_agencia))
