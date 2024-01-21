@@ -220,6 +220,8 @@ class CartaoCredito(database.Model):
     valor_limite = database.Column(database.Float, nullable=False)
     valor_gasto = database.Column(database.Float, default=0)
     valor_disponivel = database.Column(database.Float)
+    situacao_cartao = database.Column(database.Integer, default=1)# 1 - Ativo,
+    # 2 - Bloqueado, 3 - Temporariamente Bloqueado
     data_cadastro = database.Column(database.DateTime, default=datetime.utcnow())
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
@@ -228,6 +230,7 @@ class CartaoCredito(database.Model):
 class FaturaCartaoCredito(database.Model):
     __tablename__ = 'fatura_cartao_credito'
     id = database.Column(database.Integer, primary_key=True)
+    cod_fatura = database.Column(database.String, unique=True, nullable=False)
     id_cartao_credito = database.Column(database.Integer, database.ForeignKey('cartao_credito.id'))
     valor_fatura = database.Column(database.Float, default=0)
     data_inicial = database.Column(database.DateTime)

@@ -14,7 +14,7 @@ def criar_deletar_db(cod):
         with app.app_context():
             database.drop_all()
 
-criar_deletar_db(2)
+# criar_deletar_db(2)
 criar_deletar_db(1)
 
 
