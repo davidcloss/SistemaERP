@@ -12,70 +12,9 @@ from ERP.models import CartaoCredito, FaturaCartaoCredito, GeneroRoupa
 from flask_login import login_user, logout_user, current_user, login_required
 import secrets
 from datetime import datetime, timedelta
-from calendar import monthrange
 import os
 from PIL import Image
 from sqlalchemy import or_, and_
-
-
-
-def gera_cod_fatura(id_cartao, data_inicial, data_final, data_pgto):
-    cod_fatura = f'C{id_cartao}DI{data_inicial}DF{data_final}DP{data_pgto}'
-    return cod_fatura
-
-
-def ajuste_datas(dia, data_referencia):
-    mes_referencia = data_referencia.month
-    ano_referencia = data_referencia.year
-    if data_referencia.day >= dia:
-        ultimo_dia_mes_referencia = data_referencia.replace(day=monthrange(data_referencia.year, data_referencia.month)[1])
-        if dia <= ultimo_dia_mes_referencia.day:
-            data = datetime.strptime(f'{dia}/{mes_referencia}/{ano_referencia}', '%d/%m/%Y')
-        else:
-            mes_referencia += 1
-            if mes_referencia <= 12:
-                data = datetime.strptime(f'1/{mes_referencia}/{ano_referencia}')
-            else:
-                mes_referencia = 1
-                ano_referencia += 1
-                data = datetime.strptime(f'1/{mes_referencia}/{ano_referencia}')
-    else:
-        mes_referencia -= 1
-        if mes_referencia >= 1:
-            data = datetime.strptime(f'{dia}/{mes_referencia}/{ano_referencia}')
-        else:
-            mes_referencia = 12
-            ano_referencia -= 1
-            data = datetime.strptime(f'{dia}/{mes_referencia}/{ano_referencia}')
-    return data
-
-
-def calcula_datas_fatura(cartao):
-    data_atual = datetime.utcnow()
-    data_atual.replace(hour=0, minute=0, second=0)
-    data_inicial = ajuste_datas(cartao.dia_inicial, data_atual)
-    data_final = ajuste_datas(cartao.dia_final, data_atual)
-    data_pgto = ajuste_datas(cartao.dia_pgto, data_atual)
-    cod_fatura = gera_cod_fatura(cartao.id, data_inicial, data_final, data_pgto)
-    fatura_cartao = FaturaCartaoCredito.query.get_or_404(cod_fatura)
-    if fatura_cartao:
-        pass
-    else:
-        fatura = FaturaCartaoCredito(cod_fatura=cod_fatura,
-                                     id_cartao_credito=cartao.id,
-                                     data_inicial=data_inicial,
-                                     data_final=data_final,
-                                     data_vcto=data_pgto,
-                                     id_usuario=current_user.id)
-        database.session.add(fatura)
-        database.session.commit()
-
-
-def gera_faturas_cartao():
-    cartoes = CartaoCredito.query.filter(situacao_cartao=1).all()
-    for cartao in cartoes:
-        calcula_datas_fatura(cartao)
-    flash('Faturas cartões de crédito atualizadas com sucesso!', 'alert-info')
 
 
 @login_manager.user_loader
@@ -107,7 +46,6 @@ def criar_conta():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    gera_faturas_cartao()
     form = FormLogin()
     if form.validate_on_submit():
         usuario = Usuarios.query.filter_by(username=form.username.data).first()
@@ -115,6 +53,7 @@ def login():
             login_user(usuario, remember=form.lembrar_dados.data)
             flash(f"Login bem sucedido em: {form.username.data}!", 'alert-success')
             par_next = request.args.get('next')
+
             if par_next:
                 return redirect(par_next)
             else:

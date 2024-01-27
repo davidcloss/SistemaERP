@@ -13,4 +13,15 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'alert-info'
 
+def create_app():
+    app = Flask(__name__)
+    app.config['SECRET_KEY'] = '102da341b643882293e4ddd96d514b8f4505e5df211224c581ac4ea558206856'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///erp.db'
+
+    database.init_app(app)
+    bcrypt.init_app(app)
+    login_manager.init_app(app)
+
+    return app
+
 from ERP import routes
