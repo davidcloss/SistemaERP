@@ -245,3 +245,11 @@ class FaturaCartaoCredito(database.Model):
     data_cadastro = database.Column(database.DateTime, default=datetime.utcnow())
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
+
+
+class CategoriasFinanceiras (database.Model):
+    __tablename_ = 'categorias_financeiras'
+    id = database.Column(database.Integer, primary_key=True)
+    nome_categoria = database.Column(database.String(50), unique=True)
+    tipo_transacao = database.Column(database.Integer, nullable=False) #1 - ativo 2 - inativo 3 - transferencia
+    situacao = database.Column(database.Integer, default=1) #1 - ativo 2 - inativo

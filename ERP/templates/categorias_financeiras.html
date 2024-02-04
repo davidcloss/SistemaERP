@@ -1,0 +1,11 @@
+{% include 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <h2>Dados do Cadastro</h2>
+        <p>Nome Categoria: {{ categoria.nome_categoria }}</p>
+        {% set transacao = nome_tipo_transacao_categoria_financeira(categoria.tipo_transacao) %}
+            <p>Tipo Transação: {{ transacao }}</p>
+        <a href="{{ url_for('editar_categorias_financeiras', transacao_id=categoria.id) }}">Editar</a>
+    </div>
+{% endblock %}

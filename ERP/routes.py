@@ -4,17 +4,33 @@ from ERP.forms import FormCriarConta, FormLogin, FormCadastroCNPJ, FormCadastroE
 from ERP.forms import FormTiposRoupas, FormCores, FormMarcas, FormTamanhos, FormTiposUnidades
 from ERP.forms import FormItensEstoque, FormBancos, FormAgenciaBancoCadastro, FormAgenciaBancoEdicao
 from ERP.forms import FormContaBancariaCadastro, FormContaBancariaEdicao, FormGeneros
-from ERP.forms import FormCartaoCredito
+from ERP.forms import FormCartaoCredito, FormCategoriasFinanceiras
 from ERP.models import Usuarios, CadastroEmpresa, TiposCadastros, ClientesFornecedores, TiposUsuarios
 from ERP.models import TiposRoupas, Cores, Tamanhos, Marcas, TiposUnidades, ItensEstoque
 from ERP.models import TransacoesEstoque, TiposTransacoesEstoque, Bancos, AgenciaBanco, ContasBancarias
-from ERP.models import CartaoCredito, FaturaCartaoCredito, GeneroRoupa
+from ERP.models import CartaoCredito, GeneroRoupa, CategoriasFinanceiras
 from flask_login import login_user, logout_user, current_user, login_required
 import secrets
 from datetime import datetime, timedelta
 import os
 from PIL import Image
 from sqlalchemy import or_, and_
+
+
+def nome_tipo_transacao_categoria_financeira(tipo_transacao):
+    tipo_transacao = int(tipo_transacao)
+    if tipo_transacao == 1:
+        nome = 'Receita'
+    elif tipo_transacao == 2:
+        nome = 'Despesa'
+    elif tipo_transacao == 3:
+        nome = 'Transferência'
+    else:
+        nome = 'Erro'
+    return nome
+
+
+app.template_global()(nome_tipo_transacao_categoria_financeira)
 
 
 @login_manager.user_loader
@@ -71,7 +87,7 @@ def trata_documento(doc):
     return doc
 
 
-#TODO: TRazer datas ajustadas para horário local
+#TODO: Trazer datas ajustadas para horário local
 @app.route('/clientesfornecedores/cnpj/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_cnpj():
@@ -1062,3 +1078,49 @@ def editar_cartao(id_cartao):
         flash('Cartão atualizado com sucesso!', 'alert-success')
         return redirect(url_for('cartao_credito', id_cartao=cartao.id))
     return render_template('cadastro_cartao_credito.html', form=form)
+
+
+tipos_transacoes_financeiras = [(1, 'Receita'), (2, 'Despesa'), (3, 'Transferência')]
+
+
+@app.route('/financeiro/categoriasfinanceiras/cadastrar', methods=['GET', 'POST'])
+@login_required
+def criar_categorias_financeiras():
+    form = FormCategoriasFinanceiras()
+    form.tipo_transacao.choices = [(tipo_id, tipo_nome) for tipo_id, tipo_nome in tipos_transacoes_financeiras]
+    if form.validate_on_submit():
+        categorias = CategoriasFinanceiras()
+        form.populate_obj(categorias)
+        database.session.add(categorias)
+        database.session.commit()
+        transacao = CategoriasFinanceiras.query.filter_by(nome_categoria=categorias.nome_categoria).first()
+        flash('Categoria cadastrada com sucesso', 'alert-success')
+        return redirect(url_for('categorias_financeiras', transacao_id=transacao.id))
+    return render_template('cadastro_categorias_financeiras.html', form=form)
+
+
+@app.route('/financeiro/categoriasfinanceiras/<transacao_id>')
+@login_required
+def categorias_financeiras(transacao_id):
+    categoria = CategoriasFinanceiras.query.get_or_404(transacao_id)
+    return render_template('categorias_financeiras.html', categoria=categoria)
+
+
+@app.route('/financeiro/categoriasfinanceiras/<transacao_id>/editar', methods=['GET', 'POST'])
+@login_required
+def editar_categorias_financeiras(transacao_id):
+    categoria = CategoriasFinanceiras.query.get_or_404(transacao_id)
+    form = FormCategoriasFinanceiras(obj=categoria)
+    form.tipo_transacao.choices = [(tipo_id, tipo_nome) for tipo_id, tipo_nome in tipos_transacoes_financeiras]
+    if form.validate_on_submit():
+        form.populate_obj(categoria)
+        database.session.commit()
+        flash('Edição realizada com sucesso.', 'alert-success')
+        return redirect(url_for('categorias_financeiras', transacao_id=categoria.id))
+    return render_template('editar_categorias_financeiras.html', form=form)
+
+
+@app.route('/financeiro/lançamentosfinanceiros/criar', methods=['GET', 'POST'])
+@login_required
+def criar_lancamentos_financeiros():
+    return render_template('criar_lancamentos_financeiros.html')

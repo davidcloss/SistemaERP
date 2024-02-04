@@ -178,3 +178,9 @@ class FormCartaoCredito(FlaskForm):
     dia_pgto = IntegerField('Dia de vencimento da fatura', validators=[DataRequired(message='Favor incluir dia de vencimento da fatura')])
     valor_limite = StringField('Limite cartão de crédito', validators=[DataRequired(message='Favor incluir o valor limite de seu cartão de crédito')])
     botao_submit = SubmitField('Cadastrar')
+
+
+class FormCategoriasFinanceiras(FlaskForm):
+    nome_categoria = StringField('Nome Categoria', validators=[DataRequired(message='Favor inserir categoria')])
+    tipo_transacao = SelectField('Tipo transação')
+    botao_submit = SubmitField('Cadastrar')
