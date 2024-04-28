@@ -3,7 +3,6 @@ from ERP.models import TiposCadastros, TiposUsuarios, SituacoesUsuarios, TiposRo
 from ERP.models import Tamanhos, Cores, Marcas, ItensEstoque, TiposTransacoesEstoque, TiposUnidades
 from ERP.models import GeneroRoupa
 from datetime import datetime
-import sqlite3 as sql
 
 
 def criar_deletar_db(cod):

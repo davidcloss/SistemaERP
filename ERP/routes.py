@@ -13,7 +13,6 @@ from flask_login import login_user, logout_user, current_user, login_required
 import secrets
 from datetime import datetime, timedelta
 import os
-from PIL import Image
 from sqlalchemy import or_, and_
 
 
