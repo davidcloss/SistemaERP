@@ -5,24 +5,24 @@ from ERP.models import GeneroRoupa
 from datetime import datetime
 
 
-def criar_deletar_db(cod):
-    if cod == 1:
-        with app.app_context():
-            database.create_all()
-    elif cod == 2:
-        with app.app_context():
-            database.drop_all()
+# def criar_deletar_db(cod):
+#     if cod == 1:
+#         with app.app_context():
+#             database.create_all()
+#     elif cod == 2:
+#         with app.app_context():
+#             database.drop_all()
+#
+# criar_deletar_db(2)
+# criar_deletar_db(1)
 
-criar_deletar_db(2)
-criar_deletar_db(1)
 
-
-tipos_usuario = ['Gerente', 'Financeiro(a)', 'Vendedor(a)', 'Administrador(a)', 'Supervisor(a)', 'Coordenador(a)']
-with app.app_context():
-    for tipo in tipos_usuario:
-        tipo_usu = TiposUsuarios(nome_tipo=tipo)
-        database.session.add(tipo_usu)
-        database.session.commit()
+# tipos_usuario = ['Gerente', 'Financeiro(a)', 'Vendedor(a)', 'Administrador(a)', 'Supervisor(a)', 'Coordenador(a)']
+# with app.app_context():
+#     for tipo in tipos_usuario:
+#         tipo_usu = TiposUsuarios(nome_tipo=tipo)
+#         database.session.add(tipo_usu)
+#         database.session.commit()
 
 with app.app_context():
     usuario = Usuarios(username='GERENTE',

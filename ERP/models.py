@@ -141,7 +141,6 @@ class ItensEstoque(database.Model):
     valor_estoque_venda = database.Column(database.Float)
     valor_unitario_medio_venda = database.Column(database.Float)
     qtd_minima = database.Column(database.Float)
-    data_cadastro = database.Column(database.DateTime, default=datetime.utcnow())
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
 

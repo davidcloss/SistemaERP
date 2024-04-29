@@ -1,3 +1,12 @@
+CREATE TABLE auditoria (
+    id SERIAL PRIMARY KEY,
+    table_name VARCHAR(255) NOT NULL,
+    operation VARCHAR(50) NOT NULL,
+    old_data JSONB,
+    new_data JSONB,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE usuarios (
     id SERIAL PRIMARY KEY,
     username VARCHAR(100) UNIQUE NOT NULL,
