@@ -16,6 +16,14 @@ import os
 from sqlalchemy import or_, and_
 
 
+def retorna_dados_curent_user():
+    usuario = Usuarios.query.filter_by(id=current_user.id).first()
+    return usuario
+
+
+app.add_template_global(retorna_dados_curent_user, 'current_user_data')
+
+
 def nome_tipo_transacao_categoria_financeira(tipo_transacao):
     tipo_transacao = int(tipo_transacao)
     if tipo_transacao == 1:
@@ -29,7 +37,7 @@ def nome_tipo_transacao_categoria_financeira(tipo_transacao):
     return nome
 
 
-app.template_global()(nome_tipo_transacao_categoria_financeira)
+app.template_global('nome_tipo_transacao_categoria_financeira')
 
 
 @login_manager.user_loader
@@ -48,7 +56,7 @@ def criar_conta():
     form = FormCriarConta()
     form.tipo_usuario.choices = [(tipo.id, tipo.nome_tipo) for tipo in TiposUsuarios.query.all()]
     if form.validate_on_submit():
-        senha_crip = bcrypt.generate_password_hash(form.senha.data)
+        senha_crip = bcrypt.generate_password_hash(form.senha.data).decode('UTF-8')
         usuario = Usuarios(username=form.username.data,
                            senha=senha_crip,
                            tipo_usuario=int(form.tipo_usuario.data))
@@ -76,6 +84,18 @@ def login():
         else:
             flash(f"Usuário ou senha incorretos ou não cadastrados!", 'alert-danger')
     return render_template('login.html', form=form)
+
+
+@app.route('/sair')
+@login_required
+def sair():
+    if current_user.is_authenticated:
+        usuario_id = current_user.id
+        logout_user()
+        session.pop('logged_in', None)
+        session.clear()
+        flash(f"Logout realizado com sucesso!", 'alert-success')
+    return redirect(url_for('login'))
 
 
 def trata_documento(doc):

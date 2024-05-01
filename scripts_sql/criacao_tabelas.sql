@@ -7,6 +7,18 @@ CREATE TABLE auditoria (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE situacoes_usuarios (
+    id SERIAL PRIMARY KEY,
+    nome_situacao VARCHAR(70),
+    data_cadastro TIMESTAMP
+);
+
+CREATE TABLE tipos_usuarios (
+    id SERIAL PRIMARY KEY,
+    nome_tipo VARCHAR(70) NOT NULL UNIQUE,
+    data_cadastro TIMESTAMP
+);
+
 CREATE TABLE usuarios (
     id SERIAL PRIMARY KEY,
     username VARCHAR(100) UNIQUE NOT NULL,
@@ -17,15 +29,6 @@ CREATE TABLE usuarios (
     FOREIGN KEY (situacao) REFERENCES situacoes_usuarios(id),
     FOREIGN KEY (tipo_usuario) REFERENCES tipos_usuarios(id)
 );
-
-
-CREATE TABLE situacoes_usuarios (
-    id SERIAL PRIMARY KEY,
-    nome_situacao VARCHAR(70),
-    data_cadastro TIMESTAMP
-);
-
-
 
 CREATE TABLE clientes_fornecedores (
     id SERIAL PRIMARY KEY,
@@ -64,14 +67,6 @@ CREATE TABLE tipos_cadastro (
     id_usuario_cadastro INTEGER NOT NULL DEFAULT 1,
     FOREIGN KEY (id_usuario_cadastro) REFERENCES usuarios(id)
 );
-
-
-CREATE TABLE tipos_usuarios (
-    id SERIAL PRIMARY KEY,
-    nome_tipo VARCHAR(70) NOT NULL UNIQUE,
-    data_cadastro TIMESTAMP
-);
-
 
 CREATE TABLE cadastro_empresa (
     id SERIAL PRIMARY KEY,

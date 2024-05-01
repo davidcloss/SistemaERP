@@ -1,0 +1,55 @@
+{% if current_user.is_authenticated %}
+    {% set usuario_atual = current_user_data() %}
+    <ul class="navbar-nav nav-font container">
+        <li class="m-1 nav-item">
+            <a class="nav-link" href="">
+                <div class="row">
+                    <img class="icon-navbar" height="100px" width="50px" src="\static\imagens\acordo.svg">
+                </div>
+                Comercial
+            </a>
+        </li>
+    </ul>
+    <ul class="navbar-nav nav-font container">
+        <li class="m-3 nav-item">
+            <a class="nav-link" href="">
+                <div class="row">
+                    <img class="icon-navbar" height="100px" width="50px" src="\static\imagens\estoque-pronto.png">
+                </div>
+                    Estoque
+            </a>
+        </li>
+    </ul>
+    <ul class="navbar-nav nav-font container">
+        <li class="m-3 nav-item">
+            <a class="nav-link" href="">
+                <div class="row">
+                    <img class="icon-navbar" height="100px" width="50px" src="\static\imagens\orcamento.svg">
+                    </div>
+                Financeiro
+            </a>
+        </li>
+    </ul>
+    <ul class="navbar-nav nav-font container">
+        <li class="m-3 nav-item">
+            <a class="nav-link" href="">
+                <div class="col">
+                    <div class="row">
+                    <img class="icon-navbar" height="100px" width="50px" src="\static\imagens\configuracoes.svg">
+                    </div>
+                    Configurações
+                </div>
+            </a>
+        </li>
+    </ul>
+    {% endif %}
+<ul class="navbar-nav ml-auto">
+    {% if usuario_atual %}
+        <li class="nav-item">
+            <a class="nav-link" href="">{{ usuario_atual.nome_usuario }}</a>
+        </li>
+    {% endif %}
+    <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('sair') }}">Sair</a>
+    </li>
+</ul>

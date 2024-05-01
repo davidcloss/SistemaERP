@@ -5,44 +5,16 @@ from ERP.models import GeneroRoupa
 from datetime import datetime
 
 
-# def criar_deletar_db(cod):
-#     if cod == 1:
-#         with app.app_context():
-#             database.create_all()
-#     elif cod == 2:
-#         with app.app_context():
-#             database.drop_all()
-#
+def criar_deletar_db(cod):
+    if cod == 1:
+        with app.app_context():
+            database.create_all()
+    elif cod == 2:
+        with app.app_context():
+            database.drop_all()
+
 # criar_deletar_db(2)
 # criar_deletar_db(1)
-
-
-# tipos_usuario = ['Gerente', 'Financeiro(a)', 'Vendedor(a)', 'Administrador(a)', 'Supervisor(a)', 'Coordenador(a)']
-# with app.app_context():
-#     for tipo in tipos_usuario:
-#         tipo_usu = TiposUsuarios(nome_tipo=tipo)
-#         database.session.add(tipo_usu)
-#         database.session.commit()
-
-with app.app_context():
-    usuario = Usuarios(username='GERENTE',
-                       senha=bcrypt.generate_password_hash('1234567890'),
-                       tipo_usuario=1)
-    database.session.add(usuario)
-    database.session.commit()
-
-
-lista_tipos_cadastro = ['Cliente', 'Fornecedor', 'Cliente/Fornecedor', 'Empresa Própria']
-
-with app.app_context():
-    for tipo in lista_tipos_cadastro:
-        tipos_cadastros = TiposCadastros(nome_tipo=tipo)
-        database.session.add(tipos_cadastros)
-        database.session.commit()
-
-with app.app_context():
-    retorno = TiposCadastros.query.all()
-    print(retorno)
 
 
 sit = ['Ativo', 'Inativo']
@@ -52,11 +24,44 @@ with app.app_context():
         database.session.add(situacao)
         database.session.commit()
 
+
+tipos_usuario = ['Gerente', 'Financeiro(a)', 'Vendedor(a)', 'Administrador(a)', 'Supervisor(a)', 'Coordenador(a)']
+with app.app_context():
+    for tipo in tipos_usuario:
+        tipo_usu = TiposUsuarios(nome_tipo=tipo)
+        database.session.add(tipo_usu)
+        database.session.commit()
+
+with app.app_context():
+    senha = '1234567890'
+    senha_hash = bcrypt.generate_password_hash(senha).decode('UTF-8')
+    usuario = Usuarios(username='GERENTE',
+                       senha=senha_hash,
+                       tipo_usuario=1)
+    database.session.add(usuario)
+    database.session.commit()
+
+
 cores = ['Laranja', 'Vermelho', 'Azul']
 with app.app_context():
     for cor in cores:
         c = Cores(nome_cor=cor)
         database.session.add(c)
+        database.session.commit()
+with app.app_context():
+    retorno = TiposCadastros.query.all()
+    print(retorno)
+
+
+
+
+
+lista_tipos_cadastro = ['Cliente', 'Fornecedor', 'Cliente/Fornecedor', 'Empresa Própria']
+
+with app.app_context():
+    for tipo in lista_tipos_cadastro:
+        tipos_cadastros = TiposCadastros(nome_tipo=tipo)
+        database.session.add(tipos_cadastros)
         database.session.commit()
 
 tipos_roupas = ['Calça', 'Camiseta', 'Jaqueta']
