@@ -51,7 +51,13 @@ def home():
     return render_template('home.html')
 
 
-@app.route('/criarconta', methods=['GET', 'POST'])
+@app.route('/contas')
+@login_required
+def gerenciamento_contas():
+    return render_template('gerenciamento_contas.html')
+
+
+@app.route('/contas/criarconta', methods=['GET', 'POST'])
 def criar_conta():
     form = FormCriarConta()
     form.tipo_usuario.choices = [(tipo.id, tipo.nome_tipo) for tipo in TiposUsuarios.query.all()]
@@ -1143,3 +1149,9 @@ def editar_categorias_financeiras(transacao_id):
 @login_required
 def criar_lancamentos_financeiros():
     return render_template('criar_lancamentos_financeiros.html')
+
+
+@app.route('/home/configuracoes')
+@login_required
+def home_configuracoes():
+    return render_template('home_configuracoes.html')
