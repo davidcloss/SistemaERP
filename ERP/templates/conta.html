@@ -1,0 +1,18 @@
+{% extends 'gerenciamento_contas.html' %}
+{% block editarpubli %}
+<a href="{{ url_for('editar_usuario', id_conta=str(conta_selecionada.id)) }}" class="link-central">
+                <h3 class="m-2 text-start">Editar Conta</h3>
+            </a>
+<a href="{{ url_for('editar_senha', id_conta=str(conta_selecionada.id)) }}" class="link-central">
+                <h3 class="m-2 text-start">Editar Senha</h3>
+            </a>
+{% endblock %}
+{% block central %}
+    <div class="container">
+        <h2>Dados do Usuário</h2>
+        <p>Username: {{ conta_selecionada.username }}</p>
+        <p>Tipo Usuário: {{ tipo_usuario.nome_tipo }}</p>
+        <p>Situação: {{ situacao.nome_situacao }}</p>
+        <p>Data última atualização: {{ converte_data_string2(conta_selecionada.data_cadastro) }}</p>
+    </div>
+{% endblock %}

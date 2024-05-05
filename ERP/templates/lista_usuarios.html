@@ -1,0 +1,40 @@
+{% extends 'gerenciamento_contas.html' %}
+
+{% block central %}
+<div class="container background">
+  <ul class="nav row nav-tabs justify-content-center"> <!-- Adicione a classe justify-content-center para centralizar a lista horizontalmente -->
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ usuario_ativo }} link-tabela text-center" href="{{ url_for('encaminha_lista_usuarios', tipo='1') }}">Usuários Ativos</a>
+    </li>
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ todos_usuarios }} link-tabela text-center" href="{{ url_for('encaminha_lista_usuarios', tipo='2') }}">Todos Usuários</a>
+    </li>
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ usuario_inativo }} link-tabela text-center" href="{{ url_for('encaminha_lista_usuarios', tipo='3') }}">Usuários Inativos</a>
+    </li>
+  </ul>
+
+  <table class="table table-striped table-hover align-middle background">
+    <thead>
+      <tr>
+        <th style="width: 50px;">ID</th>
+        <th style="width: 150px;">Username</th>
+        <th style="width: 120px;">Tipo Usuário</th>
+        <th style="width: 100px;">Situação</th>
+        <th style="width: 160px;">Data Cadastro</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for usuario in usuarios %}
+      <tr>
+        <td><a class="link-tabela" href="{{ url_for('conta', id_conta=str(usuario.id)) }}">{{ usuario.id }}</a></td>
+        <td>{{ usuario.username }}</td>
+        <td>{{ pesquisa_tipo_usuario(usuario.tipo_usuario).nome_tipo }}</td>
+        <td>{{ situacao.query.filter_by(id=usuario.situacao).first().nome_situacao }}</td>
+        <td>Data última atualização: {{ converte_data_string(usuario.data_cadastro) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

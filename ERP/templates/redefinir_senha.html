@@ -1,0 +1,21 @@
+{% extends 'gerenciamento_contas.html' %}
+
+{% block central %}
+    <div class="container">
+        <form method='POST' action="" class="border m-5 p-2">
+            {{ form.csrf_token }}
+            <h3>Editar Senha de {{ usuario.username }}:</h3>
+            <fieldset>
+                <div class="form-group">
+                    {{ form.nova_senha.label(class="form-control-label") }}
+                    {{ form.nova_senha(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.confirmar_nova_senha.label(class="form-control-label") }}
+                    {{ form.confirmar_nova_senha(class="form-control") }}
+                </div>
+            </fieldset>
+            {{ form.botao_submit(class="btn btn-primary m-1") }}
+        </form>
+    </div>
+{% endblock %}

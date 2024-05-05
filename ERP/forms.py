@@ -12,7 +12,8 @@ class FormCriarConta(FlaskForm):
     confirmacao_senha = PasswordField('Confirme sua senha:', validators=[DataRequired(), EqualTo('senha')])
     tipo_usuario = SelectField('Tipo Usuario:')
     botao_submit_criar_conta = SubmitField('Criar conta')
-#TODO: tabela acesso
+
+
     def validate_username(self, username):
         usuario = Usuarios.query.filter_by(username=username.data).first()
         if usuario:
@@ -183,4 +184,23 @@ class FormCartaoCredito(FlaskForm):
 class FormCategoriasFinanceiras(FlaskForm):
     nome_categoria = StringField('Nome Categoria', validators=[DataRequired(message='Favor inserir categoria')])
     tipo_transacao = SelectField('Tipo transação')
+    botao_submit = SubmitField('Cadastrar')
+
+
+class FormEditarUsuario(FlaskForm):
+    tipo_usuario = SelectField('Tipo Usuário')
+    situacao = SelectField('Situação')
+    botao_submit = SubmitField('Cadastrar')
+
+
+class FormEditarSenha(FlaskForm):
+    senha_antiga = PasswordField('Senha Antiga')
+    nova_senha = PasswordField('Nova Senha')
+    confirmar_nova_senha = PasswordField('Confirmar Nova Senha')
+    botao_submit = SubmitField('Cadastrar')
+
+
+class FormRedefinirSenha(FlaskForm):
+    nova_senha = PasswordField('Nova Senha')
+    confirmar_nova_senha = PasswordField('Confirmar Nova Senha')
     botao_submit = SubmitField('Cadastrar')

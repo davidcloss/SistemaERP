@@ -10,13 +10,16 @@
                 </a>
             </div>
             <a href="{{ url_for('criar_conta') }}" class="link-central">
-                <h3 class="m-2 text-start">Criar Conta</h3>
+                <h3 class="m-2 text-start">Criar Usuário</h3>
+            </a>
+            <a href="{{ url_for('lista_usuarios') }}" class="link-central">
+                <h3 class="m-2 text-start">Lista Usuários</h3>
             </a>
             {% block editarpubli %}{% endblock %}
         </div>
         <div class="col-9 text-start p-3">
             <div class="row">
-                <h1>Gerenciamento de contas:</h1>
+                <h1>Gerenciamento de Usuários:</h1>
             </div>
             <div class="row">
                 {% block central %}

@@ -1,0 +1,21 @@
+{% extends 'gerenciamento_contas.html' %}
+
+{% block central %}
+    <div class="container">
+        <form method='POST' action="" class="border m-5 p-2">
+            {{ form.csrf_token }}
+            <h3>Editar Conta:</h3>
+            <fieldset>
+                <div class="form-group">
+                    {{ form.tipo_usuario.label(class="form-control-label") }}
+                    {{ form.tipo_usuario(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.situacao.label(class="form-control-label") }}
+                    {{ form.situacao(class="form-control") }}
+                </div>
+            </fieldset>
+            {{ form.botao_submit(class="btn btn-primary m-1") }}
+        </form>
+    </div>
+{% endblock %}

@@ -3,10 +3,10 @@ from ERP import app, database, bcrypt, login_manager
 from ERP.forms import FormCriarConta, FormLogin, FormCadastroCNPJ, FormCadastroEmpresa, FormCadastroCPF
 from ERP.forms import FormTiposRoupas, FormCores, FormMarcas, FormTamanhos, FormTiposUnidades
 from ERP.forms import FormItensEstoque, FormBancos, FormAgenciaBancoCadastro, FormAgenciaBancoEdicao
-from ERP.forms import FormContaBancariaCadastro, FormContaBancariaEdicao, FormGeneros
-from ERP.forms import FormCartaoCredito, FormCategoriasFinanceiras
+from ERP.forms import FormContaBancariaCadastro, FormContaBancariaEdicao, FormGeneros, FormRedefinirSenha
+from ERP.forms import FormCartaoCredito, FormCategoriasFinanceiras, FormEditarUsuario, FormEditarSenha
 from ERP.models import Usuarios, CadastroEmpresa, TiposCadastros, ClientesFornecedores, TiposUsuarios
-from ERP.models import TiposRoupas, Cores, Tamanhos, Marcas, TiposUnidades, ItensEstoque
+from ERP.models import TiposRoupas, Cores, Tamanhos, Marcas, TiposUnidades, ItensEstoque, SituacoesUsuarios
 from ERP.models import TransacoesEstoque, TiposTransacoesEstoque, Bancos, AgenciaBanco, ContasBancarias
 from ERP.models import CartaoCredito, GeneroRoupa, CategoriasFinanceiras
 from flask_login import login_user, logout_user, current_user, login_required
@@ -14,6 +14,30 @@ import secrets
 from datetime import datetime, timedelta
 import os
 from sqlalchemy import or_, and_
+
+
+def converte_data_string(data):
+    data_formatada = data.strftime('%d/%m/%Y')
+    return data_formatada
+
+
+app.add_template_global(converte_data_string, 'converte_data_string')
+
+
+def converte_data_string2(data):
+    data_formatada = data.strftime('%d/%m/%Y %H:%M')
+    return data_formatada
+
+
+app.add_template_global(converte_data_string2, 'converte_data_string2')
+
+
+def pesquisa_tipo_usuario(id_tipo_usuario):
+    tipo_usuario = TiposUsuarios.query.filter_by(id=id_tipo_usuario).first()
+    return tipo_usuario
+
+
+app.add_template_global(pesquisa_tipo_usuario, 'pesquisa_tipo_usuario')
 
 
 def retorna_dados_curent_user():
@@ -50,14 +74,16 @@ def load_user(user_id):
 def home():
     return render_template('home.html')
 
+# GERENCIAMENTO DE CONTAS
 
-@app.route('/contas')
+@app.route('/usuarios')
 @login_required
 def gerenciamento_contas():
     return render_template('gerenciamento_contas.html')
 
 
-@app.route('/contas/criarconta', methods=['GET', 'POST'])
+@app.route('/usuarios/criarusuario', methods=['GET', 'POST'])
+@login_required
 def criar_conta():
     form = FormCriarConta()
     form.tipo_usuario.choices = [(tipo.id, tipo.nome_tipo) for tipo in TiposUsuarios.query.all()]
@@ -72,6 +98,106 @@ def criar_conta():
         return redirect(url_for('home'))
     return render_template('criar_conta.html', form_criar_conta=form)
 
+
+@app.route('/usuarios/<id_conta>/usuario')
+@login_required
+def conta(id_conta):
+    conta_selecionada = Usuarios.query.filter_by(id=int(id_conta)).first()
+    situacao = SituacoesUsuarios.query.filter_by(id=conta_selecionada.situacao).first()
+    tipo_usuario = TiposUsuarios.query.filter_by(id=conta_selecionada.tipo_usuario).first()
+    return render_template('conta.html', conta_selecionada=conta_selecionada, situacao=situacao, tipo_usuario=tipo_usuario, str=str)
+
+
+@app.route('/usuarios/listausuarios')
+@login_required
+def lista_usuarios():
+    usuario_ativo = False
+    todos_usuarios = False
+    usuario_inativo = False
+    if not session.get('usuario_ativo') and not session.get('todos_usuarios') and not session.get('usuario_inativo'):
+        usuario_ativo = 'active'
+        usuarios = Usuarios.query.filter_by(situacao=1).all()
+    if session.get('usuario_ativo'):
+        session.pop('usuario_ativo', None)
+        usuario_ativo = 'active'
+        usuarios = Usuarios.query.filter_by(situacao=1).all()
+    if session.get('todos_usuarios'):
+        session.pop('todos_usuarios', None)
+        todos_usuarios = 'active'
+        usuarios = Usuarios.query.all()
+    if session.get('usuario_inativo'):
+        session.pop('usuario_inativo', None)
+        usuario_inativo = 'active'
+        usuarios = Usuarios.query.filter_by(situacao=2).all()
+    return render_template('lista_usuarios.html', usuario_ativo=usuario_ativo, todos_usuarios=todos_usuarios, usuario_inativo=usuario_inativo, str=str, situacao=SituacoesUsuarios, usuarios=usuarios)
+
+
+@app.route('/usuarios/listausuarios/enc/<tipo>')
+@login_required
+def encaminha_lista_usuarios(tipo):
+    if tipo == '1':
+        session['usuario_ativo'] = True
+    elif tipo == '2':
+        session['todos_usuarios'] = True
+    elif tipo == '3':
+        session['usuario_inativo'] = True
+    return redirect(url_for('lista_usuarios'))
+
+
+@app.route('/usuarios/<id_conta>/usuario/editar/usuario', methods=['GET', 'POST'])
+@login_required
+def editar_usuario(id_conta):
+    usuario = Usuarios.query.filter_by(id=int(id_conta)).first()
+    form = FormEditarUsuario(obj=usuario)
+    form.tipo_usuario.choices = [(tipo.id, tipo.nome_tipo) for tipo in TiposUsuarios.query.all()]
+    form.situacao.choices = [(situacao.id, situacao.nome_situacao) for situacao in SituacoesUsuarios.query.all()]
+    if form.validate_on_submit():
+        form.populate_obj(usuario)
+        database.session.commit()
+        flash('Usuário atualizado com sucesso!', 'alert-success')
+        return redirect(url_for('conta', id_conta=id_conta))
+    return render_template('editar_conta.html', form=form)
+
+
+@app.route('/usuarios/<id_conta>/usuario/editar/senha', methods=['GET', 'POST'])
+@login_required
+def editar_senha(id_conta):
+    usuario = Usuarios.query.filter_by(id=int(id_conta)).first()
+    form = FormEditarSenha()
+    if form.validate_on_submit():
+        if bcrypt.check_password_hash(usuario.senha, form.senha_antiga.data) and form.nova_senha.data == form.confirmar_nova_senha.data:
+            print('1')
+            usuario.senha = bcrypt.generate_password_hash(form.nova_senha.data).decode('UTF-8')
+            database.session.commit()
+            flash('Senha atualizada com sucesso', 'alert-success')
+            return redirect(url_for('conta', id_conta=id_conta))
+        elif not bcrypt.check_password_hash(usuario.senha, form.senha_antiga.data):
+            print('2')
+            flash('Favor confirme os dados', 'alert-warning')
+        elif form.nova_senha.data != form.confirmar_nova_senha.data:
+            print('3')
+            flash('Favor confirme as senhas inseridas', 'alert-warning')
+        else:
+            flash('Favor contate o suporte', 'alert-danger')
+    return render_template('editar_senha.html', form=form, usuario=usuario)
+
+
+@app.route('/usuarios/<id_conta>/usuario/redefinir/senha', methods=['GET', 'POST'])
+@login_required
+def redefinir_senha(id_conta):
+    usuario = Usuarios.query.filter_by(id=id_conta).first()
+    form = FormRedefinirSenha()
+    if form.validate_on_submit():
+        if form.nova_senha.data == form.confirmar_nova_senha.data:
+            usuario.senha =  bcrypt.generate_password_hash(form.nova_senha.data).decode('UTF-8')
+            database.session.commit()
+            flash('Senha atualizada com sucesso', 'alert-success')
+            return redirect(url_for('conta', id_conta=id_conta))
+        else:
+            flash('Senhas inseridas não são iguais', 'alert-danger')
+    return render_template('redefinir_senha.html', form=form, usuario=usuario)
+
+# LOGIN
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -88,7 +214,7 @@ def login():
             else:
                 return redirect(url_for('home'))
         else:
-            flash(f"Usuário ou senha incorretos ou não cadastrados!", 'alert-danger')
+            flash(f"Usuário ou senha incorretos ou não cadastrados!", 'alert-succcess')
     return render_template('login.html', form=form)
 
 
@@ -96,13 +222,13 @@ def login():
 @login_required
 def sair():
     if current_user.is_authenticated:
-        usuario_id = current_user.id
         logout_user()
         session.pop('logged_in', None)
         session.clear()
         flash(f"Logout realizado com sucesso!", 'alert-success')
     return redirect(url_for('login'))
 
+# COMERCIAL
 
 def trata_documento(doc):
     doc = doc.replace('.', '')
@@ -112,7 +238,6 @@ def trata_documento(doc):
     return doc
 
 
-#TODO: Trazer datas ajustadas para horário local
 @app.route('/clientesfornecedores/cnpj/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_cnpj():
