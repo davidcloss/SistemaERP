@@ -1,13 +1,48 @@
-{% include 'base.html' %}
+{% extends 'clientes_fornecedores.html' %}
 
-{% block content %}
+{% block central %}
     <div class="container-fluid">
-        {% for cliente in clientes_fornecedores %}
-            {% if cliente.cnpj %}
-                <a href="{{ url_for('clientes_fornecedor_cpf_cnpj' , cliente_fornecedor_id=cliente.id, tipo_emp='cnpj') }}"><h2>{{ cliente.id }} {{ cliente.razao_social }}</h2></a>
-            {% else %}
-                <a href="{{ url_for('clientes_fornecedor_cpf_cnpj' , cliente_fornecedor_id=cliente.id, tipo_emp='cpf') }}"><h2>{{ cliente.id }} {{ cliente.nome }}</h2></a>
-            {% endif %}
-        {% endfor %}
-    </div>
+        <ul class="nav row nav-tabs justify-content-center"> <!-- Adicione a classe justify-content-center para centralizar a lista horizontalmente -->
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ cf }} link-tabela text-center" href="{{ url_for('encaminha_lista_clientes_fornecedores', tipo_enc='1') }}">Clientes e Fornecedores</a>
+    </li>
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ c }} link-tabela text-center" href="{{ url_for('encaminha_lista_clientes_fornecedores', tipo_enc='2') }}">Clientes</a>
+    </li>
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ f }} link-tabela text-center" href="{{ url_for('encaminha_lista_clientes_fornecedores', tipo_enc='3') }}">Fornecedores</a>
+    </li>
+  </ul>
+        <table class="table table-striped table-hover align-middle background">
+        <th style="width: 50px;">ID</th>
+        <th style="width: 150px;">Nome</th>
+        <th style="width: 120px;">Tipo Documento</th>
+        <th style="width: 100px;">CPF/CNPJ</th>
+        <th style="width: 100px;">Data Cadastro</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for cliente in clientes_fornecedores %}
+      {% set id_cliente = str(cliente.id) %}
+      <tr>
+          {% if cliente.cnpj %}
+        <td><a class="link-tabela" href="{{ url_for('clientes_fornecedor_cpf_cnpj', cliente_fornecedor_id=str(cliente.id), tipo_emp='cnpj') }}">{{ cliente.id }}</a></td>
+        <td>{{ cliente.nome_fantasia }}</td>
+        <td>CNPJ</td>
+        <td>{{ configura_doscs('cnpj', cliente.cnpj) }}</td>
+        <td>{{ converte_data_string(cliente.data_cadastro) }}</td>
+          {% else %}
+        <td><a class="link-tabela" href="{{ url_for('clientes_fornecedor_cpf_cnpj', cliente_fornecedor_id=str(cliente.id), tipo_emp='cpf') }}">{{ cliente.id }}</a></td>
+        <td>{{ cliente.nome }}</td>
+        <td>CPF</td>
+        <td>{{ configura_doscs('cpf', cliente.cpf) }}</td>
+        <td>{{ converte_data_string(cliente.data_cadastro) }}</td>
+          {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}
+
+cliente_fornecedor_id, tipo_emp)

@@ -43,6 +43,7 @@ class ClientesFornecedores(database.Model):
     data_cadastro = database.Column(database.DateTime)
     tipo_cadastro = database.Column(database.Integer, database.ForeignKey('tipos_cadastro.id'), nullable=False)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False)
+    situacao = database.Column(database.Integer, default=1)# 1 - ativo 2 - inativo
 
     def __str__(self):
         return f"<ClientesFornecedores(id={self.id}, nome_fantasia={self.nome_fantasia}, razao_social={self.razao_social}, cnpj={self.cnpj})>"
@@ -255,3 +256,16 @@ class CategoriasFinanceiras (database.Model):
     data_cadastro = database.Column(database.DateTime)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
+
+
+class Auditoria(database.Model):
+    __tablename__ = 'auditoria'
+    id = database.Column(database.Integer, primary_key=True)
+    table_name = database.Column(database.String(255), nullable=False)
+    operation = database.Column(database.String(50), nullable=False)
+    old_data = database.Column(database.JSON)
+    new_data = database.Column(database.JSON)
+    timestamp = database.Column(database.DateTime, nullable=True)
+
+    def __repr__(self):
+        return f"<Auditoria(id={self.id}, table_name='{self.table_name}', operation='{self.operation}', timestamp='{self.timestamp}')>"

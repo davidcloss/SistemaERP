@@ -2,7 +2,7 @@
     {% set usuario_atual = current_user_data() %}
     <ul class="navbar-nav nav-font container">
         <li class="m-1 nav-item">
-            <a class="nav-link" href="">
+            <a class="nav-link" href="{{ url_for('home_comercial') }}">
                 <div class="row">
                     <img class="icon-navbar" height="100px" width="50px" src="\static\imagens\acordo.svg">
                 </div>

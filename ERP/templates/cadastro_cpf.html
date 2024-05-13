@@ -1,6 +1,6 @@
-{% include 'base.html' %}
+{% extends 'clientes_fornecedores.html' %}
 
-{% block content %}
+{% block central %}
     <div class="container">
         <form method='POST' action="" class="border m-5 p-2">
             {{ form.csrf_token }}
@@ -43,8 +43,8 @@
                     {{ form.cep(class="form-control") }}
                 </div>
                 <div class="form-group">
-                    {{ form.aniversario.label(class="form-control-label") }}
-                    {{ form.aniversario(class="form-control") }}
+                    {{ form.data_aniversario.label(class="form-control-label") }}
+                    {{ form.data_aniversario(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.telefone.label(class="form-control-label") }}

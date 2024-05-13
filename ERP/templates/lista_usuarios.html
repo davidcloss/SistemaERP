@@ -1,7 +1,7 @@
 {% extends 'gerenciamento_contas.html' %}
 
 {% block central %}
-<div class="container background">
+<div class="container">
   <ul class="nav row nav-tabs justify-content-center"> <!-- Adicione a classe justify-content-center para centralizar a lista horizontalmente -->
     <li class="nav-item col m-3">
       <a class="nav-link {{ usuario_ativo }} link-tabela text-center" href="{{ url_for('encaminha_lista_usuarios', tipo='1') }}">Usuários Ativos</a>
@@ -15,8 +15,6 @@
   </ul>
 
   <table class="table table-striped table-hover align-middle background">
-    <thead>
-      <tr>
         <th style="width: 50px;">ID</th>
         <th style="width: 150px;">Username</th>
         <th style="width: 120px;">Tipo Usuário</th>
@@ -31,7 +29,7 @@
         <td>{{ usuario.username }}</td>
         <td>{{ pesquisa_tipo_usuario(usuario.tipo_usuario).nome_tipo }}</td>
         <td>{{ situacao.query.filter_by(id=usuario.situacao).first().nome_situacao }}</td>
-        <td>Data última atualização: {{ converte_data_string(usuario.data_cadastro) }}</td>
+        <td>{{ converte_data_string(usuario.data_cadastro) }}</td>
       </tr>
       {% endfor %}
     </tbody>

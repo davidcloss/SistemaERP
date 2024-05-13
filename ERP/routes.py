@@ -24,6 +24,17 @@ def converte_data_string(data):
 app.add_template_global(converte_data_string, 'converte_data_string')
 
 
+def trata_documento(doc):
+    doc = doc.replace('.', '')
+    doc = doc.replace(',', '')
+    doc = doc.replace('/', '')
+    doc = doc.replace('-', '')
+    return doc
+
+
+app.add_template_global(trata_documento, 'trata_documento')
+
+
 def converte_data_string2(data):
     data_formatada = data.strftime('%d/%m/%Y %H:%M')
     return data_formatada
@@ -61,7 +72,18 @@ def nome_tipo_transacao_categoria_financeira(tipo_transacao):
     return nome
 
 
-app.template_global('nome_tipo_transacao_categoria_financeira')
+app.add_template_global(nome_tipo_transacao_categoria_financeira, 'nome_tipo_transacao_categoria_financeira')
+
+
+def configura_doscs(tipo_doc, doc):
+    if tipo_doc == 'cpf':
+        retorno = f'{doc[0:3]}.{doc[3:6]}.{doc[6:9]}-{doc[9:]}'
+    else:
+        retorno = f'{doc[0:2]}.{doc[2:5]}.{doc[5:9]}/{doc[9:13]}-{doc[13:]}'
+    return retorno
+
+
+app.add_template_global(configura_doscs, 'configura_doscs')
 
 
 @login_manager.user_loader
@@ -166,16 +188,13 @@ def editar_senha(id_conta):
     form = FormEditarSenha()
     if form.validate_on_submit():
         if bcrypt.check_password_hash(usuario.senha, form.senha_antiga.data) and form.nova_senha.data == form.confirmar_nova_senha.data:
-            print('1')
             usuario.senha = bcrypt.generate_password_hash(form.nova_senha.data).decode('UTF-8')
             database.session.commit()
             flash('Senha atualizada com sucesso', 'alert-success')
             return redirect(url_for('conta', id_conta=id_conta))
         elif not bcrypt.check_password_hash(usuario.senha, form.senha_antiga.data):
-            print('2')
             flash('Favor confirme os dados', 'alert-warning')
         elif form.nova_senha.data != form.confirmar_nova_senha.data:
-            print('3')
             flash('Favor confirme as senhas inseridas', 'alert-warning')
         else:
             flash('Favor contate o suporte', 'alert-danger')
@@ -214,7 +233,7 @@ def login():
             else:
                 return redirect(url_for('home'))
         else:
-            flash(f"Usuário ou senha incorretos ou não cadastrados!", 'alert-succcess')
+            flash(f"Usuário ou senha incorretos ou não cadastrados!", 'alert-danger')
     return render_template('login.html', form=form)
 
 
@@ -230,15 +249,18 @@ def sair():
 
 # COMERCIAL
 
-def trata_documento(doc):
-    doc = doc.replace('.', '')
-    doc = doc.replace(',', '')
-    doc = doc.replace('/', '')
-    doc = doc.replace('-', '')
-    return doc
+@app.route('/comercial')
+@login_required
+def home_comercial():
+    return render_template('home_comercial.html')
 
 
-@app.route('/clientesfornecedores/cnpj/cadastro', methods=['GET', 'POST'])
+@app.route('/comercial/clientesefornecedores')
+def clientes_e_fornecedores():
+    return render_template('clientes_fornecedores.html')
+
+
+@app.route('/comercial/clientesfornecedores/cnpj/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_cnpj():
     form = FormCadastroCNPJ()
@@ -274,7 +296,7 @@ def cadastro_cnpj():
     return render_template('cadastro_cnpj.html', form=form)
 
 
-@app.route('/clientesfornecedores/<tipo_emp>/<cliente_fornecedor_id>')
+@app.route('/comercial/clientesfornecedores/<tipo_emp>/<cliente_fornecedor_id>')
 @login_required
 def clientes_fornecedor_cpf_cnpj(cliente_fornecedor_id, tipo_emp):
     cliente_fornecedor = ClientesFornecedores.query.get(cliente_fornecedor_id)
@@ -284,7 +306,8 @@ def clientes_fornecedor_cpf_cnpj(cliente_fornecedor_id, tipo_emp):
         return render_template('cliente_fornecedor_cpf.html', cliente_fornecedor=cliente_fornecedor)
 
 
-@app.route('/clientesfornecedores/cpf/cadastro', methods=['GET', 'POST'])
+
+@app.route('/comercial/clientesfornecedores/cpf/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_cpf():
     form = FormCadastroCPF()
@@ -297,7 +320,7 @@ def cadastro_cpf():
                                         cidade=form.cidade.data,
                                         bairro=form.bairro.data,
                                         uf=form.uf.data, cep=form.cep.data,
-                                        data_aniversario=form.aniversario.data,
+                                        data_aniversario=form.data_aniversario.data,
                                         telefone=form.telefone.data,
                                         telefone2=form.telefone2.data,
                                         telefone3=form.telefone3.data,
@@ -315,11 +338,46 @@ def cadastro_cpf():
     return render_template('cadastro_cpf.html', form=form)
 
 
-@app.route('/clientesfornecedores/lista')
+@app.route('/comercial/clientesfornecedores/lista')
 @login_required
 def lista_clientes_fornecedores():
-    clientes_fornecedores = ClientesFornecedores.query.all()
-    return render_template('lista_clientes_fornecedores.html', clientes_fornecedores=clientes_fornecedores)
+    cf = False
+    c = False
+    f = False
+    if not session.get('cf') and not session.get('c') and not session.get('f'):
+        cf = 'active'
+        clientes_fornecedores = ClientesFornecedores.query.filter_by(situacao=1).all()
+    if session.get('cf'):
+        cf = 'active'
+        session.pop('cf', None)
+        clientes_fornecedores = ClientesFornecedores.query.filter_by(situacao=1).all()
+    if session.get('c'):
+        c = 'active'
+        session.pop('c', None)
+        clientes_fornecedores = ClientesFornecedores.query.filter(
+            and_(ClientesFornecedores.situacao == 1,
+                 ClientesFornecedores.tipo_cadastro.in_([1, 3]))
+        ).all()
+    if session.get('f'):
+        f = 'active'
+        session.pop('f', None)
+        clientes_fornecedores = ClientesFornecedores.query.filter(
+            and_(ClientesFornecedores.situacao == 1,
+                 ClientesFornecedores.tipo_cadastro.in_([2, 3]))
+        ).all()
+    return render_template('lista_clientes_fornecedores.html', str=str, clientes_fornecedores=clientes_fornecedores, cf=cf, c=c, f=f, tipo_cadastro=TiposCadastros)
+
+
+@app.route('/comercial/clientesfornecedores/lista/enc/<tipo_enc>')
+@login_required
+def encaminha_lista_clientes_fornecedores(tipo_enc):
+    if tipo_enc == '1':
+        session['cf'] = True
+    elif tipo_enc == '2':
+        session['c'] = True
+    elif tipo_enc == '3':
+        session['f'] = True
+    return redirect(url_for('lista_clientes_fornecedores'))
 
 
 @app.route('/cadastroinicial', methods=['GET', 'POST'])
@@ -382,10 +440,9 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
                 url_for('clientes_fornecedor_cpf_cnpj', cliente_fornecedor_id=cliente_fornecedor.id, tipo_emp='cnpj'))
         return render_template('cadastro_cnpj.html', form=form)
 
-#TODO: ajustar carregamento datas
+
     elif tipo_emp == 'cpf':
         form = FormCadastroCPF(obj=cliente_fornecedor)
-        form.nome_completo.data = cliente_fornecedor.nome
         form.tipo_cadastro.choices = [(tipo.id, tipo.nome_tipo) for tipo in TiposCadastros.query.all()]
 
         if form.validate_on_submit():
@@ -399,7 +456,7 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
             cliente_fornecedor.cidade = form.cidade.data
             cliente_fornecedor.uf = form.uf.data
             cliente_fornecedor.cep = form.cep.data
-            cliente_fornecedor.data_aniversario = form.aniversario.data
+            cliente_fornecedor.data_aniversario = form.data_aniversario.data
             cliente_fornecedor.telefone = form.telefone.data
             cliente_fornecedor.telefone2 = form.telefone2.data
             cliente_fornecedor.telefone3 = form.telefone3.data
@@ -632,6 +689,7 @@ def cadastro_tiposunidades():
         return redirect(url_for('tipos_unidades', tipos_unidades_id=tipos_unidades.id))
     return render_template('cadastro_tipos_unidades.html', form=form)
 
+
 @app.route('/estoque/tiposunidades/<tipos_unidades_id>', methods=['GET', 'POST'])
 @login_required
 def tipos_unidades(tipos_unidades_id):
@@ -657,12 +715,14 @@ def editar_tipos_unidades(tipos_unidades_id):
 
     return render_template('cadastro_tipos_unidades.html', form=form, tipos_unidades=tipos_unidades)
 
+
 def busca_ultima_transacao_estoque():
     busca = TransacoesEstoque.query.order_by(TransacoesEstoque.id_lote.desc()).first()
     if busca:
         return busca.id + 1
     else:
         return 1
+
 
 @app.route('/estoque/itensestoque/cadastro', methods=['GET', 'POST'])
 @login_required
@@ -721,6 +781,7 @@ def cadastro_itens_estoque():
         flash(f"Cadastro concluído!", 'alert-success')
         return redirect(url_for('itens_estoque_', itens_estoque_id=item_estoque.id))
     return render_template('cadastro_itens_estoque.html', form=form)
+
 
 @app.route('/estoque/tiposunidades/<int:tipos_unidades_id>/edicao', methods=['GET', 'POST'])
 @login_required

@@ -1,6 +1,6 @@
-{% include 'base.html' %}
+{% extends 'clientes_fornecedores.html' %}
 
-{% block content %}
+{% block central %}
     <div class="container">
         <form method='POST' action="" class="border m-5 p-2">
             {{ form.csrf_token }}

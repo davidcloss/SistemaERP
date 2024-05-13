@@ -58,7 +58,7 @@ class FormCadastroCPF(FlaskForm):
     uf = StringField('UF:', validators=[DataRequired()])
     cidade = StringField('Cidade:', validators=[DataRequired()])
     cep = StringField('CEP:', validators=[DataRequired()])
-    aniversario = DateField('Aniversário:', validators=[DataRequired()])
+    data_aniversario = DateField('Aniversário:', validators=[DataRequired()])
     telefone = StringField('Telefone:', validators=[DataRequired()])
     telefone2 = StringField('Telefone 2:')
     telefone3 = StringField('Telefone 3:')
