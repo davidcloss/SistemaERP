@@ -1,8 +1,12 @@
 from ERP import app, database, bcrypt
-from ERP.models import TiposCadastros, TiposUsuarios, SituacoesUsuarios, TiposRoupas, Usuarios
-from ERP.models import Tamanhos, Cores, Marcas, ItensEstoque, TiposTransacoesEstoque, TiposUnidades
 from ERP.models import GeneroRoupa
+from ERP.triggers import Gatilhos
 from datetime import datetime
+from ERP.logs_auditoria import create_audit_trigger
+from ERP.models import Usuarios, SituacoesUsuarios, ClientesFornecedores, TiposCadastros, TiposUsuarios, \
+                       CadastroEmpresa, GeneroRoupa, TiposRoupas, Cores, Tamanhos, Marcas, TiposUnidades, \
+                       ItensEstoque, TiposTransacoesEstoque, TransacoesEstoque, Bancos, AgenciaBanco, \
+                       ContasBancarias, CartaoCredito, FaturaCartaoCredito, CategoriasFinanceiras
 
 
 def criar_deletar_db(cod):
@@ -13,8 +17,25 @@ def criar_deletar_db(cod):
         with app.app_context():
             database.drop_all()
 
-# criar_deletar_db(2)
-# criar_deletar_db(1)
+
+criar_deletar_db(2)
+criar_deletar_db(1)
+
+
+gatilhos = Gatilhos()
+gatilhos.cria_gatilho_data_cadastro()
+gatilhos.cria_gatilhos_tabelas()
+
+
+tabelas = [Usuarios, SituacoesUsuarios, ClientesFornecedores, TiposCadastros, TiposUsuarios, \
+           CadastroEmpresa, GeneroRoupa, TiposRoupas, Cores, Tamanhos, Marcas, TiposUnidades, \
+           ItensEstoque, TiposTransacoesEstoque, TransacoesEstoque, Bancos, AgenciaBanco, \
+           ContasBancarias, CartaoCredito, FaturaCartaoCredito, CategoriasFinanceiras]
+
+# Chamar a função para cada modelo
+with app.app_context():
+    for tab in tabelas:
+        create_audit_trigger(tab)
 
 
 sit = ['Ativo', 'Inativo']
@@ -23,7 +44,6 @@ with app.app_context():
         situacao = SituacoesUsuarios(nome_situacao=s)
         database.session.add(situacao)
         database.session.commit()
-
 
 tipos_usuario = ['Gerente', 'Financeiro(a)', 'Vendedor(a)', 'Administrador(a)', 'Supervisor(a)', 'Coordenador(a)']
 with app.app_context():
@@ -51,10 +71,6 @@ with app.app_context():
 with app.app_context():
     retorno = TiposCadastros.query.all()
     print(retorno)
-
-
-
-
 
 lista_tipos_cadastro = ['Cliente', 'Fornecedor', 'Cliente/Fornecedor', 'Empresa Própria']
 

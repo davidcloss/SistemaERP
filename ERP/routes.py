@@ -4,7 +4,8 @@ from ERP.forms import FormCriarConta, FormLogin, FormCadastroCNPJ, FormCadastroE
 from ERP.forms import FormTiposRoupas, FormCores, FormMarcas, FormTamanhos, FormTiposUnidades
 from ERP.forms import FormItensEstoque, FormBancos, FormAgenciaBancoCadastro, FormAgenciaBancoEdicao
 from ERP.forms import FormContaBancariaCadastro, FormContaBancariaEdicao, FormGeneros, FormRedefinirSenha
-from ERP.forms import FormCartaoCredito, FormCategoriasFinanceiras, FormEditarUsuario, FormEditarSenha
+from ERP.forms import FormCartaoCredito, FormCategoriasFinanceiras, FormEditarUsuario, FormEditarSenha, FormEditarTiposUnidades
+from ERP.forms import FormEditarTiposRoupas, FormEditarCores, FormEditarMarcas, FormEditarTamanhos, FormEditarGeneros
 from ERP.models import Usuarios, CadastroEmpresa, TiposCadastros, ClientesFornecedores, TiposUsuarios
 from ERP.models import TiposRoupas, Cores, Tamanhos, Marcas, TiposUnidades, ItensEstoque, SituacoesUsuarios
 from ERP.models import TransacoesEstoque, TiposTransacoesEstoque, Bancos, AgenciaBanco, ContasBancarias
@@ -14,6 +15,17 @@ import secrets
 from datetime import datetime, timedelta
 import os
 from sqlalchemy import or_, and_
+
+
+def situacao_retorno(sit):
+    if sit == 1:
+        retorno = 'Ativo'
+    elif sit == 2:
+        retorno = 'Inativo'
+    return retorno
+
+
+app.add_template_global(situacao_retorno, 'situacao_retorno')
 
 
 def converte_data_string(data):
@@ -84,6 +96,10 @@ def configura_doscs(tipo_doc, doc):
 
 
 app.add_template_global(configura_doscs, 'configura_doscs')
+
+
+def retorna_tupla_situacao():
+    return [(1, 'Ativo'), (2, 'Inativo')]
 
 
 @login_manager.user_loader
@@ -440,7 +456,6 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
                 url_for('clientes_fornecedor_cpf_cnpj', cliente_fornecedor_id=cliente_fornecedor.id, tipo_emp='cnpj'))
         return render_template('cadastro_cnpj.html', form=form)
 
-
     elif tipo_emp == 'cpf':
         form = FormCadastroCPF(obj=cliente_fornecedor)
         form.tipo_cadastro.choices = [(tipo.id, tipo.nome_tipo) for tipo in TiposCadastros.query.all()]
@@ -466,21 +481,40 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
             cliente_fornecedor.data_cadastro = datetime.utcnow()
             database.session.commit()
 
-
             flash('Cadastro atualizado com sucesso!', 'alert-success')
             return redirect(
                 url_for('clientes_fornecedor_cpf_cnpj', cliente_fornecedor_id=cliente_fornecedor.id, tipo_emp='cpf'))
 
         return render_template('cadastro_cpf.html', form=form)
-#TODO: corrigir selectfield
+
+# ESTOQUE
+
+@app.route('/estoque')
+@login_required
+def home_estoque():
+    return render_template('home_estoque.html')
 
 
-@app.route('/estoque/tiporoupa/cadastro', methods=['GET', 'POST'])
+@app.route('/estoque/atributosdeestoque')
+@login_required
+def atributos_estoque():
+    return render_template('atributos_estoque.html')
+
+# Atributos Estoque
+
+@app.route('/estoque/atributosdeestoque/tiporoupa')
+@login_required
+def home_tipo_roupa():
+    return render_template('home_tipo_roupa.html')
+
+
+@app.route('/estoque/atributosdeestoque/tiporoupa/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_tipo_roupa():
     form = FormTiposRoupas()
     if form.validate_on_submit():
-        tipo_roupa = TiposRoupas(nome_tipo_roupa=form.nome_tipo_roupa.data)
+        tipo_roupa = TiposRoupas(nome_tipo_roupa=form.nome_tipo_roupa.data,
+                                id_usuario_cadastro=current_user.id)
         database.session.add(tipo_roupa)
         database.session.commit()
         flash(f"Cadastro concluído: {form.nome_tipo_roupa.data}!", 'alert-success')
@@ -488,40 +522,73 @@ def cadastro_tipo_roupa():
         return redirect(url_for('tipo_roupa', tipo_roupa_id=tipo_roupa.id))
     return render_template('cadastro_tipo_roupa.html', form=form)
 
-@app.route('/estoque/tiporoupa/<tipo_roupa_id>')
+
+@app.route('/estoque/atributosdeestoque/tiporoupa/<tipo_roupa_id>')
 @login_required
 def tipo_roupa(tipo_roupa_id):
     tipo_roupa = TiposRoupas.query.get_or_404(tipo_roupa_id)
     return render_template('tipo_roupa.html', tipo_roupa=tipo_roupa)
 
 
-@app.route('/estoque/tiporoupa/<int:tipo_roupa_id>/edicao', methods=['GET', 'POST'])
+@app.route('/estoque/atributosdeestoque/tiporoupa/<int:tipo_roupa_id>/edicao', methods=['GET', 'POST'])
 @login_required
 def editar_tipo_roupa(tipo_roupa_id):
     tipo_roupa = TiposRoupas.query.get_or_404(tipo_roupa_id)
-    form = FormTiposRoupas()
+    tipo_roupa.id_usuario_cadastro = current_user.id
+    form = FormEditarTiposRoupas(obj=tipo_roupa)
+    form.situacao.choices = retorna_tupla_situacao()
 
     if form.validate_on_submit():
-        tipo_roupa.nome_tipo_roupa = form.nome_tipo_roupa.data
+        form.populate_obj(tipo_roupa)
         database.session.commit()
         flash(f"Edição concluída: {form.nome_tipo_roupa.data}!", 'alert-success')
         return redirect(url_for('tipo_roupa', tipo_roupa_id=tipo_roupa.id))
 
-
-    elif request.method == 'GET':
-        form.nome_tipo_roupa.data = tipo_roupa.nome_tipo_roupa
-
-        return render_template('cadastro_tipo_roupa.html', form=form, tipo_roupa=tipo_roupa)
-
-    return render_template('cadastro_tipo_roupa.html', tipo_roupa=tipo_roupa, form=form)
+    return render_template('editar_tipo_roupa.html', tipo_roupa=tipo_roupa, form=form)
 
 
-@app.route('/estoque/cores/cadastro', methods=['GET', 'POST'])
+@app.route('/estoque/atributosdeestoque/tiporoupa/lista')
+@login_required
+def lista_tipo_roupa():
+    tipo_roupa_ativo = False
+    tipo_roupa_inativo = False
+    if not session.get('tipo_roupa_ativo') and not session.get('tipo_roupa_inativo'):
+        tipo_roupa_ativo = 'active'
+        tipos_roupas = TiposRoupas.query.filter_by(situacao=1).order_by(TiposRoupas.nome_tipo_roupa).all()
+    if session.get('tipo_roupa_ativo'):
+        tipo_roupa_ativo = 'active'
+        session.pop('tipo_roupa_ativo', None)
+        tipos_roupas = TiposRoupas.query.filter_by(situacao=1).order_by(TiposRoupas.nome_tipo_roupa).all()
+    if session.get('tipo_roupa_inativo'):
+        tipo_roupa_inativo = 'active'
+        session.pop('tipo_roupa_inativo', None)
+        tipos_roupas = TiposRoupas.query.filter_by(situacao=2).order_by(TiposRoupas.nome_tipo_roupa).all()
+    return render_template('lista_tipos_roupas.html', str=str, tipo_roupa_ativo=tipo_roupa_ativo, tipo_roupa_inativo=tipo_roupa_inativo, tipos_roupas=tipos_roupas)
+
+
+@app.route('/estoque/atributosdeestoque/tiporoupa/lista/enc/<situacao>')
+@login_required
+def encaminha_lista_tipo_roupa(situacao):
+    if situacao == '1':
+        session['tipo_roupa_ativo'] = True
+    elif situacao == '2':
+        session['tipo_roupa_inativo'] = True
+    return redirect(url_for('lista_tipo_roupa'))
+
+
+@app.route('/estoque/atributosdeestoque/cores')
+@login_required
+def home_cores():
+    return render_template('home_cores.html')
+
+
+@app.route('/estoque/atributosdeestoque/cores/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_cores():
     form = FormCores()
     if form.validate_on_submit():
-        cor = Cores(nome_cor=form.nome_cor.data)
+        cor = Cores(nome_cor=form.nome_cor.data,
+                    id_usuario_cadastro=current_user.id)
         database.session.add(cor)
         database.session.commit()
         flash(f"Cadastro concluído: {form.nome_cor.data}!", 'alert-success')
@@ -530,7 +597,36 @@ def cadastro_cores():
     return render_template('cadastro_cores.html', form=form)
 
 
-@app.route('/estoque/cores/<cor_id>')
+@app.route('/estoque/atributosdeestoque/cores/lista')
+@login_required
+def lista_cores():
+    cor_ativo = False
+    cor_inativo = False
+    if not session.get('cor_ativo') and not session.get('cor_inativo'):
+        cor_ativo = 'active'
+        cores = Cores.query.filter_by(situacao=1).order_by(Cores.nome_cor).all()
+    if session.get('cor_ativo'):
+        cor_ativo = 'active'
+        session.pop('cor_ativo', None)
+        cores = Cores.query.filter_by(situacao=1).order_by(Cores.nome_cor).all()
+    if session.get('cor_inativo'):
+        cor_inativo = 'active'
+        session.pop('cor_inativo', None)
+        cores = Cores.query.filter_by(situacao=2).order_by(Cores.nome_cor).all()
+    return render_template('lista_cores.html', str=str, cor_ativo=cor_ativo, cor_inativo=cor_inativo, cores=cores)
+
+
+@app.route('/estoque/atributosdeestoque/cores/lista/enc/<situacao>')
+@login_required
+def encaminha_lista_cores(situacao):
+    if situacao == '1':
+        session['cor_ativo'] = True
+    elif situacao == '2':
+        session['cor_inativo'] = True
+    return redirect(url_for('lista_cores'))
+
+
+@app.route('/estoque/atributosdeestoque/cores/<cor_id>')
 @login_required
 def cor(cor_id):
     cor = Cores.query.get_or_404(cor_id)
@@ -541,24 +637,26 @@ def cor(cor_id):
 @login_required
 def editar_cor(cor_id):
     cor = Cores.query.get_or_404(cor_id)
-    form = FormCores()
+    form = FormEditarCores(obj=cor)
+    form.situacao.choices = retorna_tupla_situacao()
 
     if form.validate_on_submit():
-        cor.nome_cor = form.nome_cor.data
+        form.populate_obj(cor)
+        cor.id_usuario_cadastro = current_user.id
         database.session.commit()
         flash(f"Edição concluída: {form.nome_cor.data}!", 'alert-success')
         return redirect(url_for('cor', cor_id=cor.id))
 
-    elif request.method == 'GET':
-        form.nome_cor.data = cor.nome_cor
-
-        return render_template('cadastro_cores.html', form=form, cor=cor)
-
-    return render_template('cadastro_cores.html', form=form, cor=cor)
-#TODO: Lista de marcas, cores,tipo_roupa e etc
+    return render_template('edicao_cor.html', form=form, cor=cor)
 
 
-@app.route('/estoque/marcas/cadastro', methods=['GET', 'POST'])
+@app.route('/estoque/atributosdeestoque/marcas')
+@login_required
+def home_marcas():
+    return render_template('home_marcas.html')
+
+
+@app.route('/estoque/atributosdeestoque/marcas/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_marcas():
     form = FormMarcas()
@@ -573,37 +671,72 @@ def cadastro_marcas():
     return render_template('cadastro_marcas.html', form=form)
 
 
-@app.route('/estoque/marcas/<marca_id>', methods=['GET', 'POST'])
+@app.route('/estoque/atributosdeestoque/marcas/<marca_id>', methods=['GET', 'POST'])
 @login_required
 def marcas(marca_id):
     marca = Marcas.query.get_or_404(marca_id)
     return render_template('marcas.html', marca=marca)
 
 
-@app.route('/estoque/marca/editar/<int:marca_id>', methods=['GET', 'POST'])
+@app.route('/estoque/atributosdeestoque/marcas/lista')
+@login_required
+def lista_marcas():
+    marca_ativo = False
+    marca_inativo = False
+    if not session.get('marca_ativo') and not session.get('marca_inativo'):
+        marca_ativo = 'active'
+        marcas = Marcas.query.filter_by(situacao=1).order_by(Marcas.nome_marca).all()
+    if session.get('marca_ativo'):
+        marca_ativo = 'active'
+        session.pop('marca_ativo', None)
+        marcas = Marcas.query.filter_by(situacao=1).order_by(Marcas.nome_marca).all()
+    if session.get('marca_inativo'):
+        marca_inativo = 'active'
+        session.pop('marca_inativo', None)
+        marcas = Marcas.query.filter_by(situacao=2).order_by(Marcas.nome_marca).all()
+    return render_template('lista_marcas.html', str=str, marca_ativo=marca_ativo, marca_inativo=marca_inativo, marcas=marcas)
+
+
+@app.route('/estoque/atributosdeestoque/marcas/lista/enc/<situacao>')
+@login_required
+def encaminha_lista_marcas(situacao):
+    if situacao == '1':
+        session['marca_ativo'] = True
+    elif situacao == '2':
+        session['marca_inativo'] = True
+    return redirect(url_for('lista_marcas'))
+
+
+@app.route('/estoque/atributosdeestoque/marcas/<int:marca_id>/editar', methods=['GET', 'POST'])
 @login_required
 def editar_marca(marca_id):
     marca = Marcas.query.get_or_404(marca_id)
-    form = FormMarcas()
+    form = FormEditarMarcas(obj=marca)
+    form.situacao.choices = retorna_tupla_situacao()
 
     if form.validate_on_submit():
-        marca.nome_marca = form.nome_marca.data
+        form.populate_obj(marca)
+        marca.id_usuario_cadastro = current_user.id
         database.session.commit()
         flash(f"Edição concluída: {form.nome_marca.data}!", 'alert-success')
         return redirect(url_for('marcas', marca_id=marca.id))
 
-    elif request.method == 'GET':
-        form.nome_marca.data = marca.nome_marca
-
-    return render_template('cadastro_marcas.html', form=form, marca=marca)
+    return render_template('edicao_marca.html', form=form, marca=marca)
 
 
-@app.route('/estoque/tamanhos/cadastro', methods=['GET', 'POST'])
+@app.route('/estoque/atributosdeestoque/tamanhos')
+@login_required
+def home_tamanhos():
+    return render_template('home_tamanhos.html')
+
+
+@app.route('/estoque/atributosdeestoque/tamanhos/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_tamanhos():
     form = FormTamanhos()
     if form.validate_on_submit():
-        tamanho = Tamanhos(nome_tamanho=form.tamanho.data)
+        tamanho = Tamanhos(nome_tamanho=form.tamanho.data,
+                           id_usuario_cadastro=current_user.id)
         database.session.add(tamanho)
         database.session.commit()
         flash(f"Cadastro concluído: {form.tamanho.data}!", 'alert-success')
@@ -612,37 +745,72 @@ def cadastro_tamanhos():
     return render_template('cadastro_tamanhos.html', form=form)
 
 
-@app.route('/estoque/tamanhos/<tamanho_id>', methods=['GET', 'POST'])
+@app.route('/estoque/atributosdeestoque/tamanhos/<tamanho_id>', methods=['GET', 'POST'])
 @login_required
 def tamanhos(tamanho_id):
     tamanho = Tamanhos.query.get_or_404(tamanho_id)
     return render_template('tamanhos.html', tamanho=tamanho)
 
 
-@app.route('/estoque/tamanho/editar/<int:tamanho_id>', methods=['GET', 'POST'])
+@app.route('/estoque/atributosdeestoque/tamanhos/lista')
+@login_required
+def lista_tamanhos():
+    tamanho_ativo = False
+    tamanho_inativo = False
+    if not session.get('tamanho_ativo') and not session.get('tamanho_inativo'):
+        tamanho_ativo = 'active'
+        tamanhos = Tamanhos.query.filter_by(situacao=1).order_by(Tamanhos.nome_tamanho).all()
+    if session.get('tamanho_ativo'):
+        tamanho_ativo = 'active'
+        session.pop('tamanho_ativo', None)
+        tamanhos = Tamanhos.query.filter_by(situacao=1).order_by(Tamanhos.nome_tamanho).all()
+    if session.get('tamanho_inativo'):
+        tamanho_inativo = 'active'
+        session.pop('tamanho_inativo', None)
+        tamanhos = Tamanhos.query.filter_by(situacao=2).order_by(Tamanhos.nome_tamanho).all()
+    return render_template('lista_tamanhos.html', str=str, tamanho_ativo=tamanho_ativo, tamanho_inativo=tamanho_inativo, tamanhos=tamanhos)
+
+
+@app.route('/estoque/atributosdeestoque/tamanhos/lista/enc/<situacao>')
+@login_required
+def encaminha_lista_tamanhos(situacao):
+    if situacao == '1':
+        session['tamanho_ativo'] = True
+    elif situacao == '2':
+        session['tamanho_inativo'] = True
+    return redirect(url_for('lista_tamanhos'))
+
+
+@app.route('/estoque/atributosdeestoque/tamanhos/<int:tamanho_id>/editar', methods=['GET', 'POST'])
 @login_required
 def editar_tamanho(tamanho_id):
     tamanho = Tamanhos.query.get_or_404(tamanho_id)
-    form = FormTamanhos()
+    form = FormEditarTamanhos(obj=tamanho)
+    form.situacao.choices = retorna_tupla_situacao()
 
     if form.validate_on_submit():
-        tamanho.nome_tamanho = form.tamanho.data
+        form.populate_obj(tamanho)
+        tamanho.id_usuario_cadastro = current_user.id
         database.session.commit()
-        flash(f"Edição concluída: {form.tamanho.data}!", 'alert-success')
+        flash(f"Edição concluída: {form.nome_tamanho.data}!", 'alert-success')
         return redirect(url_for('tamanhos', tamanho_id=tamanho.id))
 
-    elif request.method == 'GET':
-        form.tamanho.data = tamanho.nome_tamanho
-
-    return render_template('cadastro_tamanhos.html', form=form, tamanho=tamanho)
+    return render_template('edicao_tamanho.html', form=form, tamanho=tamanho)
 
 
-@app.route('/estoque/generos/cadastro', methods=['GET', 'POST'])
+@app.route('/estoque/atributosdeestoque/generos')
+@login_required
+def home_generos():
+    return render_template('home_generos.html')
+
+
+@app.route('/estoque/atributosdeestoque/generos/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_generos():
     form = FormGeneros()
     if form.validate_on_submit():
-        genero = GeneroRoupa(nome_genero=form.nome_genero.data)
+        genero = GeneroRoupa(nome_genero=form.nome_genero.data,
+                             id_usuario_cadastro=current_user.id)
         database.session.add(genero)
         database.session.commit()
         flash(f"Cadastro concluído: {form.nome_genero.data}!", 'alert-success')
@@ -651,69 +819,131 @@ def cadastro_generos():
     return render_template('cadastro_generos.html', form=form)
 
 
-@app.route('/estoque/generos/<genero_id>', methods=['GET', 'POST'])
+@app.route('/estoque/atributosdeestoque/generos/<genero_id>', methods=['GET', 'POST'])
 @login_required
 def generos(genero_id):
     genero = GeneroRoupa.query.get_or_404(genero_id)
     return render_template('generos.html', genero=genero)
 
 
-@app.route('/estoque/generos/editar/<int:genero_id>', methods=['GET', 'POST'])
+@app.route('/estoque/atributosdeestoque/generos/lista')
+@login_required
+def lista_generos():
+    genero_ativo = False
+    genero_inativo = False
+    if not session.get('genero_ativo') and not session.get('genero_inativo'):
+        genero_ativo = 'active'
+        generos = GeneroRoupa.query.filter_by(situacao=1).order_by(GeneroRoupa.nome_genero).all()
+    if session.get('genero_ativo'):
+        genero_ativo = 'active'
+        session.pop('genero_ativo', None)
+        generos = GeneroRoupa.query.filter_by(situacao=1).order_by(GeneroRoupa.nome_genero).all()
+    if session.get('genero_inativo'):
+        genero_inativo = 'active'
+        session.pop('genero_inativo', None)
+        generos = GeneroRoupa.query.filter_by(situacao=2).order_by(GeneroRoupa.nome_genero).all()
+    return render_template('lista_generos.html', str=str, genero_ativo=genero_ativo, genero_inativo=genero_inativo, generos=generos)
+
+
+@app.route('/estoque/atributosdeestoque/generos/lista/enc/<situacao>')
+@login_required
+def encaminha_lista_generos(situacao):
+    if situacao == '1':
+        session['genero_ativo'] = True
+    elif situacao == '2':
+        session['genero_inativo'] = True
+    return redirect(url_for('lista_generos'))
+
+
+@app.route('/estoque/atributosdeestoque/generos/<int:genero_id>/editar', methods=['GET', 'POST'])
 @login_required
 def editar_genero(genero_id):
     genero = GeneroRoupa.query.get_or_404(genero_id)
-    form = FormGeneros()
+    form = FormEditarGeneros(obj=genero)
+    form.situacao.choices = retorna_tupla_situacao()
 
     if form.validate_on_submit():
-        genero.nome_genero = form.nome_genero.data
+        form.populate_obj(genero)
+        genero.id_usuario_cadastro = current_user.id
         database.session.commit()
         flash(f"Edição concluída: {form.nome_genero.data}!", 'alert-success')
         return redirect(url_for('generos', genero_id=genero.id))
 
-    elif request.method == 'GET':
-        form.nome_genero.data = genero.nome_genero
-
-    return render_template('cadastro_generos.html', form=form, genero=genero)
+    return render_template('edicao_genero.html', form=form, genero=genero)
 
 
-@app.route('/estoque/tiposunidades/cadastro', methods=['GET', 'POST'])
+@app.route('/estoque/atributosdeestoque/tiposunidades')
 @login_required
-def cadastro_tiposunidades():
+def home_tipos_unidades():
+    return render_template('home_tipos_unidades.html')
+
+
+@app.route('/estoque/atributosdeestoque/tiposunidades/cadastro', methods=['GET', 'POST'])
+@login_required
+def cadastro_tipos_unidades():
     form = FormTiposUnidades()
     if form.validate_on_submit():
-        tipos_unidades = TiposUnidades(nome_tipo_unidade=form.tipo_unidade.data)
+        tipos_unidades = TiposUnidades(nome_tipo_unidade=form.nome_tipo_unidade.data,
+                                       id_usuario_cadastro=current_user.id)
         database.session.add(tipos_unidades)
         database.session.commit()
-        flash(f"Cadastro concluído: {form.tipo_unidade.data}!", 'alert-success')
-        tipos_unidades = TiposUnidades.query.filter_by(nome_tipo_unidade=form.tipo_unidade.data).first()
+        flash(f"Cadastro concluído: {form.nome_tipo_unidade.data}!", 'alert-success')
+        tipos_unidades = TiposUnidades.query.filter_by(nome_tipo_unidade=form.nome_tipo_unidade.data).first()
         return redirect(url_for('tipos_unidades', tipos_unidades_id=tipos_unidades.id))
     return render_template('cadastro_tipos_unidades.html', form=form)
 
 
-@app.route('/estoque/tiposunidades/<tipos_unidades_id>', methods=['GET', 'POST'])
+@app.route('/estoque/atributosdeestoque/tiposunidades/<tipos_unidades_id>', methods=['GET', 'POST'])
 @login_required
 def tipos_unidades(tipos_unidades_id):
     tipos_unidades = TiposUnidades.query.get_or_404(tipos_unidades_id)
     return render_template('tipos_unidades.html', tipos_unidades=tipos_unidades)
-#TODO: ajustar usuarios edição
 
 
-@app.route('/estoque/tiposunidades/<int:tipos_unidades_id>/edicao', methods=['GET', 'POST'])
+@app.route('/estoque/atributosdeestoque/tiposunidades/lista')
+@login_required
+def lista_tipos_unidades():
+    tipos_unidades_ativo = False
+    tipos_unidades_inativo = False
+    if not session.get('tipos_unidades_ativo') and not session.get('tipos_unidades_inativo'):
+        tipos_unidades_ativo = 'active'
+        tipos_unidades = TiposUnidades.query.filter_by(situacao=1).order_by(TiposUnidades.nome_tipo_unidade).all()
+    if session.get('tipos_unidades_ativo'):
+        tipos_unidades_ativo = 'active'
+        session.pop('tipos_unidades_ativo', None)
+        tipos_unidades = TiposUnidades.query.filter_by(situacao=1).order_by(TiposUnidades.nome_tipo_unidade).all()
+    if session.get('tipos_unidades_inativo'):
+        tipos_unidades_inativo = 'active'
+        session.pop('tipos_unidades_inativo', None)
+        tipos_unidades = TiposUnidades.query.filter_by(situacao=2).order_by(TiposUnidades.nome_tipo_unidade).all()
+    return render_template('lista_tipos_unidades.html', str=str, tipos_unidades_ativo=tipos_unidades_ativo, tipos_unidades_inativo=tipos_unidades_inativo, tipos_unidades=tipos_unidades)
+
+
+@app.route('/estoque/atributosdeestoque/tiposunidades/lista/enc/<situacao>')
+@login_required
+def encaminha_lista_tipos_unidades(situacao):
+    if situacao == '1':
+        session['tipos_unidade_ativo'] = True
+    elif situacao == '2':
+        session['tipos_unidades_inativo'] = True
+    return redirect(url_for('lista_tipos_unidades'))
+
+
+@app.route('/estoque/atributosdeestoque/tiposunidades/<int:tipos_unidades_id>/edicao', methods=['GET', 'POST'])
 @login_required
 def editar_tipos_unidades(tipos_unidades_id):
     tipos_unidades = TiposUnidades.query.get_or_404(tipos_unidades_id)
-    form = FormTiposUnidades()
+    form = FormEditarTiposUnidades(obj=tipos_unidades)
+    form.situacao.choices = retorna_tupla_situacao()
 
     if form.validate_on_submit():
-        tipos_unidades.nome_tipo_unidade = form.tipo_unidade.data
+        form.populate_obj(tipos_unidades)
+        tipos_unidades.id_usuario_cadastro = current_user.id
         database.session.commit()
-        flash(f"Edição concluída: {form.tipo_unidade.data}!", 'alert-success')
+        flash(f"Edição concluída: {form.nome_tipo_unidade.data}!", 'alert-success')
         return redirect(url_for('tipos_unidades', tipos_unidades_id=tipos_unidades.id))
 
-    elif request.method == 'GET':
-        form.tipo_unidade.data = tipos_unidades.nome_tipo_unidade
-
-    return render_template('cadastro_tipos_unidades.html', form=form, tipos_unidades=tipos_unidades)
+    return render_template('editar_tipos_unidades.html', form=form, tipos_unidades=tipos_unidades)
 
 
 def busca_ultima_transacao_estoque():

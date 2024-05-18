@@ -1,0 +1,13 @@
+{% extends 'atributos_estoque.html' %}
+
+            {% block menus %}
+            <a href="{{ url_for('cadastro_marcas') }}" class="link-central">
+                <h3 class="m-2 text-start">Cadastro</h3>
+            </a>
+            <a href="{{ url_for('lista_marcas') }}" class="link-central">
+                <h3 class="m-2 text-start">Lista</h3>
+            </a>
+            {% endblock %}
+{% block submenu %}
+<h3>Marcas</h3>
+{% endblock %}

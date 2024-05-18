@@ -1,9 +1,10 @@
-{% include 'base.html' %}
+{% extends 'home_generos.html' %}
 
-{% block content %}
+{% block central %}
     <div class="container">
         <h2>Dados do Cadastro</h2>
         <p>Genero: {{ genero.nome_genero }}</p>
+        <h6>Situação: {{ situacao_retorno(genero.situacao) }}</h6>
         <a href="{{ url_for('editar_genero', genero_id=genero.id) }}">Editar</a>
     </div>
 {% endblock %}

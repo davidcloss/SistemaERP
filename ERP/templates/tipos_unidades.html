@@ -1,9 +1,10 @@
-{% include 'base.html' %}
+{% extends 'home_tipos_unidades.html' %}
 
-{% block content %}
+{% block central %}
     <div class="container">
         <h2>Dados do Cadastro</h2>
         <p>Tipo unidade: {{ tipos_unidades.nome_tipo_unidade }}</p>
+        <h6>Situação: {{ situacao_retorno(tipos_unidades.situacao) }}</h6>
         <a href="{{ url_for('editar_tipos_unidades', tipos_unidades_id=tipos_unidades.id) }}">Editar</a>
     </div>
 {% endblock %}

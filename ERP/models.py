@@ -56,12 +56,14 @@ class TiposCadastros(database.Model):
     tipos_cadastro = database.relationship('ClientesFornecedores', backref='cadastros_tipos', lazy=True)
     data_cadastro = database.Column(database.DateTime)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False, default=1)
+    situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
 
 class TiposUsuarios(database.Model):
     __tablename__ = 'tipos_usuarios'
     id = database.Column(database.Integer, primary_key=True)
     nome_tipo = database.Column(database.String(70), nullable=False, unique=True)
     tipos_usuarios = database.relationship('Usuarios', backref='usuarios_tipo', lazy=True)
+    situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
 
 
 class CadastroEmpresa(database.Model):
@@ -73,6 +75,7 @@ class CadastroEmpresa(database.Model):
     data_cadastro = database.Column(database.DateTime)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
+    situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
 
 
 class GeneroRoupa(database.Model):
@@ -82,6 +85,7 @@ class GeneroRoupa(database.Model):
     data_cadastro = database.Column(database.DateTime)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
+    situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
 
 class TiposRoupas(database.Model):
     __tablename__ = 'tipos_roupas'
@@ -90,6 +94,7 @@ class TiposRoupas(database.Model):
     data_cadastro = database.Column(database.DateTime)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
+    situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
 
 class Cores(database.Model):
     __tablename__ = 'cores'
@@ -98,6 +103,7 @@ class Cores(database.Model):
     data_cadastro = database.Column(database.DateTime)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
+    situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
 
 class Tamanhos(database.Model):
     __tablename__ = 'tamanhos'
@@ -106,6 +112,7 @@ class Tamanhos(database.Model):
     data_cadastro = database.Column(database.DateTime)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
+    situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
 
 class Marcas(database.Model):
     __tablename__ = 'marcas'
@@ -114,6 +121,7 @@ class Marcas(database.Model):
     data_cadastro = database.Column(database.DateTime)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
+    situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
 
 class TiposUnidades(database.Model):
     __tablename__ = 'tipos_unidades'
@@ -122,6 +130,7 @@ class TiposUnidades(database.Model):
     data_cadastro = database.Column(database.DateTime)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
+    situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
 
 class ItensEstoque(database.Model):
     __tablename__ = 'itens_estoque'
@@ -144,6 +153,7 @@ class ItensEstoque(database.Model):
     qtd_minima = database.Column(database.Float)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
+    situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
 
 class TiposTransacoesEstoque(database.Model):
     __tablename__ = 'tipos_transacoes'
@@ -152,6 +162,7 @@ class TiposTransacoesEstoque(database.Model):
     data_cadastro = database.Column(database.DateTime)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
+    situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
 
 class TransacoesEstoque(database.Model):
     __tablename__ = 'transacoes_estoque'
@@ -169,6 +180,8 @@ class TransacoesEstoque(database.Model):
     data_cadastro = database.Column(database.DateTime)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
+    situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
+
 
 class Bancos(database.Model):
     __tablename__ = 'bancos'
@@ -178,6 +191,8 @@ class Bancos(database.Model):
     data_cadastro = database.Column(database.DateTime)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
+    situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
+
 
 class AgenciaBanco(database.Model):
     __tablename__ = 'agencia_bancos'
@@ -190,6 +205,8 @@ class AgenciaBanco(database.Model):
     data_cadastro = database.Column(database.DateTime)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
+    situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
+
 
 class ContasBancarias(database.Model):
     __tablename__ = 'contas_bancarias'
@@ -207,6 +224,7 @@ class ContasBancarias(database.Model):
     data_cadastro = database.Column(database.DateTime)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
+    situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
 
 
 class CartaoCredito(database.Model):
@@ -225,6 +243,7 @@ class CartaoCredito(database.Model):
     data_cadastro = database.Column(database.DateTime)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
+    situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
 
 
 class FaturaCartaoCredito(database.Model):
@@ -247,6 +266,7 @@ class FaturaCartaoCredito(database.Model):
                                           default=1)
 
 
+
 class CategoriasFinanceiras (database.Model):
     __tablename__ = 'categorias_financeiras'
     id = database.Column(database.Integer, primary_key=True)
@@ -256,6 +276,7 @@ class CategoriasFinanceiras (database.Model):
     data_cadastro = database.Column(database.DateTime)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
+    situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
 
 
 class Auditoria(database.Model):

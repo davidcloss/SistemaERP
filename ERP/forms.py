@@ -79,8 +79,20 @@ class FormTiposRoupas(FlaskForm):
     botao_submit = SubmitField('Cadastrar')
 
 
+class FormEditarTiposRoupas(FlaskForm):
+    nome_tipo_roupa = StringField('Tipo Roupa:', validators=[DataRequired()])
+    situacao = SelectField('Situação')
+    botao_submit = SubmitField('Cadastrar')
+
+
 class FormCores(FlaskForm):
     nome_cor = StringField('Cor:', validators=[DataRequired()])
+    botao_submit = SubmitField('Cadastrar')
+
+
+class FormEditarCores(FlaskForm):
+    nome_cor = StringField('Cor:', validators=[DataRequired()])
+    situacao = SelectField('Situação')
     botao_submit = SubmitField('Cadastrar')
 
 
@@ -89,8 +101,20 @@ class FormTamanhos(FlaskForm):
     botao_submit = SubmitField('Cadastrar')
 
 
+class FormEditarTamanhos(FlaskForm):
+    nome_tamanho = StringField('Tamanho:', validators=[DataRequired()])
+    situacao = SelectField('Situação')
+    botao_submit = SubmitField('Cadastrar')
+
+
 class FormMarcas(FlaskForm):
     nome_marca = StringField('Marca:', validators=[DataRequired()])
+    botao_submit = SubmitField('Cadastrar')
+
+
+class FormEditarMarcas(FlaskForm):
+    nome_marca = StringField('Marca:', validators=[DataRequired()])
+    situacao = SelectField('Situação')
     botao_submit = SubmitField('Cadastrar')
 
 
@@ -99,8 +123,20 @@ class FormGeneros(FlaskForm):
     botao_submit = SubmitField('Cadastrar')
 
 
+class FormEditarGeneros(FlaskForm):
+    nome_genero = StringField('Genero:', validators=[DataRequired()])
+    situacao = SelectField('Situação')
+    botao_submit = SubmitField('Cadastrar')
+
+
 class FormTiposUnidades(FlaskForm):
-    tipo_unidade = StringField('Tipo unidade:', validators=[DataRequired()])
+    nome_tipo_unidade = StringField('Tipo unidade:', validators=[DataRequired()])
+    botao_submit = SubmitField('Cadastrar')
+
+
+class FormEditarTiposUnidades(FlaskForm):
+    nome_tipo_unidade = StringField('Tipo unidade:', validators=[DataRequired()])
+    situacao = SelectField('Situação')
     botao_submit = SubmitField('Cadastrar')
 
 

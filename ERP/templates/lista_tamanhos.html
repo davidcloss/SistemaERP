@@ -1,0 +1,33 @@
+{% extends 'home_tamanhos.html' %}
+
+{% block central %}
+<div class="container">
+  <ul class="nav row nav-tabs justify-content-center"> <!-- Adicione a classe justify-content-center para centralizar a lista horizontalmente -->
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ tamanho_ativo }} link-tabela text-center" href="{{ url_for('encaminha_lista_tamanhos', situacao='1') }}">Ativos</a>
+    </li>
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ tamanho_inativo}} link-tabela text-center" href="{{ url_for('encaminha_lista_tamanhos', situacao='2') }}">Inativos</a>
+    </li>
+  </ul>
+
+  <table class="table table-striped table-hover align-middle background">
+        <th style="width: 50px;">ID</th>
+        <th style="width: 150px;">Tamanho</th>
+        <th style="width: 100px;">Situação</th>
+        <th style="width: 160px;">Data Cadastro</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for tamanho in tamanhos %}
+      <tr>
+        <td><a class="link-tabela" href="{{ url_for('tamanhos', tamanho_id=str(tamanho.id)) }}">{{ tamanho.id }}</a></td>
+        <td>{{ tamanho.nome_tamanho }}</td>
+        <td>{{ situacao_retorno(tamanho.situacao) }}</td>
+        <td>{{ converte_data_string(tamanho.data_cadastro) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

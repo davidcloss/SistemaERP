@@ -1,0 +1,33 @@
+{% extends 'home_marcas.html' %}
+
+{% block central %}
+<div class="container">
+  <ul class="nav row nav-tabs justify-content-center"> <!-- Adicione a classe justify-content-center para centralizar a lista horizontalmente -->
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ marca_ativo }} link-tabela text-center" href="{{ url_for('encaminha_lista_marcas', situacao='1') }}">Ativos</a>
+    </li>
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ marca_inativo}} link-tabela text-center" href="{{ url_for('encaminha_lista_marcas', situacao='2') }}">Inativos</a>
+    </li>
+  </ul>
+
+  <table class="table table-striped table-hover align-middle background">
+        <th style="width: 50px;">ID</th>
+        <th style="width: 150px;">Marca</th>
+        <th style="width: 100px;">Situação</th>
+        <th style="width: 160px;">Data Cadastro</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for marca in marcas %}
+      <tr>
+        <td><a class="link-tabela" href="{{ url_for('marcas', marca_id=str(marca.id)) }}">{{ marca.id }}</a></td>
+        <td>{{ marca.nome_marca }}</td>
+        <td>{{ situacao_retorno(marca.situacao) }}</td>
+        <td>{{ converte_data_string(marca.data_cadastro) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

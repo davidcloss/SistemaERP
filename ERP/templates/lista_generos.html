@@ -1,0 +1,33 @@
+{% extends 'home_generos.html' %}
+
+{% block central %}
+<div class="container">
+  <ul class="nav row nav-tabs justify-content-center"> <!-- Adicione a classe justify-content-center para centralizar a lista horizontalmente -->
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ genero_ativo }} link-tabela text-center" href="{{ url_for('encaminha_lista_generos', situacao='1') }}">Ativos</a>
+    </li>
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ genero_inativo}} link-tabela text-center" href="{{ url_for('encaminha_lista_generos', situacao='2') }}">Inativos</a>
+    </li>
+  </ul>
+
+  <table class="table table-striped table-hover align-middle background">
+        <th style="width: 50px;">ID</th>
+        <th style="width: 150px;">Gênero</th>
+        <th style="width: 100px;">Situação</th>
+        <th style="width: 160px;">Data Cadastro</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for genero in generos %}
+      <tr>
+        <td><a class="link-tabela" href="{{ url_for('generos', genero_id=str(genero.id)) }}">{{ genero.id }}</a></td>
+        <td>{{ genero.nome_genero }}</td>
+        <td>{{ situacao_retorno(genero.situacao) }}</td>
+        <td>{{ converte_data_string(genero.data_cadastro) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -4,11 +4,15 @@
     <div class="container">
         <form method='POST' action="" class="border m-5 p-2">
             {{ form.csrf_token }}
-            <legend>Cadastro cores:</legend>
+            <h3>Cadastro Cores:</h3>
             <fieldset>
                 <div class="form-group">
                     {{ form.nome_cor.label(class="form-control-label") }}
                     {{ form.nome_cor(class="form-control-label") }}
+                </div>
+                <div class="form-group">
+                    {{ form.situacao.label(class="form-control-label") }}
+                    {{ form.situacao(class="form-control-label") }}
                 </div>
             </fieldset>
             {{ form.botao_submit(class="btn btn-primary m-1") }}

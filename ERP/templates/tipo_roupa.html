@@ -1,9 +1,10 @@
-{% include 'base.html' %}
+{% extends 'home_tipo_roupa.html' %}
 
-{% block content %}
+{% block central %}
     <div class="container">
         <h2>Dados do Cadastro</h2>
-        <p>Tipo roupa: {{ tipo_roupa.nome_tipo_roupa }}</p>
-        <a href="{{ url_for('editar_tipo_roupa', tipo_roupa_id=tipo_roupa.id) }}">Editar</a>
+        <h6>Tipo roupa: {{ tipo_roupa.nome_tipo_roupa }}</h6>
+        <h6>Situação: {{ situacao_retorno(tipo_roupa.situacao) }}</h6>
+        <h6><a href="{{ url_for('editar_tipo_roupa', tipo_roupa_id=tipo_roupa.id) }}">Editar</a></h6>
     </div>
 {% endblock %}

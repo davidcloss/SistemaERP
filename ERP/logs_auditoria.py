@@ -1,9 +1,5 @@
 from ERP import database, app
 from sqlalchemy import text
-from ERP.models import Usuarios, SituacoesUsuarios, ClientesFornecedores, TiposCadastros, TiposUsuarios, \
-                       CadastroEmpresa, GeneroRoupa, TiposRoupas, Cores, Tamanhos, Marcas, TiposUnidades, \
-                       ItensEstoque, TiposTransacoesEstoque, TransacoesEstoque, Bancos, AgenciaBanco, \
-                       ContasBancarias, CartaoCredito, FaturaCartaoCredito, CategoriasFinanceiras
 
 
 
@@ -44,13 +40,3 @@ def create_audit_trigger(model_class):
         print(f"Gatilho de auditoria criado com sucesso para a tabela {table_name}.")
     else:
         print(f"O gatilho de auditoria para a tabela {table_name} já existe.")
-
-tabelas = [Usuarios, SituacoesUsuarios, ClientesFornecedores, TiposCadastros, TiposUsuarios, \
-                       CadastroEmpresa, GeneroRoupa, TiposRoupas, Cores, Tamanhos, Marcas, TiposUnidades, \
-                       ItensEstoque, TiposTransacoesEstoque, TransacoesEstoque, Bancos, AgenciaBanco, \
-                       ContasBancarias, CartaoCredito, FaturaCartaoCredito, CategoriasFinanceiras]
-
-# Chamar a função para cada modelo
-with app.app_context():
-    for tab in tabelas:
-        create_audit_trigger(tab)

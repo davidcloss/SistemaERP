@@ -1,9 +1,10 @@
-{% include 'base.html' %}
+{% extends 'home_marcas.html' %}
 
-{% block content %}
+{% block central %}
     <div class="container">
         <h2>Dados do Cadastro</h2>
-        <p>Tipo roupa: {{ marca.nome_marca }}</p>
-        <a href="{{ url_for('editar_marca', marca_id=marca.id) }}">Editar</a>
+        <h6>Tipo roupa: {{ marca.nome_marca }}</h6>
+        <h6>Situação: {{ situacao_retorno(marca.situacao) }}</h6>
+        <a href="{{ url_for('editar_marca', marca_id=marca.id) }}"><h6>Editar</h6></a>
     </div>
 {% endblock %}

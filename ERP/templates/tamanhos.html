@@ -1,9 +1,10 @@
-{% include 'base.html' %}
+{% extends 'home_tamanhos.html' %}
 
-{% block content %}
+{% block central %}
     <div class="container">
         <h2>Dados do Cadastro</h2>
-        <p>Tipo roupa: {{ tamanho.nome_tamanho }}</p>
+        <h6>Tipo roupa: {{ tamanho.nome_tamanho }}</h6>
+        <h6>Situação: {{ situacao_retorno(tamanho.situacao) }}</h6>
         <a href="{{ url_for('editar_tamanho', tamanho_id=tamanho.id) }}">Editar</a>
     </div>
 {% endblock %}
