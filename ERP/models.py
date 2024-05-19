@@ -149,7 +149,7 @@ class ItensEstoque(database.Model):
     valor_estoque_custo = database.Column(database.Float)
     valor_unitario_medio_custo = database.Column(database.Float)
     valor_estoque_venda = database.Column(database.Float)
-    valor_unitario_medio_venda = database.Column(database.Float)
+    valor_unitario_venda = database.Column(database.Float)
     qtd_minima = database.Column(database.Float)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
@@ -175,7 +175,7 @@ class TransacoesEstoque(database.Model):
     qtd_transacao = database.Column(database.Integer, nullable=False)
     valor_unitario_medio_custo = database.Column(database.Float, nullable=False)
     valor_total_transacao_custo = database.Column(database.Float, nullable=False)
-    valor_unitario_medio_venda = database.Column(database.Float, nullable=False)
+    valor_unitario_venda = database.Column(database.Float, nullable=False)
     valor_total_transacao_venda = database.Column(database.Float, nullable=False)
     data_cadastro = database.Column(database.DateTime)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,

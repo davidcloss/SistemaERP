@@ -1,18 +1,31 @@
-{% include 'base.html' %}
+{% extends 'home_itens_estoque.html' %}
 
-{% block content %}
-    <div class="container">
-        <h2>Dados do Cadastro</h2>
-        <p>Produto: {{ nome_roupa }}</p>
-        <p>Código produto: {{ itens_estoque.codigo_item }}</p>
-        <p>Data última entrada: {{ itens_estoque.data_ultima_entrada }}</p>
-        <p>Data última saída: {{ itens_estoque.data_ultima_saida }}</p>
-        <p>Quantidade estoque: {{ itens_estoque.qtd }}</p>
-        <p>Quantidade mínima: {{ itens_estoque.qtd_minima }}</p>
-        <p>Valor Unitário Médio (custo): R$ {{ itens_estoque.valor_unitario_medio_custo }}</p>
-        <p>Valor total (custo): R$ {{ itens_estoque.valor_estoque_custo }}</p>
-        <p>Valor Unitário (venda): R$ {{ itens_estoque.valor_unitario_medio_venda }}</p>
-        <p>Valor total (venda): R$ {{ itens_estoque.valor_estoque_venda }}</p>
+{% block central %}
 
-    </div>
+<div class="container">
+  <ul class="nav row nav-tabs justify-content-center"> <!-- Adicione a classe justify-content-center para centralizar a lista horizontalmente -->
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ descricao_item }} link-tabela text-center" href="{{ url_for('encaminha_item_estoque', item_estoque_id=itens_estoque_id, situacao='1') }}">Descrição Item</a>
+    </li>
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ transacao_item }} link-tabela text-center" href="{{ url_for('encaminha_item_estoque', item_estoque_id=itens_estoque_id, situacao='2') }}">Transações Estoque</a>
+    </li>
+  </ul>
+  <br>
+  {% block conteudo %}
+  <h2>Dados do Cadastro</h2>
+  <p>Produto: {{ nome_roupa }}</p>
+  <p>Código produto: {{ itens_estoque.codigo_item }}</p>
+  <p>Data última entrada: {{ converte_data_string(itens_estoque.data_ultima_entrada) }}</p>
+  <p>Data última saída: {{ converte_data_string(itens_estoque.data_ultima_saida) }}</p>
+  <p>Quantidade estoque: {{ itens_estoque.qtd }}</p>
+  <p>Quantidade mínima: {{ itens_estoque.qtd_minima }}</p>
+  <p>Valor Unitário Médio (custo): R$ {{ itens_estoque.valor_unitario_medio_custo }}</p>
+  <p>Valor total (custo): R$ {{ itens_estoque.valor_estoque_custo }}</p>
+  <p>Valor Unitário (venda): R$ {{ itens_estoque.valor_unitario_venda }}</p>
+  <p>Valor total (venda): R$ {{ itens_estoque.valor_estoque_venda }}</p>
+  <p>Situação: {{ situacao_retorno(itens_estoque.situacao) }}</p>
+  <p><a href="{{ url_for('edicao_itens_estoque', itens_estoque_id=itens_estoque_id) }}">Editar</a></p>
+  {% endblock %}
+</div>
 {% endblock %}

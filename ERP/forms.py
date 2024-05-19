@@ -155,6 +155,20 @@ class FormItensEstoque(FlaskForm):
     botao_submit = SubmitField('Cadastrar')
 
 
+class FormEditarItensEstoque(FlaskForm):
+    id_tipo_roupa = SelectField('Tipo Roupa')
+    id_genero = SelectField('Genero')
+    id_cor = SelectField('Cor')
+    id_marca = SelectField('Marca')
+    id_tamanho = SelectField('Tamanho')
+    id_tipo_unidade = SelectField('Tipo Unidade')
+    codigo_item = StringField('Código de Barras:', validators=[DataRequired(message='Código Item requerido')])
+    valor_unitario_venda = StringField('Valor unitário: (venda)')
+    qtd_minima = StringField('Quantidade mínima:')
+    situacao = SelectField('Situação')
+    botao_submit = SubmitField('Cadastrar')
+
+
 class FormBancos(FlaskForm):
     cod_banco = StringField('Código Banco', validators=[DataRequired(message='Favor incluir código banco')])
     nome_banco = StringField('Nome Banco', validators=[DataRequired(message='Favor incluir nome banco')])

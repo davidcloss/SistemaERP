@@ -1,6 +1,6 @@
-{% include 'base.html' %}
+{% extends 'home_itens_estoque.html' %}
 
-{% block content %}
+{% block central %}
     <div class="container">
         <form method='POST' action="" class="border m-5 p-2">
             {{ form.csrf_token }}
@@ -8,7 +8,7 @@
             <fieldset>
                 <div class="form-group">
                     {{ form.id_tipo_roupa.label(class="form-control-label") }}
-                    {{ form.id_tipo_roupa(class="form-control-label") }}
+                    {{ form.id_tipo_roupa(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.id_genero.label(class="form-control-label") }}
@@ -16,39 +16,39 @@
                 </div>
                 <div class="form-group">
                     {{ form.id_cor.label(class="form-control-label") }}
-                    {{ form.id_cor(class="form-control-label") }}
+                    {{ form.id_cor(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.id_marca.label(class="form-control-label") }}
-                    {{ form.id_marca(class="form-control-label") }}
+                    {{ form.id_marca(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.id_tamanho.label(class="form-control-label") }}
-                    {{ form.id_tamanho(class="form-control-label") }}
+                    {{ form.id_tamanho(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.id_tipo_unidade.label(class="form-control-label") }}
-                    {{ form.id_tipo_unidade(class="form-control-label") }}
+                    {{ form.id_tipo_unidade(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.codigo_item.label(class="form-control-label") }}
-                    {{ form.codigo_item(class="form-control-label") }}
+                    {{ form.codigo_item(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.qtd_inicial.label(class="form-control-label") }}
-                    {{ form.qtd_inicial(class="form-control-label") }}
+                    {{ form.qtd_inicial(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.valor_total_custo.label(class="form-control-label") }}
-                    {{ form.valor_total_custo(class="form-control-label") }}
+                    {{ form.valor_total_custo(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.valor_unitario_venda.label(class="form-control-label") }}
-                    {{ form.valor_unitario_venda(class="form-control-label") }}
+                    {{ form.valor_unitario_venda(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.qtd_minima.label(class="form-control-label") }}
-                    {{ form.qtd_minima(class="form-control-label") }}
+                    {{ form.qtd_minima(class="form-control") }}
                 </div>
             </fieldset>
             {{ form.botao_submit(class="btn btn-primary m-1") }}

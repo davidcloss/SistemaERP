@@ -1,6 +1,6 @@
-{% include 'base.html' %}
+{% extends 'home_itens_estoque.html' %}
 
-{% block content %}
+{% block central %}
     <div class="container">
         <form method='POST' action="" class="border m-5 p-2">
             {{ form.csrf_token }}
@@ -31,8 +31,16 @@
                     {{ form.id_tipo_unidade(class="form-control") }}
                 </div>
                 <div class="form-group">
+                    {{ form.valor_unitario_venda.label(class="form-control-label") }}
+                    {{ form.valor_unitario_venda(class="form-control") }}
+                </div>
+                <div class="form-group">
                     {{ form.qtd_minima.label(class="form-control-label") }}
                     {{ form.qtd_minima(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.situacao.label(class="form-control-label") }}
+                    {{ form.situacao(class="form-control") }}
                 </div>
             </fieldset>
             {{ form.botao_submit(class="btn btn-primary") }}

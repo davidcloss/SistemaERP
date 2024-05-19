@@ -1,6 +1,8 @@
 from ERP import app, database
 from sqlalchemy import text
 
+# 1 - DATA CADASTRO
+
 
 trigger_data_cadastro = """
     CREATE OR REPLACE FUNCTION atualiza_data_cadastro_function()
@@ -164,6 +166,141 @@ FOR EACH ROW
 EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
 
+
+# 2 - DATA ULTIMA ENTRADA ITEM ESTOQUE = TRANSACAO POSITIVA
+
+
+trigger_data_ultima_entrada_transacoes = """
+    CREATE OR REPLACE FUNCTION atualiza_data_ultima_entrada_transacoes()
+    RETURNS TRIGGER AS $$
+    BEGIN
+        IF NEW.tipo_transacao IN (1, 3, 5) THEN
+            UPDATE itens_estoque
+            SET data_ultima_entrada = NEW.data_transacao
+            WHERE id = NEW.id_item;
+        END IF;
+        RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+"""
+
+
+ativar_tg_data_ultima_entrada_transacoes = """
+    CREATE TRIGGER trg_after_insert_update_transacoes_estoque_entrada
+    BEFORE INSERT OR UPDATE ON transacoes_estoque
+    FOR EACH ROW
+    EXECUTE FUNCTION atualiza_data_ultima_entrada_transacoes();
+"""
+
+
+# 2 - DATA ULTIMA SAIDA ITEM ESTOQUE = TRANSACAO POSITIVA
+
+
+trigger_data_ultima_saida_transacoes = """
+    CREATE OR REPLACE FUNCTION atualiza_data_ultima_saida_transacoes()
+    RETURNS TRIGGER AS $$
+    BEGIN
+        IF NEW.tipo_transacao IN (2, 4, 6) THEN
+            UPDATE itens_estoque
+            SET data_ultima_saida = NEW.data_transacao
+            WHERE id = NEW.id_item;
+        END IF;
+        RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+"""
+
+
+ativar_tg_data_ultima_saida_transacoes = """
+    CREATE TRIGGER trg_after_insert_update_transacoes_estoque_saida
+    BEFORE INSERT OR UPDATE ON transacoes_estoque
+    FOR EACH ROW
+    EXECUTE FUNCTION atualiza_data_ultima_saida_transacoes();
+"""
+
+
+
+# 3 QTD TABELA ITENS_ESTOQUE TODA VEZ QUE ATUALIZA TRANSACOES_ESTOQUE ENTRADA
+
+
+
+
+trigger_atualiza_qtd_estoque_entrada = """
+CREATE OR REPLACE FUNCTION atualiza_quantidade_estoque()
+RETURNS TRIGGER AS $$
+DECLARE
+    entradas FLOAT;
+    saidas FLOAT;
+    custo_entradas FLOAT := 0;
+    custo_saidas FLOAT := 0;
+    qtd_final FLOAT;
+    custo_final FLOAT;
+    valor_unitario_venda_itens_estoque FLOAT;
+BEGIN
+    -- Calcular as entradas
+    SELECT COALESCE(SUM(qtd_transacao), 0)
+    INTO entradas
+    FROM transacoes_estoque
+    WHERE id_item = NEW.id_item
+    AND tipo_transacao IN (1, 3, 5);
+    
+    -- Calcular os custos de entradas
+    SELECT COALESCE(SUM(valor_total_transacao_custo), 0)
+    INTO custo_entradas
+    FROM transacoes_estoque
+    WHERE id_item = NEW.id_item
+    AND tipo_transacao IN (1, 3, 5);
+
+    -- Calcular as saídas
+    SELECT COALESCE(SUM(qtd_transacao), 0)
+    INTO saidas
+    FROM transacoes_estoque
+    WHERE id_item = NEW.id_item
+    AND tipo_transacao IN (2, 4, 6);
+    
+    -- Calcular os custos de saídas
+    SELECT COALESCE(SUM(valor_total_transacao_custo), 0)
+    INTO custo_saidas
+    FROM transacoes_estoque
+    WHERE id_item = NEW.id_item
+    AND tipo_transacao IN (2, 4, 6);
+
+    -- Calcular a quantidade final e o custo final
+    qtd_final := COALESCE(entradas - saidas, 0);
+    custo_final := COALESCE(custo_entradas - custo_saidas, 0);
+
+    -- Obter o valor unitário de venda
+    SELECT valor_unitario_venda
+    INTO valor_unitario_venda_itens_estoque
+    FROM itens_estoque
+    WHERE id = NEW.id_item;
+
+    -- Atualizar a quantidade na tabela itens_estoque
+    UPDATE itens_estoque
+    SET 
+        qtd = qtd_final,
+        valor_estoque_custo = custo_final,
+        valor_unitario_medio_custo = CASE 
+            WHEN qtd_final = 0 THEN 0
+            ELSE custo_final / qtd_final
+        END,
+        valor_estoque_venda = COALESCE(qtd_final * valor_unitario_venda_itens_estoque, 0)
+    WHERE id = NEW.id_item;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+"""
+
+
+ativar_tg_atualiza_qtd_estoque_entrada = """
+    CREATE TRIGGER trg_after_insert_transacoes_estoque_qtd
+    AFTER INSERT OR UPDATE ON transacoes_estoque
+    FOR EACH ROW
+    EXECUTE FUNCTION atualiza_quantidade_estoque();
+"""
+
+
 class Gatilhos:
 
 
@@ -194,3 +331,48 @@ class Gatilhos:
                 statement = text(gatilho)
                 self.database.session.execute(statement)
                 self.database.session.commit()
+
+
+    def ativa_gatilho_data_ultima_entrada_item_estoque(self):
+        with self.app.app_context():
+            self.database.session.execute(text(ativar_tg_data_ultima_entrada_transacoes))
+            self.database.session.commit()
+
+
+    def cria_gatilho_data_ultima_entrada_item_estoque(self):
+        with self.app.app_context():
+            self.database.session.execute(text(trigger_data_ultima_entrada_transacoes))
+            self.database.session.commit()
+        self.ativa_gatilho_data_ultima_entrada_item_estoque()
+
+
+    def ativa_gatilho_data_ultima_saida_item_estoque(self):
+        with self.app.app_context():
+            self.database.session.execute(text(ativar_tg_data_ultima_saida_transacoes))
+            self.database.session.commit()
+
+
+    def cria_gatilho_data_ultima_saida_item_estoque(self):
+        with self.app.app_context():
+            self.database.session.execute(text(trigger_data_ultima_saida_transacoes))
+            self.database.session.commit()
+        self.ativa_gatilho_data_ultima_saida_item_estoque()
+
+
+    def ativa_gatilho_qtd_estoque_entrada(self):
+        with self.app.app_context():
+            self.database.session.execute(text(ativar_tg_atualiza_qtd_estoque_entrada))
+            self.database.session.commit()
+
+
+    def cria_gatilho_atualiza_qtd_estoque_entrada(self):
+        with self.app.app_context():
+            self.database.session.execute(text(trigger_atualiza_qtd_estoque_entrada))
+            self.database.session.commit()
+        self.ativa_gatilho_qtd_estoque_entrada()
+
+
+    def triggers_tabela_item_estoque(self):
+        self.cria_gatilho_data_ultima_entrada_item_estoque()
+        self.cria_gatilho_data_ultima_saida_item_estoque()
+        self.cria_gatilho_atualiza_qtd_estoque_entrada()

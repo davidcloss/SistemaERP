@@ -1,0 +1,32 @@
+{% extends 'home_estoque.html' %}
+
+{% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col-3">
+            <div class="text-start">
+                <a href="{{ url_for('home_itens_estoque') }}">
+                    <img width="200" class="p-3" src="{{ url_for('static', filename='imagens/ordenar.png') }}">
+                </a>
+            </div>
+            <a href="{{ url_for('cadastro_itens_estoque') }}" class="link-central">
+                <h3 class="m-2 text-start">Cadastro Item Estoque</h3>
+            </a>
+            <a href="{{ url_for('lista_itens_estoque') }}" class="link-central">
+                <h3 class="m-2 text-start">Lista Itens Estoque</h3>
+            </a>
+            {% block editarpubli %}{% endblock %}
+        </div>
+        <div class="col-9 text-start p-3">
+            <div class="row">
+                <h1>Itens Estoque:</h1>
+            </div>
+            <div class="row">
+                {% block central %}
+                    <!-- Conteúdo dinâmico que será renderizado no bloco 'central' -->
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

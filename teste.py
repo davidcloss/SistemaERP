@@ -1,5 +1,4 @@
 from ERP import app, database, bcrypt
-from ERP.models import GeneroRoupa
 from ERP.triggers import Gatilhos
 from datetime import datetime
 from ERP.logs_auditoria import create_audit_trigger
@@ -32,6 +31,7 @@ tabelas = [Usuarios, SituacoesUsuarios, ClientesFornecedores, TiposCadastros, Ti
            ItensEstoque, TiposTransacoesEstoque, TransacoesEstoque, Bancos, AgenciaBanco, \
            ContasBancarias, CartaoCredito, FaturaCartaoCredito, CategoriasFinanceiras]
 
+
 # Chamar a função para cada modelo
 with app.app_context():
     for tab in tabelas:
@@ -45,12 +45,14 @@ with app.app_context():
         database.session.add(situacao)
         database.session.commit()
 
+
 tipos_usuario = ['Gerente', 'Financeiro(a)', 'Vendedor(a)', 'Administrador(a)', 'Supervisor(a)', 'Coordenador(a)']
 with app.app_context():
     for tipo in tipos_usuario:
         tipo_usu = TiposUsuarios(nome_tipo=tipo)
         database.session.add(tipo_usu)
         database.session.commit()
+
 
 with app.app_context():
     senha = '1234567890'
@@ -72,13 +74,16 @@ with app.app_context():
     retorno = TiposCadastros.query.all()
     print(retorno)
 
+
 lista_tipos_cadastro = ['Cliente', 'Fornecedor', 'Cliente/Fornecedor', 'Empresa Própria']
+
 
 with app.app_context():
     for tipo in lista_tipos_cadastro:
         tipos_cadastros = TiposCadastros(nome_tipo=tipo)
         database.session.add(tipos_cadastros)
         database.session.commit()
+
 
 tipos_roupas = ['Calça', 'Camiseta', 'Jaqueta']
 with app.app_context():
@@ -87,12 +92,14 @@ with app.app_context():
         database.session.add(t)
         database.session.commit()
 
+
 marcas = ['Mamô', 'Gardana', 'Biamar']
 with app.app_context():
     for mar in marcas:
         m = Marcas(nome_marca=mar)
         database.session.add(m)
         database.session.commit()
+
 
 tamanhos = ['P', 'M', 'G', 'GG']
 with app.app_context():
@@ -101,12 +108,14 @@ with app.app_context():
         database.session.add(t)
         database.session.commit()
 
-tipos_transacoes = ['Entrada', 'Saída', 'Ajuste Estoque +', 'Ajuste Estoque -']
+
+tipos_transacoes = ['Entrada', 'Saída', 'Transferência +', 'Transferência -', 'Ajuste Estoque +', 'Ajuste Estoque -']
 with app.app_context():
     for tipo in tipos_transacoes:
         t = TiposTransacoesEstoque(nome_tipo_transacao=tipo)
         database.session.add(t)
         database.session.commit()
+
 
 tipos_unidades = ['Unidade', 'Metro', 'Centimetro +', 'Kilos', 'Gramas']
 with app.app_context():
@@ -115,11 +124,16 @@ with app.app_context():
         database.session.add(t)
         database.session.commit()
 
+
 tipos_generos = ['Masculino', 'Feminino', 'Unissex']
 with app.app_context():
     for tipo in tipos_generos:
         t = GeneroRoupa(nome_genero=tipo)
         database.session.add(t)
         database.session.commit()
+
+
+gatilhos.triggers_tabela_item_estoque()
+
 
 print(datetime.utcnow().date())

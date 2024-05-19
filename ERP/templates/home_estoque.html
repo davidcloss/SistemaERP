@@ -1,6 +1,11 @@
 {% extends 'base.html' %} {% block navbarver %}
 <ul class="navbar-nav">
     <li class="navbar-item text-start ps-3">
+        <a class="nav-link text-white" href="{{ url_for('home_itens_estoque') }}">
+            Itens de Estoque
+        </a>
+    </li>
+    <li class="navbar-item text-start ps-3">
         <a class="nav-link text-white" href="{{ url_for('atributos_estoque') }}">
             Atributos de Estoque
         </a>

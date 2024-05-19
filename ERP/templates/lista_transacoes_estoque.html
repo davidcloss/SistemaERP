@@ -1,0 +1,42 @@
+{% extends 'itens_estoque.html' %}
+
+{% block conteudo %}
+<div class="container">
+  <ul class="nav row nav-tabs justify-content-center"> <!-- Adicione a classe justify-content-center para centralizar a lista horizontalmente -->
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ todas_transacoes }} link-tabela text-center" href="{{ url_for('encaminha_lista_transacoes_item', item_id=item_id, situacao='1') }}">Todas Transações</a>
+    </li>
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ transacoes_entrada }} link-tabela text-center" href="{{ url_for('encaminha_lista_transacoes_item', item_id=item_id, situacao='2') }}">Transações Entrada</a>
+    </li>
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ transacoes_saida }} link-tabela text-center" href="{{ url_for('encaminha_lista_transacoes_item', item_id=item_id, situacao='3') }}">Transações Saída</a>
+    </li>
+  </ul>
+
+  <table class="table table-striped table-hover align-middle background">
+    <thead>
+      <tr>
+        <th style="width: 50px;">ID</th>
+        <th style="width: 150px;">Lote</th>
+        <th style="width: 100px;">Qtd</th>
+        <th style="width: 160px;">Valor Total Custo</th>
+        <th style="width: 160px;">Valor Total Venda</th>
+        <th style="width: 160px;">Usuário Cadastro</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for transacao in transacoes %}
+      <tr>
+        <td><a class="link-tabela" href="">{{ transacao.id }}</a></td>
+        <td>{{ transacao.id_lote }}</td>
+        <td>{{ transacao.qtd_transacao }}</td>
+        <td>{{ transacao.valor_total_transacao_custo }}</td>
+        <td>{{ transacao.valor_total_transacao_venda }}</td>
+        <td>{{ transacao.id_usuario_cadastro }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
