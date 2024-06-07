@@ -1,0 +1,41 @@
+{% extends 'home_cartao_credito.html' %}
+
+{% block central %}
+    <div class="container">
+        <form method='POST' action="" class="border m-5 p-2">
+            {{ form.csrf_token }}
+            <legend>Cadastro cartão crédito:</legend>
+            <fieldset>
+                <div class="form-group">
+                    {{ form.apelido_cartao.label(class="form-control-label") }}
+                    {{ form.apelido_cartao(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.id_conta_bancaria.label(class="form-control-label") }}
+                    {{ form.id_conta_bancaria(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.dia_inicial.label(class="form-control-label") }}
+                    {{ form.dia_inicial(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.dia_final.label(class="form-control-label") }}
+                    {{ form.dia_final(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.dia_pgto.label(class="form-control-label") }}
+                    {{ form.dia_pgto(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.valor_limite.label(class="form-control-label") }}
+                    {{ form.valor_limite(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.situacao.label(class="form-control-label") }}
+                    {{ form.situacao(class="form-control") }}
+                </div>
+            </fieldset>
+            {{ form.botao_submit(class="btn btn-primary m-1") }}
+        </form>
+    </div>
+{% endblock %}

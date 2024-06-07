@@ -1,8 +1,8 @@
-{% include 'base.html' %}
+{% extends 'home_contas_bancarias.html' %}
 
-{% block content %}
+{% block central %}
     <div class="container">
-        <h2>Dados do Cadastro</h2>
+        <h3>Dados do Cadastro</h3>
         <p>Conta: {{ conta.nro_conta }}</p>
         <p> Dgt Conta: {{conta.digito_conta }}</p>
         {% if titular.cpf %}
@@ -13,8 +13,13 @@
         <p>Agencia: {{ agencia.agencia }}</p>
         <p>Dígito agência: {{ agencia.digito_agencia }}</p>
         <p>Banco: {{ banco.id }} - {{ banco.nome_banco }}</p>
-        <p>Apelido Agencia: {{ agencia.apelido_agencia }}</p>
+        <p>Apelido Agencia: {{ agencia.id }} - {{ agencia.apelido_agencia }}</p>
+        <p>Cheque Especial: {{ conta.cheque_especial }}</p>
+        <p>Cheque Especial Utilizado: {{ conta.cheque_especial_utilizado }}</p>
+        <p>Cheque Especial Disponível: {{ conta.cheque_especial_disponivel }}</p>
+        <p>Saldo Conta: {{ conta.saldo_conta }}</p>
         <p>Fornecedor: {{ fornecedor.id }} - {{ fornecedor.razao_social }}</p>
+        <p>Status conta: {{ situacao_retorno(conta.situacao) }}</p>
         <p><a href="{{ url_for('editar_contas', id_conta=conta.id) }}">Editar</a></p>
 
     </div>

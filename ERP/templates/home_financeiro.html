@@ -1,0 +1,14 @@
+{% extends 'base.html' %} {% block navbarver %}
+<ul class="navbar-nav">
+    <li class="navbar-item text-start ps-3">
+        <a class="nav-link text-white" href="{{ url_for('home_atributos_bancos') }}">
+            Atributos de Banco
+        </a>
+        <a class="nav-link text-white" href="{{ url_for('home_transacoes_financeiras') }}">
+            Transações Financeiras
+        </a>
+    </li>
+</ul>
+{% endblock %} {% block body %}
+
+{% endblock %}

@@ -2,19 +2,108 @@ from flask import render_template, redirect, url_for, flash, request, session
 from ERP import app, database, bcrypt, login_manager
 from ERP.forms import FormCriarConta, FormLogin, FormCadastroCNPJ, FormCadastroEmpresa, FormCadastroCPF
 from ERP.forms import FormTiposRoupas, FormCores, FormMarcas, FormTamanhos, FormTiposUnidades, FormEditarItensEstoque
-from ERP.forms import FormItensEstoque, FormBancos, FormAgenciaBancoCadastro, FormAgenciaBancoEdicao
-from ERP.forms import FormContaBancariaCadastro, FormContaBancariaEdicao, FormGeneros, FormRedefinirSenha
+from ERP.forms import FormItensEstoque, FormBancos, FormAgenciaBancoCadastro, FormAgenciaBancoEdicao, FormAlterarPagamentoFaturaCartaoCredito
+from ERP.forms import FormEditarBancos, FormEditarCartaoCredito, FormContaBancariaCadastro2, FormEditarCategoriasFinanceiras
+from ERP.forms import FormContaBancariaCadastro, FormContaBancariaEdicao, FormGeneros, FormRedefinirSenha, FormEditarFaturaCartaoCredito
 from ERP.forms import FormCartaoCredito, FormCategoriasFinanceiras, FormEditarUsuario, FormEditarSenha, FormEditarTiposUnidades
 from ERP.forms import FormEditarTiposRoupas, FormEditarCores, FormEditarMarcas, FormEditarTamanhos, FormEditarGeneros
-from ERP.models import Usuarios, CadastroEmpresa, TiposCadastros, ClientesFornecedores, TiposUsuarios
+from ERP.forms import FormCadastroDespesaCartaoCredito
+from ERP.models import Usuarios, CadastroEmpresa, TiposCadastros, ClientesFornecedores, TiposUsuarios, TransacoesFinanceiras
 from ERP.models import TiposRoupas, Cores, Tamanhos, Marcas, TiposUnidades, ItensEstoque, SituacoesUsuarios
 from ERP.models import TransacoesEstoque, TiposTransacoesEstoque, Bancos, AgenciaBanco, ContasBancarias
-from ERP.models import CartaoCredito, GeneroRoupa, CategoriasFinanceiras
+from ERP.models import CartaoCredito, GeneroRoupa, CategoriasFinanceiras, ValidacaoFaturasCartaoCredito, FaturaCartaoCredito
 from flask_login import login_user, logout_user, current_user, login_required
 import secrets
 from datetime import datetime, timedelta
 import os
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, desc
+
+
+def retorna_categorias_financeiras_custos_despesas():
+    categorias = CategoriasFinanceiras.query.filter_by(situacao=1).filter(
+        CategoriasFinanceiras.tipo_transacao_financeira.in_([2, 3])).all()
+    return categorias
+
+
+def ajusta_mes(mes):
+    if len(str(mes)) < 2:
+        mes_r = f'0{mes}'
+    else:
+        mes_r = str(mes)
+    return mes_r
+
+
+def retorna_fatura_cartao_credito():
+    data_ref = datetime.now()
+    data_ref = data_ref - timedelta(days=180)
+    retorno = []
+    for i in range(6):
+        retorno.append((i, f'{ajusta_mes(data_ref.month)}/{data_ref.year}'))
+        data_ref = data_ref + timedelta(days=30)
+    data_ref = datetime.now()
+    for i in range(6):
+        retorno.append((i+6, f'{ajusta_mes(data_ref.month)}/{data_ref.year}'))
+        data_ref = data_ref + timedelta(days=30)
+    return retorno
+
+
+def devolve_label_fatura(index_):
+    faturas = retorna_fatura_cartao_credito()
+    return faturas[int(index_)]
+
+
+def gera_cod_fatura(cartao, mes_venc, ano_venc):
+    if len(str(mes_venc)) < 2:
+        mes_venc = f'0{mes_venc}'
+    if len(str(cartao.id)) <2:
+        cartao.id = f'0{cartao.id}'
+    cod_fatura = f'{cartao.id}.{mes_venc}.{ano_venc}'
+    return cod_fatura
+
+
+def gera_cod_fatura2(id_cartao, mes_venc, ano_venc):
+    if len(str(mes_venc)) < 2:
+        mes_venc = f'0{mes_venc}'
+    if len(str(id_cartao)) <2:
+        id_cartao = f'0{id_cartao}'
+    cod_fatura = f'{id_cartao}.{mes_venc}.{ano_venc}'
+    return cod_fatura
+
+
+def verifica_fat_cartao(id_cartao):
+    data_limite = datetime.now() - timedelta(days=31)
+    cartao = CartaoCredito.query.filter_by(id=int(id_cartao)).first()
+    validacao = ValidacaoFaturasCartaoCredito.query.filter(
+        ValidacaoFaturasCartaoCredito.id_cartao == cartao.id,
+        ValidacaoFaturasCartaoCredito.data_cadastro <= data_limite
+    ).order_by(
+        ValidacaoFaturasCartaoCredito.id.desc()
+    ).first()
+    data_ref = datetime.now()
+    if validacao:
+        for i in range(24):
+            fatura = FaturaCartaoCredito.query.filter_by(id_cartao=cartao.id).first()
+            cod_fat = gera_cod_fatura(cartao, data_ref.month, data_ref.month)
+            if cod_fat == fatura.cod_fatura:
+                pass
+            else:
+                nova_fatura = FaturaCartaoCredito(
+                    cod_fat=cod_fat,
+                    id_cartao_credito=cartao.id,
+                    id_usuario_cadastro = current_user.id
+                )
+                nova_validacao = ValidacaoFaturasCartaoCredito(id_cartao=cartao.id)
+                data_ref = data_ref + timedelta(days=30)
+                database.session.add(nova_validacao)
+                database.session.add(nova_fatura)
+                database.session.commit()
+
+
+def recebe_form_valor_monetario(valor):
+    valor = valor.replace(',', '.')
+    valor = valor.replace('R$', '')
+    valor = valor.replace('$', '')
+    return float(valor)
 
 
 def situacao_retorno(sit):
@@ -26,6 +115,30 @@ def situacao_retorno(sit):
 
 
 app.add_template_global(situacao_retorno, 'situacao_retorno')
+
+
+def situacao_fatura_retorno(sit):
+    if sit == 0:
+        retorno = 'Em aberto'
+    elif sit == 1:
+        retorno = 'Pago'
+    elif sit == 2:
+        retorno = 'Em Atraso'
+    elif sit == 3:
+        retorno = 'Pago em atraso'
+        #TODO: Adicionar codições pensando em pagamentos parcias de faturas cartao de credito
+    return retorno
+
+
+app.add_template_global(situacao_fatura_retorno, 'situacao_fatura_retorno')
+
+
+def busc_lote_transacao():
+    lote = TransacoesFinanceiras.query.order_by(desc(TransacoesFinanceiras.id)).first()
+    if lote:
+        return lote.lote_transacao + 1
+    else:
+        return 1
 
 
 def converte_data_string(data):
@@ -79,9 +192,13 @@ def nome_tipo_transacao_categoria_financeira(tipo_transacao):
     if tipo_transacao == 1:
         nome = 'Receita'
     elif tipo_transacao == 2:
-        nome = 'Despesa'
+        nome = 'Custo'
     elif tipo_transacao == 3:
-        nome = 'Transferência'
+        nome = 'Despesa'
+    elif tipo_transacao == 4:
+        nome = 'Transferência +'
+    elif tipo_transacao == 5:
+        nome = 'Transferência -'
     else:
         nome = 'Erro'
     return nome
@@ -508,13 +625,13 @@ def edicao_clientes_fornecedores(tipo_emp, cliente_fornecedor_id):
 def home_estoque():
     return render_template('home_estoque.html')
 
+# Atributos Estoque
 
 @app.route('/estoque/atributosdeestoque')
 @login_required
 def atributos_estoque():
     return render_template('atributos_estoque.html')
 
-# Atributos Estoque
 
 @app.route('/estoque/atributosdeestoque/tiporoupa')
 @login_required
@@ -1173,8 +1290,31 @@ def edicao_itens_estoque(itens_estoque_id):
 
     return render_template('edicao_itens_estoque.html', form=form, itens_estoque=itens_estoque.id)
 
+# Financeiro
 
-@app.route('/financeiro/bancos/cadastro', methods=['GET', 'POST'])
+@app.route('/financeiro')
+@login_required
+def home_financeiro():
+    cartoes = CartaoCredito.query.filter_by(situacao=1).all()
+    for cartao in cartoes:
+        verifica_fat_cartao(cartao.id)
+    return render_template('home_financeiro.html')
+
+# Atributos Financeiros
+
+@app.route('/financeiro/atributosbancos')
+@login_required
+def home_atributos_bancos():
+    return render_template('home_atributos_banco.html')
+
+
+@app.route('/financeiro/atributosbancos/instituicoesbancarias')
+@login_required
+def home_bancos():
+    return render_template('home_instituicao_bancaria.html')
+
+
+@app.route('/financeiro/atributosbancos/instituicoesbancarias/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_banco():
     form = FormBancos()
@@ -1199,18 +1339,49 @@ def cadastro_banco():
     return render_template('cadastro_bancos.html', form=form)
 
 
-@app.route('/financeiro/bancos/<banco_id>', methods=['GET', 'POST'])
+@app.route('/financeiro/atributosbancos/instituicoesbancarias/<banco_id>', methods=['GET', 'POST'])
 @login_required
 def bancos(banco_id):
     banco = Bancos.query.filter_by(id=banco_id).first()
     return render_template('bancos.html', banco=banco)
 
 
+@app.route('/financeiro/atributosbancos/instituicoesbancarias/lista')
+@login_required
+def lista_bancos():
+    bancos_ativo = False
+    bancos_inativo = False
+    if not session.get('bancos_ativo') and not session.get('bancos_inativo'):
+        bancos_ativo = 'active'
+        bancos = Bancos.query.filter_by(situacao=1).order_by(Bancos.nome_banco).all()
+    if session.get('bancos_ativo'):
+        bancos_ativo = 'active'
+        session.pop('bancos_ativo', None)
+        bancos = Bancos.query.filter_by(situacao=1).order_by(Bancos.nome_banco).all()
+    if session.get('bancos_inativo'):
+        bancos_inativo = 'active'
+        session.pop('bancos_inativo', None)
+        bancos = Bancos.query.filter_by(situacao=2).order_by(Bancos.nome_banco).all()
+    return render_template('lista_bancos.html', str=str, bancos_ativo=bancos_ativo,
+                           bancos_inativo=bancos_inativo, bancos=bancos)
+
+
+@app.route('/financeiro/atributosbancos/instituicoesbancarias/lista/enc/<situacao>')
+@login_required
+def encaminha_lista_bancos(situacao):
+    if situacao == '1':
+        session['bancos_ativo'] = True
+    elif situacao == '2':
+        session['bancos_inativo'] = True
+    return redirect(url_for('lista_bancos'))
+
+
 @app.route('/financeiro/bancos/<banco_id>/editar', methods=['GET', 'POST'])
 @login_required
 def editar_bancos(banco_id):
     banco = Bancos.query.get_or_404(banco_id)
-    form = FormBancos(obj=banco)
+    form = FormEditarBancos(obj=banco)
+    form.situacao.choices = retorna_tupla_situacao()
     if form.validate_on_submit():
         verifica_cod = Bancos.query.filter((Bancos.cod_banco == form.cod_banco.data) & (Bancos.id != banco.id)).first()
         verifica_nome = Bancos.query.filter(
@@ -1226,10 +1397,16 @@ def editar_bancos(banco_id):
             database.session.commit()
             flash("Cadastro atualizado!", 'alert-success')
             return redirect(url_for('bancos', banco_id=banco.id))
-    return render_template('cadastro_bancos.html', form=form)
+    return render_template('editar_bancos.html', form=form)
 
 
-@app.route('/financeiro/bancos/agencias/cadastro', methods=['GET', 'POST'])
+@app.route('/financeiro/atributosbancos/agenciasbancarias')
+@login_required
+def home_agencias_bancarias():
+    return render_template('home_agencias_bancarias.html')
+
+
+@app.route('/financeiro/atributosbancos/agenciasbancarias/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_agencias_bancos():
     form_agencia = FormAgenciaBancoCadastro()
@@ -1312,7 +1489,7 @@ def busca_todos_clientes_fornecedores_cnpj():
     return resultado
 
 
-@app.route('/financeiro/bancos/agencias/cadastro/<id_banco>', methods=['GET', 'POST'])
+@app.route('/financeiro/atributosbancos/agenciasbancarias/cadastro/<id_banco>', methods=['GET', 'POST'])
 @login_required
 def cadastro_fornecedor_selecionado_agencia(id_banco):
     form_agencia = FormAgenciaBancoEdicao(agencia=session.get('agencia'),
@@ -1336,7 +1513,7 @@ def cadastro_fornecedor_selecionado_agencia(id_banco):
                                    id_cliente=id_banco,
                                    apelido_agencia=session.get('apelido_agencia'),
                                    data_cadastro=datetime.utcnow(),
-                                   id_usuario_cadstro=current_user.id)
+                                   id_usuario_cadastro=current_user.id)
             database.session.add(agencia)
             database.session.commit()
             flash("Agencia cadastrada com sucesso!", 'alert-success')
@@ -1344,7 +1521,7 @@ def cadastro_fornecedor_selecionado_agencia(id_banco):
     return render_template('cadastro_fornecedor_selecionado_agencia.html', form_agencia=form_agencia)
 
 
-@app.route('/financeiro/bancos/agencias/pesquisafornecedor', methods=['GET', 'POST'])
+@app.route('/financeiro/atributosbancos/agenciasbancarias/pesquisafornecedor', methods=['GET', 'POST'])
 @login_required
 def busca_fornecedor_banco():
     search = buscar_cliente_fornecedor_cnpj(session.get('pesquisa_bancos'))
@@ -1356,7 +1533,7 @@ def busca_fornecedor_banco():
     return render_template('pesquisa_fornecedor_banco.html', form_agencia=form_agencia, search=search)
 
 
-@app.route('/financeiro/bancos/agencias/cadastro/cnpj', methods=['GET', 'POST'])
+@app.route('/financeiro/atributosbancos/agenciasbancarias/cadastro/cnpj', methods=['GET', 'POST'])
 @login_required
 def cadastro_fornecedor_banco():
     form_agencia = FormAgenciaBancoCadastro(agencia=session.get('agencia'),
@@ -1405,7 +1582,7 @@ def cadastro_fornecedor_banco():
     return render_template('cadastro_cnpj_agencia_bancaria.html', form_agencia=form_agencia, form=form)
 
 
-@app.route('/financeiro/bancos/agencias/<id_agencia>')
+@app.route('/financeiro/atributosbancos/agenciasbancarias/<id_agencia>')
 @login_required
 def agencias_bancarias(id_agencia):
     agencia = AgenciaBanco.query.get_or_404(id_agencia)
@@ -1414,13 +1591,44 @@ def agencias_bancarias(id_agencia):
     return render_template('agencia_bancaria.html', agencia=agencia, banco=banco, fornecedor=fornecedor)
 
 
-@app.route('/financeiro/bancos/agencias/<id_agencia>/edicao', methods=['GET', 'POST'])
+@app.route('/financeiro/atributosbancos/agenciasbancarias/lista')
+@login_required
+def lista_agencias():
+    agencia_ativo = False
+    agencia_inativo = False
+    if not session.get('agencia_ativo') and not session.get('agencia_inativo'):
+        agencia_ativo = 'active'
+        agencias = AgenciaBanco.query.filter_by(situacao=1).order_by(AgenciaBanco.apelido_agencia).all()
+    if session.get('agencia_ativo'):
+        agencia_ativo = 'active'
+        session.pop('agencia_ativo', None)
+        agencias = AgenciaBanco.query.filter_by(situacao=1).order_by(AgenciaBanco.apelido_agencia).all()
+    if session.get('agencia_inativo'):
+        agencia_inativo = 'active'
+        session.pop('agencia_inativo', None)
+        agencias = AgenciaBanco.query.filter_by(situacao=2).order_by(AgenciaBanco.apelido_agencia).all()
+    return render_template('lista_agencia_bancaria.html', str=str, agencia_ativo_ativo=agencia_ativo,
+                           agencia_inativo=agencia_inativo, agencias=agencias)
+
+
+@app.route('/financeiro/atributosbancos/agenciasbancarias/lista/enc/<situacao>')
+@login_required
+def encaminha_lista_agencias(situacao):
+    if situacao == '1':
+        session['bancos_ativo'] = True
+    elif situacao == '2':
+        session['bancos_inativo'] = True
+    return redirect(url_for('lista_bancos'))
+
+
+@app.route('/financeiro/atributosbancos/agenciasbancarias/<id_agencia>/edicao', methods=['GET', 'POST'])
 @login_required
 def editar_agencias_bancarias(id_agencia):
     agencia = AgenciaBanco.query.get_or_404(id_agencia)
     form_agencia = FormAgenciaBancoEdicao(obj=agencia)
     form_agencia.id_cliente.choices = [(cnpj.id, cnpj.razao_social) for cnpj in ClientesFornecedores.query.filter(ClientesFornecedores.cnpj.isnot(None)).all()]
     form_agencia.id_banco.choices = [(banco.id, banco.nome_banco) for banco in Bancos.query.all()]
+    form_agencia.situacao.choices = retorna_tupla_situacao()
     if form_agencia.validate_on_submit():
         if 'finalizar' in request.form:
             form_agencia.populate_obj(agencia)
@@ -1432,7 +1640,14 @@ def editar_agencias_bancarias(id_agencia):
             return redirect(url_for('agencias_bancarias', id_agencia=id_agencia))
     return render_template('edicao_agencias_bancos.html', form_agencia=form_agencia)
 
-@app.route('/financeiro/bancos/agencias/contas/cadastro', methods=['GET', 'POST'])
+
+@app.route('/financeiro/atributosbancos/contasbancarias')
+@login_required
+def home_contas_bancarias():
+    return render_template('home_contas_bancarias.html')
+
+
+@app.route('/financeiro/atributosbancos/contasbancarias/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_conta_bancaria():
     form = FormContaBancariaCadastro()
@@ -1451,7 +1666,8 @@ def cadastro_conta_bancaria():
             return redirect(url_for('busca_titular_conta_cnpj'))
     return render_template('cadastro_contas.html', form=form)
 
-@app.route('/financeiro/bancos/agencias/contas/buscatitularcpf', methods=['GET', 'POST'])
+
+@app.route('/financeiro/atributosbancos/contasbancarias/buscatitularcpf', methods=['GET', 'POST'])
 @login_required
 def busca_titular_conta_cpf():
     search = buscar_cliente_fornecedor_cpf(session.get('campo_pesquisa'))
@@ -1465,7 +1681,8 @@ def busca_titular_conta_cpf():
     form.id_agencia.choices = [(agencia.id, agencia.apelido_agencia) for agencia in AgenciaBanco.query.all()]
     return render_template('pesquisa_titular_conta_cpf.html', form=form, search=search)
 
-@app.route('/financeiro/bancos/agencias/contas/buscatitularcnpj', methods=['GET', 'POST'])
+
+@app.route('/financeiro/atributosbancos/contasbancarias/buscatitularcnpj', methods=['GET', 'POST'])
 @login_required
 def busca_titular_conta_cnpj():
     search = buscar_cliente_fornecedor_cnpj(session.get('campo_pesquisa'))
@@ -1486,11 +1703,11 @@ def string_to_integer(string):
     string = string.replace(' ', '')
     return int(string)
 
-@app.route('/financeiro/bancos/agencias/contas/cadastro/<id_titular>', methods=['GET', 'POST'])
+@app.route('/financeiro/atributosbancos/contasbancarias/cadastro/<id_titular>', methods=['GET', 'POST'])
 @login_required
 def cadastro_titular_selecionado_conta(id_titular):
     titular = ClientesFornecedores.query.get_or_404(id_titular)
-    form = FormContaBancariaEdicao(id_agencia=session.get('id_agencia'),
+    form = FormContaBancariaCadastro2(id_agencia=session.get('id_agencia'),
                                    apelido_conta=session.get('apelido_conta'),
                                    nro_conta=session.get('nro_conta'),
                                    digito_conta=session.get('digito_conta'),
@@ -1508,18 +1725,25 @@ def cadastro_titular_selecionado_conta(id_titular):
                                          nro_conta=string_to_integer(form.nro_conta.data),
                                          digito_conta=string_to_integer(form.digito_conta.data),
                                          id_titular=form.id_titular.data,
-                                         cheque_especial=string_to_float(form.cheque_especial.data),
-                                         cheque_especial_disponivel=string_to_float(form.cheque_especial.data),
-                                         saldo_conta=string_to_float(form.saldo_conta.data))
+                                         cheque_especial=string_to_float(form.cheque_especial.data))
         database.session.add(conta_bancaria)
         database.session.commit()
-        #TODO: transação financeira de saldo atual
+        conta_cadastrada = ContasBancarias.query.filter_by(id_agencia=form.id_agencia.data).first()
+        transacao = TransacoesFinanceiras(id_categoria_financeira=1,
+                                          lote_transacao=busc_lote_transacao(),
+                                          tipo_transacao=1,
+                                          id_conta_bancaria=conta_cadastrada.id,
+                                          valor_transacao=string_to_float(form.saldo_conta.data),
+                                          data_pagamento=datetime.now(),
+                                          situacao_transacao=3)
+        database.session.add(transacao)
+        database.session.commit()
         flash("Conta cadastrada com sucesso!", 'alert-success')
         return redirect(url_for('contas_bancarias', id_conta=conta_bancaria.id))
     return render_template('cadastro_titular_selecionado_conta.html', form=form)
 
 
-@app.route('/financeiro/bancos/agencias/contas/<id_conta>')
+@app.route('/financeiro/atributosbancos/contasbancarias/<id_conta>')
 @login_required
 def contas_bancarias(id_conta):
     conta = ContasBancarias.query.get_or_404(id_conta)
@@ -1530,11 +1754,42 @@ def contas_bancarias(id_conta):
     return render_template('conta_bancaria.html', conta=conta, titular=titular, agencia=agencia, banco=banco, fornecedor=fornecedor)
 
 
-@app.route('/financeiro/bancos/agencias/contas/<int:id_conta>/editar', methods=['GET', 'POST'])
+@app.route('/financeiro/atributosbancos/contasbancarias/lista')
+@login_required
+def lista_contas():
+    conta_ativo = False
+    conta_inativo = False
+    if not session.get('conta_ativo') and not session.get('conta_inativo'):
+        conta_ativo = 'active'
+        contas = ContasBancarias.query.filter_by(situacao=1).order_by(ContasBancarias.apelido_conta).all()
+    if session.get('conta_ativo'):
+        conta_ativo = 'active'
+        session.pop('conta_ativo', None)
+        contas = ContasBancarias.query.filter_by(situacao=1).order_by(ContasBancarias.apelido_conta).all()
+    if session.get('conta_inativo'):
+        conta_inativo = 'active'
+        session.pop('conta_inativo', None)
+        contas = ContasBancarias.query.filter_by(situacao=2).order_by(ContasBancarias.apelido_conta).all()
+    return render_template('lista_contas_bancarias.html', str=str, conta_ativo=conta_ativo,
+                           conta_inativo=conta_inativo, contas=contas)
+
+
+@app.route('/financeiro/atributosbancos/contasbancarias/lista/enc/<situacao>')
+@login_required
+def encaminha_lista_contas(situacao):
+    if situacao == '1':
+        session['conta_ativo'] = True
+    elif situacao == '2':
+        session['conta_inativo'] = True
+    return redirect(url_for('lista_contas'))
+
+
+@app.route('/financeiro/atributosbancos/contasbancarias/<int:id_conta>/editar', methods=['GET', 'POST'])
 @login_required
 def editar_contas(id_conta):
     conta = ContasBancarias.query.get_or_404(id_conta)
     form = FormContaBancariaEdicao(obj=conta)
+    form.situacao.choices = retorna_tupla_situacao()
     titular = ClientesFornecedores.query.get_or_404(conta.id_titular)
     form.id_agencia.choices = [(agencia.id, agencia.apelido_agencia) for agencia in AgenciaBanco.query.all()]
     if titular.cpf:
@@ -1556,11 +1811,18 @@ def editar_contas(id_conta):
     return render_template('edicao_contas.html', form=form)
 
 
-@app.route('/financeiro/bancos/agencias/contas/cartaocredito/cadastrar', methods=['GET', 'POST'])
+@app.route('/financeiro/atributosbancos/cartoescredito')
+@login_required
+def home_cartao_credito():
+    return render_template('home_cartao_credito.html')
+
+
+@app.route('/financeiro/atributosbancos/cartoescredito/cadastrar', methods=['GET', 'POST'])
 @login_required
 def cadastrar_cartao_credito():
     form = FormCartaoCredito()
     form.id_conta_bancaria.choices = [(conta.id, conta.apelido_conta) for conta in ContasBancarias.query.all()]
+
     if form.validate_on_submit():
         if form.dia_inicial.data > 31 or form.dia_inicial.data < 1:
             flash('Dia inicial deve ser um dia entre 1 e 31', 'alert-danger')
@@ -1569,56 +1831,185 @@ def cadastrar_cartao_credito():
         elif form.dia_pgto.data > 31 or form.dia_pgto.data < 1:
             flash('Dia pagamento deve ser um dia entre 1 e 31', 'alert-danger')
         else:
-            cartao = CartaoCredito(id_conta_bancaria=form.id_conta_bancaria.data,
-                                   apelido_cartao=form.apelido_cartao.data,
-                                   dia_inicial=form.dia_inicial.data,
-                                   dia_final=form.dia_final.data,
-                                   dia_pgto=form.dia_pgto.data,
-                                   valor_limite=form.valor_limite.data,
-                                   valor_disponivel=form.valor_limite.data,
-                                   id_usuario_cadastro=current_user.id)
-            database.session.add(cartao)
-            database.session.commit()
-            cartao2 = CartaoCredito.query.filter_by(apelido_cartao=form.apelido_cartao.data).first()
-            flash('Cartão cadastrado com sucesso!', 'alert-success')
-            return redirect(url_for('cartao_credito', id_cartao=cartao2.id))
+            id_conta_bancaria = int(form.id_conta_bancaria.data)
+            conta_bancaria = ContasBancarias.query.get(id_conta_bancaria)
+
+            if not conta_bancaria:
+                flash('Conta bancária selecionada não existe', 'alert-danger')
+            else:
+                cartao = CartaoCredito(
+                    id_conta_bancaria=id_conta_bancaria,
+                    apelido_cartao=form.apelido_cartao.data,
+                    dia_inicial=form.dia_inicial.data,
+                    dia_final=form.dia_final.data,
+                    dia_pgto=form.dia_pgto.data,
+                    valor_limite=form.valor_limite.data,
+                    valor_disponivel=form.valor_limite.data,
+                    id_usuario_cadastro=current_user.id
+                )
+                database.session.add(cartao)
+                database.session.commit()
+
+                cartao2 = CartaoCredito.query.filter_by(apelido_cartao=form.apelido_cartao.data).first()
+                data_ref = datetime.now()
+                for i in range(24):
+                    cod_fatura = gera_cod_fatura(cartao2, data_ref.month, data_ref.year)
+                    pesquisa = FaturaCartaoCredito.query.filter_by(cod_fatura=cod_fatura).first()
+
+                    if not pesquisa:
+                        fatura = FaturaCartaoCredito(
+                            cod_fatura=cod_fatura,
+                            id_cartao_credito=cartao2.id,
+                            id_usuario_cadastro=current_user.id
+                        )
+                        database.session.add(fatura)
+                        database.session.commit()
+
+                    data_ref = data_ref + timedelta(days=30)
+                    validacao = ValidacaoFaturasCartaoCredito(id_cartao=cartao2.id)
+                    database.session.add(validacao)
+                    database.session.commit()
+
+                flash('Cartão cadastrado com sucesso!', 'alert-success')
+                return redirect(url_for('cartao_credito', id_cartao=cartao2.id))
+
     return render_template('cadastro_cartao_credito.html', form=form)
 
 
-@app.route('/financeiro/bancos/agencias/contas/cartaocredito/<id_cartao>')
+@app.route('/financeiro/atributosbancos/cartoescredito/<id_cartao>')
 @login_required
 def cartao_credito(id_cartao):
     cartao = CartaoCredito.query.get_or_404(id_cartao)
     conta = ContasBancarias.query.get_or_404(cartao.id_conta_bancaria)
     usuario = Usuarios.query.get_or_404(cartao.id_usuario_cadastro)
-    return render_template('cartao_credito.html', cartao=cartao, conta=conta, usuario=usuario)
+    return render_template('cartao_credito.html', cartao=cartao, conta=conta, usuario=usuario, dados_cadastro='active')
 
-@app.route('/financeiro/bancos/agencias/contas/cartaocredito/<id_cartao>/edicao', methods=['GET', 'POST'])
+
+@app.route('/financeiro/atributosbancos/cartoescredito/<id_cartao>/faturas/lista')
+@login_required
+def lista_fatura_cartao_credito(id_cartao):
+    faturas = FaturaCartaoCredito.query.filter_by(id_cartao_credito=int(id_cartao)).order_by(FaturaCartaoCredito.id).all()
+    cartao = CartaoCredito.query.filter_by(id=int(id_cartao)).first()
+    return render_template('lista_fat_cartao_credito.html', str=str, cartao=cartao, faturas=faturas, lista_faturas='active')
+
+
+@app.route('/financeiro/atributosbancos/cartoescredito/<id_cartao>/faturas/<id_fatura>')
+@login_required
+def fatura_cartao_credito(id_cartao, id_fatura):
+    faturas = FaturaCartaoCredito.query.filter(FaturaCartaoCredito.id_cartao_credito == int(id_cartao),
+                                               FaturaCartaoCredito.id == int(id_fatura)).first()
+    usuario = Usuarios.query.filter_by(id=faturas.id_usuario_cadastro).first()
+    cartao = CartaoCredito.query.filter_by(id=int(id_cartao)).first()
+    return render_template('fatura_cartao_credito.html', cartao=cartao, fatura=faturas, usuario=usuario, dados_fatura='active')
+
+
+@app.route('/financeiro/atributosbancos/cartoescredito/<id_cartao>/faturas/<id_fatura>/lista')
+@login_required
+def lista_extrato_fatura_cartao_credito(id_cartao, id_fatura):
+    transacoes = TransacoesFinanceiras.query.filter(
+    TransacoesFinanceiras.id_fatura_cartao_credito == int(id_fatura),
+    TransacoesFinanceiras.tipo_transacao == 2
+).order_by(TransacoesFinanceiras.data_ocorrencia).all()
+    cartao = CartaoCredito.query.filter_by(id=int(id_cartao)).first()
+    fatura = FaturaCartaoCredito.query.filter_by(id=int(id_fatura)).first()
+    categorias = CategoriasFinanceiras()
+    return render_template('lista_extrato_fat_cartao_credito.html', categorias=categorias, fatura=fatura, str=str, cartao=cartao, transacoes=transacoes, extrato_fatura='active')
+
+
+@app.route('/financeiro/atributosbancos/cartoescredito/<id_cartao>/faturas/<id_fatura>/editar', methods=['GET', 'POST'])
+@login_required
+def editar_fatura_cartao_credito(id_cartao, id_fatura):
+    fatura = FaturaCartaoCredito.query.filter(FaturaCartaoCredito.id_cartao_credito==int(id_cartao), FaturaCartaoCredito.id==int(id_fatura)).first()
+    form = FormEditarFaturaCartaoCredito(obj=fatura)
+    if form.validate_on_submit():
+        form.populate_obj(fatura)
+        fatura.id_cadastro = current_user.id
+        database.session.commit()
+        flash('Fatura atualizada com sucesso', 'alert-success')
+        return redirect(url_for('fatura_cartao_credito', id_cartao=id_cartao, id_fatura=id_fatura))
+    return render_template('editar_fat_cartao_credito.html', form=form)
+
+
+@app.route('/financeiro/atributosbancos/cartoescredito/<id_cartao>/faturas/<id_fatura>/pgto', methods=['GET','POST'])
+@login_required
+def alterar_pagamento_faturaa_cartao_credito(id_cartao, id_fatura):
+    fatura = FaturaCartaoCredito.query.filter(FaturaCartaoCredito.id_cartao_credito == int(id_cartao),
+                                              FaturaCartaoCredito.id == int(id_fatura)).first()
+    form = FormAlterarPagamentoFaturaCartaoCredito(obj=fatura)
+    if form.validate_on_submit():
+        form.populate_obj(fatura)
+        fatura.valor_pago = recebe_form_valor_monetario(form.valor_pago.data)
+        fatura.id_cadastro = current_user.id
+        database.session.commit()
+        flash('Fatura atualizada com sucesso.', 'alert-success')
+        return redirect(url_for('fatura_cartao_credito', id_cartao=id_cartao, id_fatura=id_fatura))
+    return render_template('alterar_pagamento_fatura_cartao_credito.html', form=form)
+
+
+@app.route('/financeiro/atributosbancos/cartoescredito/lista')
+@login_required
+def lista_cartao():
+    cartao_ativo = False
+    cartao_inativo = False
+    if not session.get('cartao_ativo') and not session.get('cartao_inativo'):
+        cartao_ativo = 'active'
+        cartoes = CartaoCredito.query.filter_by(situacao=1).order_by(CartaoCredito.apelido_cartao).all()
+    if session.get('cartao_ativo'):
+        cartao_ativo = 'active'
+        session.pop('cartao_ativo', None)
+        cartoes = ContasBancarias.query.filter_by(situacao=1).order_by(ContasBancarias.apelido_conta).all()
+    if session.get('cartao_inativo'):
+        cartao_inativo = 'active'
+        session.pop('cartao_inativo', None)
+        cartoes = CartaoCredito.query.filter_by(situacao=2).order_by(CartaoCredito.apelido_cartao).all()
+    return render_template('lista_cartao_credito.html', str=str, cartao_ativo=cartao_ativo,
+                           cartao_inativo=cartao_inativo, cartoes=cartoes)
+
+
+@app.route('/financeiro/atributosbancos/cartoescredito/lista/enc/<situacao>')
+@login_required
+def encaminha_lista_cartao(situacao):
+    if situacao == '1':
+        session['cartao_ativo'] = True
+    elif situacao == '2':
+        session['cartao_inativo'] = True
+    return redirect(url_for('lista_cartao'))
+
+
+@app.route('/financeiro/atributosbancos/cartoescredito/<id_cartao>/edicao', methods=['GET', 'POST'])
 @login_required
 def editar_cartao(id_cartao):
     cartao = CartaoCredito.query.get_or_404(id_cartao)
-    form = FormCartaoCredito(obj=cartao)
+    form = FormEditarCartaoCredito(obj=cartao)
     form.id_conta_bancaria.choices = [(conta.id, conta.apelido_conta) for conta in ContasBancarias.query.all()]
+    form.situacao.choices = retorna_tupla_situacao()
     if form.validate_on_submit():
         form.populate_obj(cartao)
         cartao.data_cadastro = datetime.utcnow()
         database.session.commit()
         flash('Cartão atualizado com sucesso!', 'alert-success')
         return redirect(url_for('cartao_credito', id_cartao=cartao.id))
-    return render_template('cadastro_cartao_credito.html', form=form)
+    return render_template('editar_cartao_credito.html', form=form)
+
+# Categorias Financeiras
+
+@app.route('/financeiro/transacoesfinanceiras')
+@login_required
+def home_transacoes_financeiras():
+    return render_template('home_transacoes_financeiras.html')
+
+#1 - Receita 2 - Custo 3 - Despesa 4 - Transferência +, 5 - Transferência -
+tipos_transacoes_financeiras = [(1, 'Receita'), (2, 'Custo'), (3, 'Despesa'), (4, 'Transferêncaia +'), (5, 'Transferêncaia -')]
 
 
-tipos_transacoes_financeiras = [(1, 'Receita'), (2, 'Despesa'), (3, 'Transferência')]
-
-
-@app.route('/financeiro/categoriasfinanceiras/cadastrar', methods=['GET', 'POST'])
+@app.route('/financeiro/transacoesfinanceiras/categoriasfinanceiras/cadastrar', methods=['GET', 'POST'])
 @login_required
 def criar_categorias_financeiras():
     form = FormCategoriasFinanceiras()
-    form.tipo_transacao.choices = [(tipo_id, tipo_nome) for tipo_id, tipo_nome in tipos_transacoes_financeiras]
+    form.tipo_transacao_financeira.choices = [(tipo_id, tipo_nome) for tipo_id, tipo_nome in tipos_transacoes_financeiras]
     if form.validate_on_submit():
-        categorias = CategoriasFinanceiras()
-        form.populate_obj(categorias)
+        categorias = CategoriasFinanceiras(nome_categoria=form.nome_categoria.data,
+                                           tipo_transacao_financeira=form.tipo_transacao_financeira.data)
         database.session.add(categorias)
         database.session.commit()
         transacao = CategoriasFinanceiras.query.filter_by(nome_categoria=categorias.nome_categoria).first()
@@ -1627,19 +2018,50 @@ def criar_categorias_financeiras():
     return render_template('cadastro_categorias_financeiras.html', form=form)
 
 
-@app.route('/financeiro/categoriasfinanceiras/<transacao_id>')
+@app.route('/financeiro/transacoesfinanceiras/categoriasfinanceiras/<transacao_id>')
 @login_required
 def categorias_financeiras(transacao_id):
     categoria = CategoriasFinanceiras.query.get_or_404(transacao_id)
     return render_template('categorias_financeiras.html', categoria=categoria)
 
 
-@app.route('/financeiro/categoriasfinanceiras/<transacao_id>/editar', methods=['GET', 'POST'])
+@app.route('/financeiro/transacoesfinanceiras/categoriasfinanceiras/lista')
+@login_required
+def lista_categoria_financeira():
+    categoria_ativo = False
+    categoria_inativo = False
+    if not session.get('categoria_ativo') and not session.get('categoria_inativo'):
+        categoria_ativo = 'active'
+        categorias = CategoriasFinanceiras.query.filter_by(situacao=1).order_by(CategoriasFinanceiras.nome_categoria).all()
+    if session.get('categoria_ativo'):
+        categoria_ativo = 'active'
+        session.pop('categoria_ativo', None)
+        categorias = CategoriasFinanceiras.query.filter_by(situacao=1).order_by(CategoriasFinanceiras.nome_categoria).all()
+    if session.get('categoria_inativo'):
+        categoria_inativo = 'active'
+        session.pop('categoria_inativo', None)
+        categorias = CategoriasFinanceiras.query.filter_by(situacao=2).order_by(CategoriasFinanceiras.nome_categoria).all()
+    return render_template('lista_categorias_financeiras.html', str=str, categoria_ativo=categoria_ativo,
+                           categoria_inativo=categoria_inativo, categorias=categorias)
+
+
+@app.route('/financeiro/transacoesfinanceiras/categoriasfinanceiras/lista/enc/<situacao>')
+@login_required
+def encaminha_lista_categoria_financeira(situacao):
+    if situacao == '1':
+        session['categoria_ativo'] = True
+    elif situacao == '2':
+        session['categoria_inativo'] = True
+    return redirect(url_for('lista_categoria_financeira'))
+
+
+@app.route('/financeiro/transacoesfinanceiras/categoriasfinanceiras/<transacao_id>/editar', methods=['GET', 'POST'])
 @login_required
 def editar_categorias_financeiras(transacao_id):
     categoria = CategoriasFinanceiras.query.get_or_404(transacao_id)
-    form = FormCategoriasFinanceiras(obj=categoria)
-    form.tipo_transacao.choices = [(tipo_id, tipo_nome) for tipo_id, tipo_nome in tipos_transacoes_financeiras]
+    form = FormEditarCategoriasFinanceiras(obj=categoria)
+    form.tipo_transacao_financeira.choices = [(tipo_id, tipo_nome) for tipo_id, tipo_nome in tipos_transacoes_financeiras]
+    form.situacao.choices = retorna_tupla_situacao()
     if form.validate_on_submit():
         form.populate_obj(categoria)
         database.session.commit()
@@ -1650,8 +2072,35 @@ def editar_categorias_financeiras(transacao_id):
 
 @app.route('/financeiro/lançamentosfinanceiros/criar', methods=['GET', 'POST'])
 @login_required
-def criar_lancamentos_financeiros():
-    return render_template('criar_lancamentos_financeiros.html')
+def cadastro_custo_despesa():
+    return render_template('cadastro_custo_despesa_financeira.html')
+
+
+@app.route('/financeiro/lancamentosfinanceiros/despesa/cartaodecredito/cadastrar', methods=['GET', 'POST'])
+@login_required
+def cadastro_despesa_cartao_credito():
+    form = FormCadastroDespesaCartaoCredito()
+    form.id_cartao_credito.choices = [(cartao.id, cartao.apelido_cartao) for cartao in CartaoCredito.query.filter_by(situacao=1).all()]
+    form.id_categoria_financeira.choices = [(categoria.id, categoria.nome_categoria) for categoria in retorna_categorias_financeiras_custos_despesas()]
+    form.fatura_cartao_credito.choices = retorna_fatura_cartao_credito()
+    if form.validate_on_submit():
+        fatura_seleciona = devolve_label_fatura(form.fatura_cartao_credito.data)
+        cod_fat = gera_cod_fatura2(form.id_cartao_credito.data, fatura_seleciona[1][0:2], fatura_seleciona[1][3:])
+        id_fat = FaturaCartaoCredito.query.filter_by(cod_fatura=cod_fat).first()
+        lote_transacao = busc_lote_transacao()
+        transacao = TransacoesFinanceiras(lote_transacao=lote_transacao,
+                                          tipo_transacao=2,
+                                          id_categoria_financeira=int(form.id_categoria_financeira.data),
+                                          id_cartao_credito=int(form.id_cartao_credito.data),
+                                          id_fatura_cartao_credito=id_fat.id,
+                                          valor_transacao=recebe_form_valor_monetario(form.valor_transacao.data),
+                                          data_ocorrencia=form.data_ocorrencia.data,
+                                          id_usuario_cadastro=current_user.id)
+        database.session.add(transacao)
+        database.session.commit()
+        flash('Transação cadastrada com Sucesso.', 'alert-success')
+        return redirect(url_for('home_transacoes_financeiras'))
+    return render_template('cadastro_despesa_cartao_credito.html', form=form)
 
 
 @app.route('/home/configuracoes')

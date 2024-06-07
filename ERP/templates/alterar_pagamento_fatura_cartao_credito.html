@@ -1,0 +1,21 @@
+{% extends 'home_cartao_credito.html' %}
+
+{% block central %}
+    <div class="container">
+        <form method='POST' action="" class="border m-5 p-2">
+            {{ form.csrf_token }}
+            <h2>Edição fatura cartão crédito:</h2>
+            <fieldset>
+                <div class="form-group">
+                    {{ form.data_pagamento.label(class="form-control-label") }}
+                    {{ form.data_pagamento(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.valor_pago.label(class="form-control-label") }}
+                    {{ form.valor_pago(class="form-control") }}
+                </div>
+            </fieldset>
+            {{ form.botao_submit(class="btn btn-primary m-1") }}
+        </form>
+    </div>
+{% endblock %}

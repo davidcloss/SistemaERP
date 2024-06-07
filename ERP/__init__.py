@@ -5,7 +5,7 @@ from flask_login import LoginManager
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '102da341b643882293e4ddd96d514b8f4505e5df211224c581ac4ea558206856'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://sistemaerp:Tsk267ak@localhost/sistemaerp'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://sistemaerp:Tsk267ak@localhost:5432/sistemaerp'
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://usuario:senha@localhost/producao'
 
 database = SQLAlchemy(app)

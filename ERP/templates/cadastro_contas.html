@@ -1,6 +1,6 @@
-{% include 'base.html' %}
+{% extends 'home_contas_bancarias.html' %}
 
-{% block content %}
+{% block central %}
     <div class="container">
         <form method='POST' action="" class="border m-5 p-2">
             {{ form.csrf_token }}
@@ -8,31 +8,31 @@
             <fieldset>
                 <div class="form-group">
                     {{ form.id_agencia.label(class="form-control-label") }}
-                    {{ form.id_agencia(class="form-control-label") }}
+                    {{ form.id_agencia(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.apelido_conta.label(class="form-control-label") }}
-                    {{ form.apelido_conta(class="form-control-label") }}
+                    {{ form.apelido_conta(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.nro_conta.label(class="form-control-label") }}
-                    {{ form.nro_conta(class="form-control-label") }}
+                    {{ form.nro_conta(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.digito_conta.label(class="form-control-label") }}
-                    {{ form.digito_conta(class="form-control-label") }}
+                    {{ form.digito_conta(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.cheque_especial.label(class="form-control-label") }}
-                    {{ form.cheque_especial(class="form-control-label") }}
+                    {{ form.cheque_especial(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.saldo_conta.label(class="form-control-label") }}
-                    {{ form.saldo_conta(class="form-control-label") }}
+                    {{ form.saldo_conta(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.campo_pesquisa.label(class="form-control-label") }}
-                    {{ form.campo_pesquisa(class="form-control-label") }}
+                    {{ form.campo_pesquisa(class="form-control") }}
                 </div>
             </fieldset>
             {{ form.botao_pesquisar_cpf(class="btn btn-primary m-1") }}

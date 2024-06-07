@@ -1,8 +1,17 @@
-{% include 'base.html' %}
+{% extends 'home_cartao_credito.html' %}
 
-{% block content %}
+{% block central %}
     <div class="container">
-        <h2>Dados do Cadastro</h2>
+        <div class="container">
+  <ul class="nav row nav-tabs justify-content-center"> <!-- Adicione a classe justify-content-center para centralizar a lista horizontalmente -->
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ dados_cadastro }} link-tabela text-center" href="{{ url_for('cartao_credito', id_cartao='1') }}">Dados Cadastro</a>
+    </li>
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ lista_faturas}} link-tabela text-center" href="{{ url_for('lista_fatura_cartao_credito', id_cartao=cartao.id) }}">Lista Faturas</a>
+    </li>
+  </ul>
+            {% block dados_lista %}
         <p>Conta bancária: {{ conta.apelido_conta  }}</p>
         <p>Cartão de crédito: {{ cartao.apelido_cartao  }}</p>
         <p>Dia inicial: {{ cartao.dia_inicial  }}</p>
@@ -11,8 +20,10 @@
         <p>Valor limite: {{ cartao.valor_limite  }}</p>
         <p>Valor gasto: {{ cartao.valor_gasto  }}</p>
         <p>Valor disponível: {{ cartao.valor_disponivel  }}</p>
-        <p>Data cadastro: {{ cartao.data_cadastro  }}</p>
+        <p>Data cadastro: {{ converte_data_string(cartao.data_cadastro)  }}</p>
         <p>Usuario cadastro: {{ usuario.username  }}</p>
+        <p>Status cartão: {{ situacao_retorno(cartao.situacao) }}</p>
         <a href="{{ url_for('editar_cartao', id_cartao=cartao.id) }}">Editar</a>
+            {% endblock %}
     </div>
 {% endblock %}

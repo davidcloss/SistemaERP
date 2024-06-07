@@ -1,0 +1,13 @@
+{% extends 'home_atributos_banco.html' %}
+
+            {% block menus %}
+            <a href="{{ url_for('cadastro_conta_bancaria') }}" class="link-central">
+                <h3 class="m-2 text-start">Cadastro</h3>
+            </a>
+            <a href="{{ url_for('lista_contas') }}" class="link-central">
+                <h3 class="m-2 text-start">Lista</h3>
+            </a>
+            {% endblock %}
+{% block submenu %}
+<h2>Contas Bancárias</h2>
+{% endblock %}

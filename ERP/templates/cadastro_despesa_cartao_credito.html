@@ -1,0 +1,33 @@
+{% extends 'home_transacoes_financeiras.html' %}
+
+{% block central %}
+    <div class="container">
+        <form method='POST' action="" class="border m-5 p-2">
+            {{ form.csrf_token }}
+            <h2>Cadastro Despesa Cartão de Crédito:</h2>
+            <fieldset>
+                <div class="form-group">
+                    {{ form.valor_transacao.label(class="form-control-label") }}
+                    {{ form.valor_transacao(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.id_cartao_credito.label(class="form-control-label") }}
+                    {{ form.id_cartao_credito(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.id_categoria_financeira.label(class="form-control-label") }}
+                    {{ form.id_categoria_financeira(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.fatura_cartao_credito.label(class="form-control-label") }}
+                    {{ form.fatura_cartao_credito(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.data_ocorrencia.label(class="form-control-label") }}
+                    {{ form.data_ocorrencia(class="form-control") }}
+                </div>
+            </fieldset>
+            {{ form.botao_submit(class="btn btn-primary m-1") }}
+        </form>
+    </div>
+{% endblock %}

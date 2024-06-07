@@ -1,6 +1,6 @@
-{% include 'base.html' %}
+{% extends 'home_transacoes_financeiras.html' %}
 
-{% block content %}
+{% block central %}
     <div class="container">
         <form method='POST' action="" class="border m-5 p-2">
             {{ form.csrf_token }}
@@ -8,11 +8,15 @@
             <fieldset>
                 <div class="form-group">
                     {{ form.nome_categoria.label(class="form-control-label") }}
-                    {{ form.nome_categoria(class="form-control-label") }}
+                    {{ form.nome_categoria(class="form-control") }}
                 </div>
                 <div class="form-group">
-                    {{ form.tipo_transacao.label(class="form-control-label") }}
-                    {{ form.tipo_transacao(class="form-control-label") }}
+                    {{ form.tipo_transacao_financeira.label(class="form-control-label") }}
+                    {{ form.tipo_transacao_financeira(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.situacao.label(class="form-control-label") }}
+                    {{ form.situacao(class="form-control") }}
                 </div>
             </fieldset>
             {{ form.botao_submit(class="btn btn-primary m-1") }}

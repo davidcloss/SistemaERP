@@ -1,10 +1,11 @@
-{% extends 'home_estoque.html' %}
+{% extends 'home_instituicao_bancaria.html' %}
 
 {% block central %}
     <div class="container">
         <h2>Dados do Cadastro</h2>
         <p>Código banco: {{ banco.cod_banco }}</p>
             <p>Nome banco: {{ banco.nome_banco }}</p>
+        <p>Situação banco: {{ situacao_retorno(banco.situacao) }}</p>
         <a href="{{ url_for('editar_bancos', banco_id=banco.id) }}">Editar</a>
     </div>
 {% endblock %}

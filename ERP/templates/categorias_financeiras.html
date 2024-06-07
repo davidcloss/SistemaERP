@@ -1,11 +1,12 @@
-{% include 'base.html' %}
+{% extends 'home_transacoes_financeiras.html' %}
 
-{% block content %}
+{% block central %}
     <div class="container">
         <h2>Dados do Cadastro</h2>
         <p>Nome Categoria: {{ categoria.nome_categoria }}</p>
-        {% set transacao = nome_tipo_transacao_categoria_financeira(categoria.tipo_transacao) %}
+        {% set transacao = nome_tipo_transacao_categoria_financeira(categoria.tipo_transacao_financeira) %}
             <p>Tipo Transação: {{ transacao }}</p>
+        <p>Situação: {{ situacao_retorno(categoria.situacao) }}</p>
         <a href="{{ url_for('editar_categorias_financeiras', transacao_id=categoria.id) }}">Editar</a>
     </div>
 {% endblock %}

@@ -1,6 +1,6 @@
-{% include 'base.html' %}
+{% extends 'home_instituicao_bancaria.html' %}
 
-{% block content %}
+{% block central %}
     <div class="container">
         <form method='POST' action="" class="border m-5 p-2">
             {{ form_agencia.csrf_token }}
@@ -8,23 +8,23 @@
             <fieldset>
                 <div class="form-group">
                     {{ form_agencia.agencia.label(class="form-control-label") }}
-                    {{ form_agencia.agencia(class="form-control-label") }}
+                    {{ form_agencia.agencia(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form_agencia.digito_agencia.label(class="form-control-label") }}
-                    {{ form_agencia.digito_agencia(class="form-control-label") }}
+                    {{ form_agencia.digito_agencia(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form_agencia.id_banco.label(class="form-control-label") }}
-                    {{ form_agencia.id_banco(class="form-control-label") }}
+                    {{ form_agencia.id_banco(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form_agencia.apelido_agencia.label(class="form-control-label") }}
-                    {{ form_agencia.apelido_agencia(class="form-control-label") }}
+                    {{ form_agencia.apelido_agencia(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form_agencia.campo_pesquisa.label(class="form-control-label") }}
-                    {{ form_agencia.campo_pesquisa(class="form-control-label") }}
+                    {{ form_agencia.campo_pesquisa(class="form-control") }}
                 </div>
 
             </fieldset>

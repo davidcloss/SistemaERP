@@ -175,6 +175,13 @@ class FormBancos(FlaskForm):
     botao_submit = SubmitField('Cadastrar')
 
 
+class FormEditarBancos(FlaskForm):
+    cod_banco = StringField('Código Banco', validators=[DataRequired(message='Favor incluir código banco')])
+    nome_banco = StringField('Nome Banco', validators=[DataRequired(message='Favor incluir nome banco')])
+    situacao = SelectField('Situação')
+    botao_submit = SubmitField('Cadastrar')
+
+
 class FormAgenciaBancoCadastro(FlaskForm):
     agencia = StringField('Agência Banco', validators=[DataRequired(message='Favor incluir código agencia')])
     digito_agencia = StringField('Dígito agência', validators=[DataRequired(message='Favor incluir dígito agencia')])
@@ -195,6 +202,7 @@ class FormAgenciaBancoEdicao(FlaskForm):
     campo_pesquisa = StringField('Nome fornecedor a pesquisar')
     botao_pesquisar = SubmitField('Pesquisar cliente/fornecedor banco', name='pesquisar')
     botao_cadastrar = SubmitField('Cadastrar cliente/fornecedor banco', name='cadastrar')
+    situacao = SelectField('Situação')
     botao_finalizar = SubmitField('Finalizar cadastro', name='finalizar')
 
 
@@ -210,6 +218,17 @@ class FormContaBancariaCadastro(FlaskForm):
     botao_pesquisar_cnpj = SubmitField('Pesquisar CNPJ', name='cnpj')
 
 
+class FormContaBancariaCadastro2(FlaskForm):
+    id_agencia = SelectField('Agência')
+    apelido_conta = StringField('Apelido conta', validators=[DataRequired(message='Favor incluir apelido conta')])
+    nro_conta = StringField('Número conta', validators=[DataRequired(message='Favor incluir número conta')])
+    digito_conta = StringField('Dígito conta', validators=[DataRequired(message='Favor incluir dígito conta')])
+    id_titular = SelectField('Titular')
+    cheque_especial = StringField('Valor cheque especial')
+    saldo_conta = StringField('Saldo inicial conta', validators=[DataRequired(message='Favor incluir saldo inicial da conta')])
+    botao_finalizar = SubmitField('Cadastrar', name='finalizar')
+
+
 class FormContaBancariaEdicao(FlaskForm):
     id_agencia = SelectField('Agência')
     apelido_conta = StringField('Apelido conta', validators=[DataRequired(message='Favor incluir apelido conta')])
@@ -218,6 +237,7 @@ class FormContaBancariaEdicao(FlaskForm):
     id_titular = SelectField('Titular')
     cheque_especial = StringField('Valor cheque especial')
     saldo_conta = StringField('Saldo inicial conta', validators=[DataRequired(message='Favor incluir saldo inicial da conta')])
+    situacao = SelectField('Situação')
     botao_finalizar = SubmitField('Cadastrar', name='finalizar')
 
 
@@ -231,9 +251,53 @@ class FormCartaoCredito(FlaskForm):
     botao_submit = SubmitField('Cadastrar')
 
 
+class FormEditarCartaoCredito(FlaskForm):
+    id_conta_bancaria = SelectField('Conta bancária')
+    apelido_cartao = StringField('Apelido cartão de crédito', validators=[DataRequired(message='Favor incluir apelido cartão de crédito')])
+    dia_inicial = IntegerField('Dia inicial fatura', validators=[DataRequired(message='Favor incluir dia inicial fatura')])
+    dia_final = IntegerField('Dia final fatura', validators=[DataRequired(message='Favor incluir dia final fatura')])
+    dia_pgto = IntegerField('Dia de vencimento da fatura', validators=[DataRequired(message='Favor incluir dia de vencimento da fatura')])
+    valor_limite = StringField('Limite cartão de crédito', validators=[DataRequired(message='Favor incluir o valor limite de seu cartão de crédito')])
+    situacao = SelectField('Situação')
+    botao_submit = SubmitField('Cadastrar')
+
+
+class FormEditarFaturaCartaoCredito(FlaskForm):
+    data_inicial = DateField('Data Inicial')
+    data_final = DateField('Data Final')
+    data_vcto = DateField('Data Vencimento')
+    botao_submit = SubmitField('Cadastrar')
+
+
+class FormAlterarPagamentoFaturaCartaoCredito(FlaskForm):
+    data_pagamento = DateField('Data Pagamento')
+    valor_pago = StringField('Valor Pago')
+    botao_submit = SubmitField('Cadastrar')
+
+
 class FormCategoriasFinanceiras(FlaskForm):
     nome_categoria = StringField('Nome Categoria', validators=[DataRequired(message='Favor inserir categoria')])
-    tipo_transacao = SelectField('Tipo transação')
+    tipo_transacao_financeira = SelectField('Tipo transação')
+    botao_submit = SubmitField('Cadastrar')
+
+
+class FormEditarCategoriasFinanceiras(FlaskForm):
+    nome_categoria = StringField('Nome Categoria', validators=[DataRequired(message='Favor inserir categoria')])
+    tipo_transacao_financeira = SelectField('Tipo transação')
+    situacao = SelectField('Situação')
+    botao_submit = SubmitField('Cadastrar')
+
+
+class FormCadastroCustoDespesa(FlaskForm):
+    pass
+
+
+class FormCadastroDespesaCartaoCredito(FlaskForm):
+    id_categoria_financeira = SelectField('Categoria Financeira')
+    id_cartao_credito = SelectField('Cartão de Crédito')
+    fatura_cartao_credito = SelectField('Fatura')
+    valor_transacao = StringField('Valor Transação')
+    data_ocorrencia = DateField('Data Ocorrência')
     botao_submit = SubmitField('Cadastrar')
 
 

@@ -1,0 +1,18 @@
+{% extends 'home_atributos_banco.html' %}
+
+            {% block icone %}
+                <a href="{{ url_for('home_cartao_credito') }}">
+                    <img width="200" class="p-3" src="{{ url_for('static', filename='imagens/cartao-de-debito.png') }}">
+                </a>
+            {% endblock %}
+            {% block menus %}
+            <a href="{{ url_for('cadastrar_cartao_credito') }}" class="link-central">
+                <h3 class="m-2 text-start">Cadastro Cartão de Crédito</h3>
+            </a>
+            <a href="{{ url_for('lista_cartao') }}" class="link-central">
+                <h3 class="m-2 text-start">Lista Cartões Crédito</h3>
+            </a>
+            {% endblock %}
+{% block submenu %}
+<h2>Cartões de Crédito</h2>
+{% endblock %}

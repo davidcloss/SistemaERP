@@ -1,6 +1,6 @@
-{% include 'base.html' %}
+{% extends 'home_instituicao_bancaria.html' %}
 
-{% block content %}
+{% block central %}
     <div class="container">
         <form method='POST' action="" class="border m-5 p-2">
             {{ form.csrf_token }}
@@ -8,11 +8,11 @@
             <fieldset>
                 <div class="form-group">
                     {{ form.cod_banco.label(class="form-control-label") }}
-                    {{ form.cod_banco(class="form-control-label") }}
+                    {{ form.cod_banco(class="form-control") }}
                 </div>
                 <div class="form-group">
                     {{ form.nome_banco.label(class="form-control-label") }}
-                    {{ form.nome_banco(class="form-control-label") }}
+                    {{ form.nome_banco(class="form-control") }}
                 </div>
             </fieldset>
             {{ form.botao_submit(class="btn btn-primary m-1") }}

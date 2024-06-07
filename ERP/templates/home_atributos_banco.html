@@ -1,0 +1,44 @@
+{% extends 'home_financeiro.html' %}
+
+{% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col-3">
+            <div class="text-start">
+                {% block icone %}
+                <a href="{{ url_for('home_atributos_bancos') }}">
+                    <img width="200" class="p-3" src="{{ url_for('static', filename='imagens/moeda-digital.png') }}">
+                </a>
+                {% endblock %}
+            </div>
+            {% block menus %}
+            <a href="{{ url_for('home_bancos') }}" class="link-central">
+                <h3 class="m-2 text-start">Instituições Bancárias</h3>
+            </a>
+            <a href="{{ url_for('home_agencias_bancarias') }}" class="link-central">
+                <h3 class="m-2 text-start">Agências Bancária</h3>
+            </a>
+            <a href="{{ url_for('home_contas_bancarias') }}" class="link-central">
+                <h3 class="m-2 text-start">Contas Bancárias</h3>
+            </a>
+            <a href="{{ url_for('home_cartao_credito') }}" class="link-central">
+                <h3 class="m-2 text-start">Cartões de Crédito</h3>
+            </a>
+            {% endblock %}
+            {% block editarpubli %}{% endblock %}
+        </div>
+        <div class="col-9 text-start p-3">
+            <div class="row">
+                <h1>Atributos Banco:</h1>
+            </div>
+            <div class="row">
+                {% block submenu %}
+                {% endblock %}
+                {% block central %}
+                    <!-- Conteúdo dinâmico que será renderizado no bloco 'central' -->
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

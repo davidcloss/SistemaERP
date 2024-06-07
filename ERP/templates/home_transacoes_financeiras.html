@@ -1,0 +1,42 @@
+{% extends 'home_financeiro.html' %}
+
+{% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col-3">
+            <div class="text-start">
+                <a href="{{ url_for('home_transacoes_financeiras') }}">
+                    <img width="200" class="p-3" src="{{ url_for('static', filename='imagens/limite-de-tempo.png') }}">
+                </a>
+            </div>
+            {% block menus %}
+            <a href="{{ url_for('home_bancos') }}" class="link-central">
+                <h3 class="m-2 text-start">Lista Transações Financeiras</h3>
+            </a>
+            <a href="{{ url_for('criar_categorias_financeiras') }}" class="link-central">
+                <h3 class="m-2 text-start">Cadastrar Categorias Financeiras</h3>
+            </a>
+            <a href="{{ url_for('lista_categoria_financeira') }}" class="link-central">
+                <h3 class="m-2 text-start">Lista Categorias Financeiras</h3>
+            </a>
+            <a href="{{ url_for('cadastro_despesa_cartao_credito') }}" class="link-central">
+                <h3 class="m-2 text-start">Cadastro Despesa Cartão de Crédito</h3>
+            </a>
+            {% endblock %}
+            {% block editarpubli %}{% endblock %}
+        </div>
+        <div class="col-9 text-start p-3">
+            <div class="row">
+                <h1>Transações Financeiras:</h1>
+            </div>
+            <div class="row">
+                {% block submenu %}
+                {% endblock %}
+                {% block central %}
+                    <!-- Conteúdo dinâmico que será renderizado no bloco 'central' -->
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
