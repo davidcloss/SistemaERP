@@ -1,4 +1,4 @@
-#!/home/david/Documentos/SistemaERP/venv/bin/python
+#!/home/david/Documentos/GitHub/SistemaERP/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

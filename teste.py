@@ -137,7 +137,6 @@ with app.app_context():
         database.session.commit()
 
 
-gatilhos.triggers_financeiro()
 
 with app.app_context():
     fornecedor = ClientesFornecedores(nome_fantasia='Mimos', razao_social='Mimos LTDA',
@@ -217,7 +216,6 @@ with app.app_context():
     database.session.add(transacao)
     database.session.commit()
 
-gatilhos.triggers_tabela_item_estoque()
 
 
 print(datetime.utcnow().date())

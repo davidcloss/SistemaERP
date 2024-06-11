@@ -12,11 +12,109 @@ from ERP.models import Usuarios, CadastroEmpresa, TiposCadastros, ClientesFornec
 from ERP.models import TiposRoupas, Cores, Tamanhos, Marcas, TiposUnidades, ItensEstoque, SituacoesUsuarios
 from ERP.models import TransacoesEstoque, TiposTransacoesEstoque, Bancos, AgenciaBanco, ContasBancarias
 from ERP.models import CartaoCredito, GeneroRoupa, CategoriasFinanceiras, ValidacaoFaturasCartaoCredito, FaturaCartaoCredito
+from ERP.models import Conferencias
 from flask_login import login_user, logout_user, current_user, login_required
 import secrets
 from datetime import datetime, timedelta
-import os
-from sqlalchemy import or_, and_, desc
+from sqlalchemy import or_, and_, desc, func
+
+
+def define_data_ultima_entrada_item_estoque(item, transacao):
+    item.data_ultima_entrada = transacao.data_transacao
+    conferencia = Conferencias(id_funcao=1,
+                               id_item=item.id)
+    database.session.add(conferencia)
+    database.session.commit()
+
+
+def define_data_ultima_saida_item_estoque(item, transacao):
+    item.data_ultima_saida = transacao.data_transacao
+    conferencia = Conferencias(id_funcao=2,
+                               id_item=item.id)
+    database.session.add(conferencia)
+    database.session.commit()
+
+
+def confere_data_entrada_saida_itens_estoque():
+    itens_estoque = ItensEstoque.query.filter(ItensEstoque.situacao==1).all()
+    for item in itens_estoque:
+        ultima_transacao = TransacoesEstoque.query.filter_by(id_item=item.id).order_by(TransacoesEstoque.id.desc()).first()
+
+        if item.data_ultima_entrada is False or item.data_ultima_entrada != ultima_transacao.data_transacao and ultima_transacao.tipo_transacao in [1,3,5,7]:
+            item.data_ultima_entrada = ultima_transacao.data_transacao
+            conferencia = Conferencias(id_funcao=3,
+                                       id_item=item.id)
+            database.session.add(conferencia)
+            database.session.commit()
+
+        if item.data_ultima_saida is False or item.data_ultima_saida != ultima_transacao.data_transacao and ultima_transacao.tipo_transacao in [2,4,6,8]:
+            item.data_ultima_saida = ultima_transacao.data_transacao
+            conferencia = Conferencias(id_funcao=3,
+                                       id_item=item.id)
+            database.session.add(conferencia)
+            database.session.commit()
+
+
+def atualiza_item_estoque(item, tipo=5):
+    qtd_entradas = database.session.query(
+        func.coalesce(func.sum(TransacoesEstoque.qtd_transacao), 0)
+    ).filter(
+        TransacoesEstoque.id_item == item.id,
+        TransacoesEstoque.tipo_transacao.in_([1, 3, 5, 7])
+    ).scalar()
+
+    custo_entradas = database.session.query(
+        func.coalesce(func.sum(TransacoesEstoque.valor_total_transacao_custo), 0)
+    ).filter(
+        TransacoesEstoque.id_item == item.id,
+        TransacoesEstoque.tipo_transacao.in_([1, 3, 5, 7])
+    ).scalar()
+
+    # Query for sum of saidas
+    qtd_saidas = database.session.query(
+        func.coalesce(func.sum(TransacoesEstoque.qtd_transacao), 0)
+    ).filter(
+        TransacoesEstoque.id_item == item.id,
+        TransacoesEstoque.tipo_transacao.in_([2, 4, 6, 8])
+    ).scalar()
+
+    custo_saidas = database.session.query(
+        func.coalesce(func.sum(TransacoesEstoque.valor_total_transacao_custo), 0)
+    ).filter(
+        TransacoesEstoque.id_item == item.id,
+        TransacoesEstoque.tipo_transacao.in_([2, 4, 6, 8])
+    ).scalar()
+
+    # Calculate final values
+    custo_final = custo_entradas - custo_saidas
+    qtd_final = qtd_entradas - qtd_saidas
+
+    valor_unitario_medio_custo = 0
+    valor_estoque_venda = 0
+
+    if qtd_final > 0:
+        valor_unitario_medio_custo = custo_final / qtd_final
+        valor_estoque_venda = item.valor_unitario_venda * qtd_final
+
+
+    # Update item
+    item.qtd = qtd_final
+    item.valor_estoque_custo = custo_final
+    item.valor_unitario_medio_custo = valor_unitario_medio_custo
+    item.valor_estoque_venda = valor_estoque_venda
+    conferencia = Conferencias(id_funcao=tipo,
+                               id_item=item.id)
+    database.session.add(conferencia)
+    database.session.commit()
+
+
+def saldos_itens_estoque(item=False):
+    if item:
+        atualiza_item_estoque(item)
+    else:
+        itens_estoque = ItensEstoque.query.filter(ItensEstoque.situacao == 1).all()
+        for item in itens_estoque:
+            atualiza_item_estoque(item, tipo=4)
 
 
 def retorna_categorias_financeiras_custos_despesas():
@@ -1084,6 +1182,13 @@ def home_itens_estoque():
     return render_template('home_itens_estoque.html')
 
 
+@app.route('/estoque/itensestoque/confereitens')
+def confere_itens_estoque():
+    confere_data_entrada_saida_itens_estoque()
+    saldos_itens_estoque()
+    return redirect(url_for('home_itens_estoque'))
+
+
 @app.route('/estoque/itensestoque/cadastro', methods=['GET', 'POST'])
 @login_required
 def cadastro_itens_estoque():
@@ -1137,6 +1242,9 @@ def cadastro_itens_estoque():
                                                   valor_unitario_venda=vlr_medio_venda)
             database.session.add(transacao_estoque)
             database.session.commit()
+            transacao_cadastrada = TransacoesEstoque.query.filter_by(id_lote=int(id_lote)).first()
+            define_data_ultima_entrada_item_estoque(item_estoque, transacao_cadastrada)
+            saldos_itens_estoque(item_estoque)
             flash(f"Cadastro concluído!", 'alert-success')
             return redirect(url_for('itens_estoque_', itens_estoque_id=item_estoque.id))
     return render_template('cadastro_itens_estoque.html', form=form)
@@ -1730,6 +1838,7 @@ def cadastro_titular_selecionado_conta(id_titular):
         database.session.commit()
         conta_cadastrada = ContasBancarias.query.filter_by(id_agencia=form.id_agencia.data).first()
         transacao = TransacoesFinanceiras(id_categoria_financeira=1,
+                                          tipo_lancamento=1,
                                           lote_transacao=busc_lote_transacao(),
                                           tipo_transacao=1,
                                           id_conta_bancaria=conta_cadastrada.id,
@@ -2089,6 +2198,7 @@ def cadastro_despesa_cartao_credito():
         id_fat = FaturaCartaoCredito.query.filter_by(cod_fatura=cod_fat).first()
         lote_transacao = busc_lote_transacao()
         transacao = TransacoesFinanceiras(lote_transacao=lote_transacao,
+                                          tipo_lancamento=2,
                                           tipo_transacao=2,
                                           id_categoria_financeira=int(form.id_categoria_financeira.data),
                                           id_cartao_credito=int(form.id_cartao_credito.data),

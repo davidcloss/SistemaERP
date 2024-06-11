@@ -14,14 +14,12 @@ trigger_data_cadastro = """
     $$ LANGUAGE plpgsql;
 """
 
-
 ativar_tg_usuarios = """
     CREATE TRIGGER atualiza_data_cadastro_usuarios
     BEFORE INSERT OR UPDATE ON usuarios
     FOR EACH ROW
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
-
 
 ativar_tg_clientes_fornecedores = """
     CREATE TRIGGER atualiza_data_cadastro_clientes_fornecedores
@@ -30,14 +28,12 @@ ativar_tg_clientes_fornecedores = """
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
 
-
 ativar_tg_tipos_cadastro = """
     CREATE TRIGGER atualiza_data_cadastro_tipos_cadastro
     BEFORE INSERT OR UPDATE ON tipos_cadastro
     FOR EACH ROW
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
-
 
 ativar_tg_cadastro_empresa = """
     CREATE TRIGGER atualiza_data_cadastro_cadastro_empresa
@@ -46,14 +42,12 @@ ativar_tg_cadastro_empresa = """
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
 
-
 ativar_tg_genero_roupa = """
     CREATE TRIGGER atualiza_data_cadastro_genero_roupa
     BEFORE INSERT OR UPDATE ON genero_roupa
     FOR EACH ROW
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
-
 
 ativar_tg_tipos_roupas = """
     CREATE TRIGGER atualiza_data_cadastro_tipos_roupas
@@ -62,14 +56,12 @@ ativar_tg_tipos_roupas = """
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
 
-
 ativar_tg_cores = """
     CREATE TRIGGER atualiza_data_cadastro_cores
     BEFORE INSERT OR UPDATE ON cores
     FOR EACH ROW
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
-
 
 ativar_tg_tamanhos = """
     CREATE TRIGGER atualiza_data_cadastro_tamanhos
@@ -78,14 +70,12 @@ ativar_tg_tamanhos = """
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
 
-
 ativar_tg_marcas = """
     CREATE TRIGGER atualiza_data_cadastro_marcas
     BEFORE INSERT OR UPDATE ON marcas
     FOR EACH ROW
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
-
 
 ativar_tg_tipos_unidades = """
     CREATE TRIGGER atualiza_data_cadastro_tipos_unidades
@@ -94,14 +84,12 @@ ativar_tg_tipos_unidades = """
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
 
-
 ativar_tg_itens_estoque = """
     CREATE TRIGGER atualiza_data_cadastro_itens_estoque
     BEFORE INSERT OR UPDATE ON itens_estoque
     FOR EACH ROW
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
-
 
 ativar_tg_tipos_transacoes = """
     CREATE TRIGGER atualiza_data_cadastro_tipos_transacoes
@@ -110,14 +98,12 @@ ativar_tg_tipos_transacoes = """
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
 
-
 ativar_tg_transacoes_estoque = """
     CREATE TRIGGER atualiza_data_cadastro_transacoes_estoque
     BEFORE INSERT OR UPDATE ON transacoes_estoque
     FOR EACH ROW
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
-
 
 ativar_tg_bancos = """
     CREATE TRIGGER atualiza_data_cadastro_bancos
@@ -126,14 +112,12 @@ ativar_tg_bancos = """
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
 
-
 ativar_tg_agencias_bancos = """
     CREATE TRIGGER atualiza_data_cadastro_agencia_bancos
     BEFORE INSERT OR UPDATE ON agencia_bancos
     FOR EACH ROW
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
-
 
 ativar_tg_contas_bancarias = """
     CREATE TRIGGER atualiza_data_cadastro_contas_bancarias
@@ -142,14 +126,12 @@ ativar_tg_contas_bancarias = """
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
 
-
 ativar_tg_cartao_credito = """
     CREATE TRIGGER atualiza_data_cadastro_cartao_credito
     BEFORE INSERT OR UPDATE ON cartao_credito
     FOR EACH ROW
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
-
 
 ativar_tg_fatura_cartao_credito = """
     CREATE TRIGGER atualiza_data_cadastro_fatura_cartao_credito
@@ -158,14 +140,12 @@ ativar_tg_fatura_cartao_credito = """
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
 
-
 ativar_tg_categorias_financeiras = """
     CREATE TRIGGER atualiza_data_cadastro_categorias_financeiras
     BEFORE INSERT OR UPDATE ON categorias_financeiras
     FOR EACH ROW
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
-
 
 ativar_tg_formas_pagamento = """
     CREATE TRIGGER atualiza_data_cadastro_formas_pagamento
@@ -174,14 +154,12 @@ ativar_tg_formas_pagamento = """
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
 
-
 ativar_tg_transacoes_financeiras = """
     CREATE TRIGGER atualiza_data_cadastro_transacoes_financeiras
     BEFORE INSERT OR UPDATE ON transacoes_financeiras
     FOR EACH ROW
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
-
 
 ativar_tg_documentos_fiscais = """
     CREATE TRIGGER atualiza_data_cadastro_documentos_fiscais
@@ -190,14 +168,12 @@ ativar_tg_documentos_fiscais = """
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
 
-
 ativar_tg_tipo_ticket = """
     CREATE TRIGGER atualiza_data_cadastro_tipo_ticket
     BEFORE INSERT OR UPDATE ON tipo_ticket
     FOR EACH ROW
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
-
 
 ativar_tg_status_tickets = """
     CREATE TRIGGER atualiza_data_cadastro_status_tickets
@@ -206,14 +182,12 @@ ativar_tg_status_tickets = """
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
 
-
 ativar_tg_tickets_comerciais = """
     CREATE TRIGGER atualiza_data_cadastro_tickets_comerciais
     BEFORE INSERT OR UPDATE ON tickets_comerciais
     FOR EACH ROW
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
-
 
 ativar_tg_validacao_faturas_cartao_credito = """
     CREATE TRIGGER atualiza_data_cadastro_validacao_faturas_cartao_credito
@@ -223,62 +197,15 @@ ativar_tg_validacao_faturas_cartao_credito = """
 """
 
 
-# 2 - DATA ULTIMA ENTRADA ITEM ESTOQUE = TRANSACAO POSITIVA
-
-
-trigger_data_ultima_entrada_transacoes = """
-    CREATE OR REPLACE FUNCTION atualiza_data_ultima_entrada_transacoes()
-    RETURNS TRIGGER AS $$
-    BEGIN
-        IF NEW.tipo_transacao IN (1, 3, 5) THEN
-            UPDATE itens_estoque
-            SET data_ultima_entrada = NEW.data_transacao
-            WHERE id = NEW.id_item;
-        END IF;
-        RETURN NEW;
-    END;
-    $$ LANGUAGE plpgsql;
-"""
-
-
-ativar_tg_data_ultima_entrada_transacoes = """
-    CREATE TRIGGER trg_after_insert_update_transacoes_estoque_entrada
-    BEFORE INSERT OR UPDATE ON transacoes_estoque
+ativar_tg_conferencias = """
+    CREATE TRIGGER atualiza_data_cadastro_conferencias
+    BEFORE INSERT OR UPDATE ON conferencias
     FOR EACH ROW
-    EXECUTE FUNCTION atualiza_data_ultima_entrada_transacoes();
+    EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
-
-
-# 3 - DATA ULTIMA SAIDA ITEM ESTOQUE = TRANSACAO POSITIVA
-
-
-trigger_data_ultima_saida_transacoes = """
-    CREATE OR REPLACE FUNCTION atualiza_data_ultima_saida_transacoes()
-    RETURNS TRIGGER AS $$
-    BEGIN
-        IF NEW.tipo_transacao IN (2, 4, 6) THEN
-            UPDATE itens_estoque
-            SET data_ultima_saida = NEW.data_transacao
-            WHERE id = NEW.id_item;
-        END IF;
-        RETURN NEW;
-    END;
-    $$ LANGUAGE plpgsql;
-"""
-
-
-ativar_tg_data_ultima_saida_transacoes = """
-    CREATE TRIGGER trg_after_insert_update_transacoes_estoque_saida
-    BEFORE INSERT OR UPDATE ON transacoes_estoque
-    FOR EACH ROW
-    EXECUTE FUNCTION atualiza_data_ultima_saida_transacoes();
-"""
-
 
 
 # 3 QTD TABELA ITENS_ESTOQUE TODA VEZ QUE ATUALIZA TRANSACOES_ESTOQUE ENTRADA
-
-
 
 
 trigger_atualiza_qtd_estoque_entrada = """
@@ -299,7 +226,7 @@ BEGIN
     FROM transacoes_estoque
     WHERE id_item = NEW.id_item
     AND tipo_transacao IN (1, 3, 5);
-    
+
     -- Calcular os custos de entradas
     SELECT COALESCE(SUM(valor_total_transacao_custo), 0)
     INTO custo_entradas
@@ -313,7 +240,7 @@ BEGIN
     FROM transacoes_estoque
     WHERE id_item = NEW.id_item
     AND tipo_transacao IN (2, 4, 6);
-    
+
     -- Calcular os custos de saídas
     SELECT COALESCE(SUM(valor_total_transacao_custo), 0)
     INTO custo_saidas
@@ -348,7 +275,6 @@ END;
 $$ LANGUAGE plpgsql;
 """
 
-
 ativar_tg_atualiza_qtd_estoque_entrada = """
     CREATE TRIGGER trg_after_insert_transacoes_estoque_qtd
     AFTER INSERT OR UPDATE ON transacoes_estoque
@@ -367,7 +293,7 @@ trigger_atualiza_saldo_conta_bancaria = """
     BEGIN
         IF (NEW.tipo_transacao = 1 AND NEW.id_conta_bancaria IS NOT NULL) THEN
             id_conta := NEW.id_conta_bancaria;
-            
+
             -- Calcula as entradas
             SELECT COALESCE(SUM(tf.valor_transacao), 0)
             INTO entradas
@@ -375,7 +301,7 @@ trigger_atualiza_saldo_conta_bancaria = """
             JOIN categorias_financeiras cf ON cf.id = tf.id_categoria_financeira
             WHERE tf.id_conta_bancaria = id_conta
               AND cf.tipo_transacao_financeira IN (1, 4);
-    
+
             -- Calcula as saídas
             SELECT COALESCE(SUM(tf.valor_transacao), 0)
             INTO saidas
@@ -383,7 +309,7 @@ trigger_atualiza_saldo_conta_bancaria = """
             JOIN categorias_financeiras cf ON cf.id = tf.id_categoria_financeira
             WHERE tf.id_conta_bancaria = id_conta
               AND cf.tipo_transacao_financeira IN (2, 3, 5);
-    
+
             -- Atualiza o saldo da conta bancária
             UPDATE contas_bancarias
             SET saldo_conta = entradas - saidas
@@ -394,14 +320,12 @@ trigger_atualiza_saldo_conta_bancaria = """
     $$ LANGUAGE plpgsql;
 """
 
-
 ativar_tg_atualiza_saldo_conta_bancaria = """
     CREATE TRIGGER trigger_atualizar_saldo
     AFTER INSERT OR UPDATE ON transacoes_financeiras
     FOR EACH ROW
     EXECUTE FUNCTION atualizar_saldo_conta();
 """
-
 
 trigger_atualiza_cheque_especial = """
     CREATE OR REPLACE FUNCTION atualizar_cheque_especial() RETURNS TRIGGER AS $$
@@ -413,12 +337,11 @@ trigger_atualiza_cheque_especial = """
             NEW.cheque_especial_utilizado := 0;
             NEW.cheque_especial_disponivel := NEW.cheque_especial;
         END IF;
-    
+
         RETURN NEW;
     END;
     $$ LANGUAGE plpgsql;
 """
-
 
 ativar_tg_atualiza_cheque_especial = """
     CREATE TRIGGER trigger_atualizar_cheque_especial
@@ -426,7 +349,6 @@ ativar_tg_atualiza_cheque_especial = """
     FOR EACH ROW
     EXECUTE FUNCTION atualizar_cheque_especial();
 """
-
 
 trigger_sync_fatura_carta_credito_transacoes_financeiras = """
     -- Criação da função que será chamada pelo trigger
@@ -448,6 +370,7 @@ trigger_sync_fatura_carta_credito_transacoes_financeiras = """
             -- Atualiza a transação financeira existente
             UPDATE transacoes_financeiras
         SET data_vencimento = NEW.data_vcto,
+            tipo_lancamento = 2,
             id_usuario_cadastro = NEW.id_usuario_cadastro,
             valor_pago = NEW.valor_pago,
             valor_transacao = NEW.valor_fatura,
@@ -463,6 +386,7 @@ trigger_sync_fatura_carta_credito_transacoes_financeiras = """
         -- Cria uma nova transação financeira
         INSERT INTO transacoes_financeiras (
             tipo_transacao, 
+            tipo_lancamento,
             id_categoria_financeira, 
             id_fatura_cartao_credito, 
             data_vencimento, 
@@ -479,6 +403,7 @@ trigger_sync_fatura_carta_credito_transacoes_financeiras = """
             data_ocorrencia
         ) VALUES (
             1, 
+            2,
             2, 
             NEW.id, 
             NEW.data_vcto,
@@ -495,7 +420,7 @@ trigger_sync_fatura_carta_credito_transacoes_financeiras = """
             NEW.data_vcto
         );
     END IF;
-    
+
         RETURN NEW;
     END;
     $$ LANGUAGE plpgsql;
@@ -509,7 +434,6 @@ ativar_tg_sync_fatura_carta_credito_transacoes_financeiras = """
     EXECUTE FUNCTION sync_transacoes_financeiras();
 """
 
-
 trigger_atualiza_valor_fatura_cartao_credito = """
     CREATE OR REPLACE FUNCTION atualizar_valor_fatura_cartao_credito()
     RETURNS TRIGGER AS $$
@@ -518,32 +442,31 @@ trigger_atualiza_valor_fatura_cartao_credito = """
         abatimentos NUMERIC;
     BEGIN
         -- Verifica se o tipo de transação é 2 e se id_fatura_cartao_credito não é nulo
-        IF NEW.tipo_transacao = 2 AND NEW.id_fatura_cartao_credito IS NOT NULL THEN
+        IF NEW.tipo_lancamento = 2 THEN
             -- Calcula o total de gastos
             SELECT SUM(tf.valor_transacao) INTO gastos
             FROM transacoes_financeiras tf
             JOIN categorias_financeiras cf ON tf.id_categoria_financeira = cf.id
             WHERE tf.id_fatura_cartao_credito = NEW.id_fatura_cartao_credito
               AND cf.tipo_transacao_financeira IN (2, 3, 5);
-        
+
             -- Calcula o total de abatimentos
             SELECT SUM(tf.valor_transacao) INTO abatimentos
             FROM transacoes_financeiras tf
             JOIN categorias_financeiras cf ON tf.id_categoria_financeira = cf.id
             WHERE tf.id_fatura_cartao_credito = NEW.id_fatura_cartao_credito
               AND cf.tipo_transacao_financeira IN (1, 4);
-        
+
             -- Atualiza o valor da fatura
             UPDATE fatura_cartao_credito
             SET valor_fatura = COALESCE(gastos, 0) - COALESCE(abatimentos, 0)
             WHERE id = NEW.id_fatura_cartao_credito;
         END IF;
-        
+
         RETURN NEW;
     END;
     $$ LANGUAGE plpgsql;
 """
-
 
 ativar_tg_atualiza_valor_fatura_cartao_credito = """
     CREATE TRIGGER trigger_atualizar_valor_fatura_cartao_credito
@@ -551,8 +474,6 @@ ativar_tg_atualiza_valor_fatura_cartao_credito = """
     FOR EACH ROW
     EXECUTE FUNCTION atualizar_valor_fatura_cartao_credito();
 """
-
-
 trigger_atualiza_valor_gasto_cartao_credito = """
     CREATE OR REPLACE FUNCTION atualizar_valor_gasto_cartao_credito()
     RETURNS TRIGGER AS $$
@@ -564,24 +485,23 @@ trigger_atualiza_valor_gasto_cartao_credito = """
         SELECT c.valor_limite INTO valor_limite_total
         FROM cartao_credito c
         WHERE c.id = NEW.id_cartao_credito;
-    
+
         -- Calcula a soma de todas as faturas com situacao_fatura igual a 0 ou 2
         SELECT SUM(fcc.valor_fatura) INTO valor_utilizado
         FROM fatura_cartao_credito fcc
         WHERE fcc.id_cartao_credito = NEW.id_cartao_credito
           AND fcc.situacao_fatura IN (0, 2);
-    
+
         -- Atualiza as colunas valor_utilizado e valor_disponivel no cartao_credito
         UPDATE cartao_credito
         SET valor_gasto = COALESCE(valor_utilizado, 0),
             valor_disponivel = valor_limite_total - COALESCE(valor_utilizado, 0)
         WHERE id = NEW.id_cartao_credito;
-    
+
         RETURN NEW;
     END;
     $$ LANGUAGE plpgsql;
 """
-
 
 ativar_tg_trigger_atualiza_valor_gasto_cartao_credito = """
     CREATE TRIGGER trigger_atualizar_valor_gasto_cartao_credito
@@ -593,11 +513,9 @@ ativar_tg_trigger_atualiza_valor_gasto_cartao_credito = """
 
 class Gatilhos:
 
-
     def __init__(self):
         self.app = app
         self.database = database
-
 
     def cria_gatilho_data_cadastro(self):
         with self.app.app_context():
@@ -615,7 +533,7 @@ class Gatilhos:
             ativar_tg_cartao_credito, ativar_tg_fatura_cartao_credito, ativar_tg_categorias_financeiras,
             ativar_tg_formas_pagamento, ativar_tg_transacoes_financeiras, ativar_tg_documentos_fiscais,
             ativar_tg_tipo_ticket, ativar_tg_status_tickets, ativar_tg_tickets_comerciais,
-            ativar_tg_validacao_faturas_cartao_credito]
+            ativar_tg_validacao_faturas_cartao_credito, ativar_tg_conferencias]
 
         # Executar cada gatilho na lista
         with self.app.app_context():
@@ -623,122 +541,103 @@ class Gatilhos:
                 statement = text(gatilho)
                 self.database.session.execute(statement)
                 self.database.session.commit()
-
-
-    def ativa_gatilho_data_ultima_entrada_item_estoque(self):
-        with self.app.app_context():
-            self.database.session.execute(text(ativar_tg_data_ultima_entrada_transacoes))
-            self.database.session.commit()
-
-
-    def cria_gatilho_data_ultima_entrada_item_estoque(self):
-        with self.app.app_context():
-            self.database.session.execute(text(trigger_data_ultima_entrada_transacoes))
-            self.database.session.commit()
-        self.ativa_gatilho_data_ultima_entrada_item_estoque()
-
-
-    def ativa_gatilho_data_ultima_saida_item_estoque(self):
-        with self.app.app_context():
-            self.database.session.execute(text(ativar_tg_data_ultima_saida_transacoes))
-            self.database.session.commit()
-
-
-    def cria_gatilho_data_ultima_saida_item_estoque(self):
-        with self.app.app_context():
-            self.database.session.execute(text(trigger_data_ultima_saida_transacoes))
-            self.database.session.commit()
-        self.ativa_gatilho_data_ultima_saida_item_estoque()
-
-
-    def ativa_gatilho_qtd_estoque_entrada(self):
-        with self.app.app_context():
-            self.database.session.execute(text(ativar_tg_atualiza_qtd_estoque_entrada))
-            self.database.session.commit()
-
-
-    def cria_gatilho_atualiza_qtd_estoque_entrada(self):
-        with self.app.app_context():
-            self.database.session.execute(text(trigger_atualiza_qtd_estoque_entrada))
-            self.database.session.commit()
-        self.ativa_gatilho_qtd_estoque_entrada()
-
-
-    def triggers_tabela_item_estoque(self):
-        self.cria_gatilho_data_ultima_entrada_item_estoque()
-        self.cria_gatilho_data_ultima_saida_item_estoque()
-        self.cria_gatilho_atualiza_qtd_estoque_entrada()
-
-
-
-    def ativa_gatilho_saldo_conta_bancaria(self):
-        with self.app.app_context():
-            self.database.session.execute(text(ativar_tg_atualiza_saldo_conta_bancaria))
-            self.database.session.commit()
-
-
-    def cria_gatilho_atualiza_saldo_conta_bancaria(self):
-        with self.app.app_context():
-            self.database.session.execute(text(trigger_atualiza_saldo_conta_bancaria))
-            self.database.session.commit()
-        self.ativa_gatilho_saldo_conta_bancaria()
-
-
-    def ativa_gatilho_atualiza_cheque_especial(self):
-        with app.app_context():
-            self.database.session.execute(text(ativar_tg_atualiza_cheque_especial))
-            self.database.session.commit()
-
-
-    def cria_gatilho_atualiza_cheque_especial(self):
-        with self.app.app_context():
-            self.database.session.execute(text(trigger_atualiza_cheque_especial))
-            self.database.session.commit()
-        self.ativa_gatilho_atualiza_cheque_especial()
-
-
-    def ativa_gatilho_sync_fatura_cartao_credito_transacoes_financeiras(self):
-        with self.app.app_context():
-            self.database.session.execute(text(ativar_tg_sync_fatura_carta_credito_transacoes_financeiras))
-            self.database.session.commit()
-
-
-    def cria_gatilho_sync_fatura_cartao_credito_transacoes_financeiras(self):
-        with self.app.app_context():
-            self.database.session.execute(text(trigger_sync_fatura_carta_credito_transacoes_financeiras))
-            self.database.session.commit()
-        self.ativa_gatilho_sync_fatura_cartao_credito_transacoes_financeiras()
-
-
-    def ativa_gatilho_atualiza_valor_fatura_cartao_credito(self):
-        with self.app.app_context():
-            self.database.session.execute(text(trigger_atualiza_valor_fatura_cartao_credito))
-            self.database.session.commit()
-
-
-    def cria_gatilho_atualiza_valor_fatura_cartao_credito(self):
-        with self.app.app_context():
-            self.database.session.execute(text(ativar_tg_atualiza_valor_fatura_cartao_credito))
-            self.database.session.commit()
-        self.ativa_gatilho_atualiza_valor_fatura_cartao_credito()
-
-
-    def ativa_gatilho_atualiza_valor_gasto_cartao_credito(self):
-        with self.app.app_context():
-            self.database.session.execute(text(ativar_tg_trigger_atualiza_valor_gasto_cartao_credito))
-            self.database.session.commit()
-
-
-    def cria_gatilho_atualiza_valor_gasto_cartao_credito(self):
-        with self.app.app_context():
-            self.database.session.execute(text(trigger_atualiza_valor_gasto_cartao_credito))
-            self.database.session.commit()
-        self.ativa_gatilho_atualiza_valor_gasto_cartao_credito()
-
-
-    def triggers_financeiro(self):
-        self.cria_gatilho_atualiza_saldo_conta_bancaria()
-        self.cria_gatilho_atualiza_cheque_especial()
-        self.cria_gatilho_sync_fatura_cartao_credito_transacoes_financeiras()
-        self.cria_gatilho_atualiza_valor_fatura_cartao_credito()
-        self.cria_gatilho_atualiza_valor_gasto_cartao_credito()
+    #
+    # def ativa_gatilho_data_ultima_entrada_item_estoque(self):
+    #     with self.app.app_context():
+    #         self.database.session.execute(text(ativar_tg_data_ultima_entrada_transacoes))
+    #         self.database.session.commit()
+    #
+    # def cria_gatilho_data_ultima_entrada_item_estoque(self):
+    #     with self.app.app_context():
+    #         self.database.session.execute(text(trigger_data_ultima_entrada_transacoes))
+    #         self.database.session.commit()
+    #     self.ativa_gatilho_data_ultima_entrada_item_estoque()
+    #
+    # def ativa_gatilho_data_ultima_saida_item_estoque(self):
+    #     with self.app.app_context():
+    #         self.database.session.execute(text(ativar_tg_data_ultima_saida_transacoes))
+    #         self.database.session.commit()
+    #
+    # def cria_gatilho_data_ultima_saida_item_estoque(self):
+    #     with self.app.app_context():
+    #         self.database.session.execute(text(trigger_data_ultima_saida_transacoes))
+    #         self.database.session.commit()
+    #     self.ativa_gatilho_data_ultima_saida_item_estoque()
+    #
+    # def ativa_gatilho_qtd_estoque_entrada(self):
+    #     with self.app.app_context():
+    #         self.database.session.execute(text(ativar_tg_atualiza_qtd_estoque_entrada))
+    #         self.database.session.commit()
+    #
+    # def cria_gatilho_atualiza_qtd_estoque_entrada(self):
+    #     with self.app.app_context():
+    #         self.database.session.execute(text(trigger_atualiza_qtd_estoque_entrada))
+    #         self.database.session.commit()
+    #     self.ativa_gatilho_qtd_estoque_entrada()
+    #
+    # def triggers_tabela_item_estoque(self):
+    #     self.cria_gatilho_data_ultima_entrada_item_estoque()
+    #     self.cria_gatilho_data_ultima_saida_item_estoque()
+    #     self.cria_gatilho_atualiza_qtd_estoque_entrada()
+    #
+    # def ativa_gatilho_saldo_conta_bancaria(self):
+    #     with self.app.app_context():
+    #         self.database.session.execute(text(ativar_tg_atualiza_saldo_conta_bancaria))
+    #         self.database.session.commit()
+    #
+    # def cria_gatilho_atualiza_saldo_conta_bancaria(self):
+    #     with self.app.app_context():
+    #         self.database.session.execute(text(trigger_atualiza_saldo_conta_bancaria))
+    #         self.database.session.commit()
+    #     self.ativa_gatilho_saldo_conta_bancaria()
+    #
+    # def ativa_gatilho_atualiza_cheque_especial(self):
+    #     with app.app_context():
+    #         self.database.session.execute(text(ativar_tg_atualiza_cheque_especial))
+    #         self.database.session.commit()
+    #
+    # def cria_gatilho_atualiza_cheque_especial(self):
+    #     with self.app.app_context():
+    #         self.database.session.execute(text(trigger_atualiza_cheque_especial))
+    #         self.database.session.commit()
+    #     self.ativa_gatilho_atualiza_cheque_especial()
+    #
+    # def ativa_gatilho_sync_fatura_cartao_credito_transacoes_financeiras(self):
+    #     with self.app.app_context():
+    #         self.database.session.execute(text(ativar_tg_sync_fatura_carta_credito_transacoes_financeiras))
+    #         self.database.session.commit()
+    #
+    # def cria_gatilho_sync_fatura_cartao_credito_transacoes_financeiras(self):
+    #     with self.app.app_context():
+    #         self.database.session.execute(text(trigger_sync_fatura_carta_credito_transacoes_financeiras))
+    #         self.database.session.commit()
+    #     self.ativa_gatilho_sync_fatura_cartao_credito_transacoes_financeiras()
+    #
+    # def ativa_gatilho_atualiza_valor_fatura_cartao_credito(self):
+    #     with self.app.app_context():
+    #         self.database.session.execute(text(ativar_tg_atualiza_valor_fatura_cartao_credito))
+    #         self.database.session.commit()
+    #
+    # def cria_gatilho_atualiza_valor_fatura_cartao_credito(self):
+    #     with self.app.app_context():
+    #         self.database.session.execute(text(trigger_atualiza_valor_fatura_cartao_credito))
+    #         self.database.session.commit()
+    #     self.ativa_gatilho_atualiza_valor_fatura_cartao_credito()
+    #
+    # def ativa_gatilho_atualiza_valor_gasto_cartao_credito(self):
+    #     with self.app.app_context():
+    #         self.database.session.execute(text(ativar_tg_trigger_atualiza_valor_gasto_cartao_credito))
+    #         self.database.session.commit()
+    #
+    # def cria_gatilho_atualiza_valor_gasto_cartao_credito(self):
+    #     with self.app.app_context():
+    #         self.database.session.execute(text(trigger_atualiza_valor_gasto_cartao_credito))
+    #         self.database.session.commit()
+    #     self.ativa_gatilho_atualiza_valor_gasto_cartao_credito()
+    #
+    # def triggers_financeiro(self):
+    #     self.cria_gatilho_atualiza_saldo_conta_bancaria()
+    #     self.cria_gatilho_atualiza_cheque_especial()
+    #     self.cria_gatilho_sync_fatura_cartao_credito_transacoes_financeiras()
+    #     self.cria_gatilho_atualiza_valor_fatura_cartao_credito()
+    #     self.cria_gatilho_atualiza_valor_gasto_cartao_credito()
