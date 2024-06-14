@@ -1,3 +1,4 @@
+import time
 from flask import render_template, redirect, url_for, flash, request, session
 from ERP import app, database, bcrypt, login_manager
 from ERP.forms import FormCriarConta, FormLogin, FormCadastroCNPJ, FormCadastroEmpresa, FormCadastroCPF
@@ -17,6 +18,196 @@ from flask_login import login_user, logout_user, current_user, login_required
 import secrets
 from datetime import datetime, timedelta
 from sqlalchemy import or_, and_, desc, func
+
+
+def verifica_fat_cartao_credito_transacao_financeira(fatura):
+    verifica_transacao = TransacoesFinanceiras.query.filter(TransacoesFinanceiras.tipo_lancamento == 1,
+                                                            TransacoesFinanceiras.id_categoria_financeira == 2,
+                                                            TransacoesFinanceiras.tipo_transacao == 1,
+                                                            TransacoesFinanceiras.id_fatura_cartao_credito == fatura.id).first()
+    cartao = CartaoCredito.query.filter_by(id=fatura.id_cartao_credito).first()
+
+    if verifica_transacao:
+        verifica_transacao.valor_transacao = fatura.valor_fatura
+        verifica_transacao.valor_pago = fatura.valor_pago
+        verifica_transacao.data_vencimento = fatura.data_vcto
+        verifica_transacao.tipo_lancamento = 1
+        verifica_transacao.id_usuario_cadastro = current_user.id
+        verifica_transacao.id_cartao_credito = fatura.id_cartao_credito
+        verifica_transacao.data_pagamento = fatura.data_pagamento
+        verifica_transacao.id_conta_bancaria = cartao.id_conta_bancaria
+        database.session.commit()
+
+    else:
+        nova_transacao = TransacoesFinanceiras(tipo_transacao=1,
+                                               tipo_lancamento=1,
+                                               id_categoria_financeira=2,
+                                               id_fatura_cartao_credito=fatura.id,
+                                               data_vencimento=fatura.data_vcto,
+                                               id_usuario_cadastro=current_user.id,
+                                               lote_transacao=busc_lote_transacao(),
+                                               valor_pago=fatura.valor_pago,
+                                               valor_transacao=fatura.valor_fatura,
+                                               id_cartao_credito=fatura.id_cartao_credito,
+                                               data_pagamento=fatura.data_pagamento,
+                                               id_conta_bancaria=cartao.id_conta_bancaria,
+                                               id_forma_pagamento=1,
+                                               situacao_transacao=1,
+                                               situacao=1,
+                                               data_ocorrencia=fatura.data_vcto)
+        database.session.add(nova_transacao)
+        database.session.commit()
+
+
+def vincula_fat_cartao_credito_transacao_financeira(fatura=False):
+    if fatura:
+        verifica_fat_cartao_credito_transacao_financeira(fatura)
+    else:
+        faturas = FaturaCartaoCredito.query.filter(or_(
+            FaturaCartaoCredito.situacao_fatura == 0,
+            FaturaCartaoCredito.situacao_fatura == 2)).all()
+        for fatura in faturas:
+            verifica_fat_cartao_credito_transacao_financeira(fatura)
+
+
+def calcula_valor_utilizado_cartao(credito, tipo=11):
+    valor_utilizado = database.session.query(
+        func.coalesce(func.sum(FaturaCartaoCredito.valor_fatura), 0)
+    ).filter(
+        FaturaCartaoCredito.id_cartao_credito == credito.id,
+        or_(
+            FaturaCartaoCredito.situacao_fatura == 0,
+            FaturaCartaoCredito.situacao_fatura == 2
+        )
+    ).scalar()
+    valor_disponivel = credito.valor_limite - valor_utilizado
+    credito.valor_gasto = valor_utilizado
+    credito.valor_disponivel = valor_disponivel
+    conferencia = Conferencias(id_cartao=credito.id,
+                               id_funcao=tipo)
+    database.session.add(conferencia)
+    database.session.commit()
+
+
+def calcula_gastos_fatura_cartao(fatura):
+    gastos = database.session.query(
+        func.coalesce(func.sum(TransacoesFinanceiras.valor_transacao), 0)
+    ).join(CategoriasFinanceiras, CategoriasFinanceiras.id == TransacoesFinanceiras.id_categoria_financeira
+    ).filter(
+        TransacoesFinanceiras.id_fatura_cartao_credito == fatura.id,
+        CategoriasFinanceiras.tipo_transacao_financeira.in_([2, 3, 5])
+    ).scalar()
+    return gastos
+
+
+def calcula_abatimentos_fatura_cartao(fatura):
+    abatimentos = database.session.query(
+        func.coalesce(func.sum(TransacoesFinanceiras.valor_transacao), 0)
+    ).join(CategoriasFinanceiras, CategoriasFinanceiras.id == TransacoesFinanceiras.id_categoria_financeira
+    ).filter(
+        TransacoesFinanceiras.id_fatura_cartao_credito == fatura.id,
+        CategoriasFinanceiras.tipo_transacao_financeira.in_([1, 4])
+    ).scalar()
+    return abatimentos
+
+
+def atualiza_valores_faturas(fatura, tipo=9):
+    gastos = calcula_gastos_fatura_cartao(fatura)
+    abatimentos = calcula_abatimentos_fatura_cartao(fatura)
+    fatura.valor_fatura = gastos - abatimentos
+    conferencia = Conferencias(id_fatura=fatura.id,
+                               id_funcao=tipo)
+    database.session.add(conferencia)
+    database.session.commit()
+
+
+def atualiza_cartao(cartao=False):
+    if cartao:
+        for fatura in FaturaCartaoCredito.query.filter(
+                and_(
+                    FaturaCartaoCredito.id_cartao_credito == cartao.id,
+                    or_(
+                        FaturaCartaoCredito.situacao_fatura == 0,
+                        FaturaCartaoCredito.situacao_fatura == 2
+                    )
+                )
+        ).all():
+            atualiza_valores_faturas(fatura)
+            vincula_fat_cartao_credito_transacao_financeira(fatura)
+        calcula_valor_utilizado_cartao(cartao)
+    else:
+        for cartao in CartaoCredito.query.filter_by(situacao=1).all():
+            for fatura in FaturaCartaoCredito.query.filter(
+                    and_(
+                        FaturaCartaoCredito.id_cartao_credito == cartao.id,
+                        or_(
+                            FaturaCartaoCredito.situacao_fatura == 0,
+                            FaturaCartaoCredito.situacao_fatura == 2
+                        )
+                    )
+            ).all():
+                atualiza_valores_faturas(fatura, tipo=8)
+                vincula_fat_cartao_credito_transacao_financeira(fatura)
+            calcula_valor_utilizado_cartao(cartao, tipo=10)
+
+
+def calcula_entradas(conta):
+    entradas = database.session.query(
+        func.coalesce(func.sum(TransacoesFinanceiras.valor_transacao), 0)
+    ).join(CategoriasFinanceiras, CategoriasFinanceiras.id == TransacoesFinanceiras.id_categoria_financeira
+    ).filter(
+        TransacoesFinanceiras.id_conta_bancaria == conta.id,
+        CategoriasFinanceiras.tipo_transacao_financeira.in_([1, 4]),
+        TransacoesFinanceiras.tipo_lancamento == 1
+    ).scalar()
+
+    return entradas
+
+
+def calcula_saidas(conta):
+    saidas = database.session.query(
+        func.coalesce(func.sum(TransacoesFinanceiras.valor_transacao), 0)
+    ).join(CategoriasFinanceiras, CategoriasFinanceiras.id == TransacoesFinanceiras.id_categoria_financeira
+    ).filter(
+        TransacoesFinanceiras.id_conta_bancaria == conta.id,
+        CategoriasFinanceiras.tipo_transacao_financeira.in_([2, 3, 5]),
+        TransacoesFinanceiras.tipo_lancamento == 1
+    ).scalar()
+    return saidas
+
+
+def ajusta_saldo_contas(conta=False, tipo=7):
+    if conta:
+        entradas = calcula_entradas(conta)
+        saidas = calcula_saidas(conta)
+        saldo = entradas - saidas
+        conta.saldo_conta = saldo
+        if conta.saldo_conta < 0:
+            conta.cheque_especial_utilizado = saldo
+            conta.cheque_especial_disponivel = conta.cheque_especial - saldo
+        else:
+            conta.cheque_especial_utilizado = 0
+            conta.cheque_especial_disponivel = conta.cheque_especial
+        conferencia = Conferencias(id_conta=conta.id,
+                                   id_funcao=tipo)
+        database.session.add(conferencia)
+        database.session.commit()
+    else:
+        for conta in ContasBancarias.query.filter_by(situacao=1).all():
+            entradas = calcula_entradas(conta)
+            saidas = calcula_saidas(conta)
+            saldo = entradas - saidas
+            conta.saldo_conta = saldo
+            if conta.saldo_conta < 0:
+                conta.cheque_especial_utilizado = saldo
+                conta.cheque_especial_disponivel = conta.cheque_especial + saldo
+            else:
+                conta.cheque_especial_utilizado = 0
+                conta.cheque_especial_disponivel = conta.cheque_especial
+            conferencia = Conferencias(id_conta=conta.id,
+                                       id_funcao=tipo)
+            database.session.add(conferencia)
+            database.session.commit()
 
 
 def define_data_ultima_entrada_item_estoque(item, transacao):
@@ -1837,6 +2028,7 @@ def cadastro_titular_selecionado_conta(id_titular):
         database.session.add(conta_bancaria)
         database.session.commit()
         conta_cadastrada = ContasBancarias.query.filter_by(id_agencia=form.id_agencia.data).first()
+
         transacao = TransacoesFinanceiras(id_categoria_financeira=1,
                                           tipo_lancamento=1,
                                           lote_transacao=busc_lote_transacao(),
@@ -1846,6 +2038,9 @@ def cadastro_titular_selecionado_conta(id_titular):
                                           data_pagamento=datetime.now(),
                                           situacao_transacao=3)
         database.session.add(transacao)
+
+        ajusta_saldo_contas(conta_cadastrada)
+
         database.session.commit()
         flash("Conta cadastrada com sucesso!", 'alert-success')
         return redirect(url_for('contas_bancarias', id_conta=conta_bancaria.id))
@@ -1920,6 +2115,15 @@ def editar_contas(id_conta):
     return render_template('edicao_contas.html', form=form)
 
 
+@app.route('/financeiro/atributosbancos/contasbancarias/recalculo')
+@login_required
+def recalcula_contas_bancarias():
+    ajusta_saldo_contas(tipo=6)
+    atualiza_cartao()
+    vincula_fat_cartao_credito_transacao_financeira()
+    return redirect(url_for('home_contas_bancarias'))
+
+
 @app.route('/financeiro/atributosbancos/cartoescredito')
 @login_required
 def home_cartao_credito():
@@ -1941,7 +2145,7 @@ def cadastrar_cartao_credito():
             flash('Dia pagamento deve ser um dia entre 1 e 31', 'alert-danger')
         else:
             id_conta_bancaria = int(form.id_conta_bancaria.data)
-            conta_bancaria = ContasBancarias.query.get(id_conta_bancaria)
+            conta_bancaria = ContasBancarias.query.filter_by(id=id_conta_bancaria).first()
 
             if not conta_bancaria:
                 flash('Conta bancária selecionada não existe', 'alert-danger')
@@ -1973,12 +2177,19 @@ def cadastrar_cartao_credito():
                         )
                         database.session.add(fatura)
                         database.session.commit()
+                        pesq_fat = FaturaCartaoCredito.query.filter_by(cod_fatura=fatura.cod_fatura).first()
+                        vincula_fat_cartao_credito_transacao_financeira(pesq_fat)
+
+                    else:
+                        vincula_fat_cartao_credito_transacao_financeira()
 
                     data_ref = data_ref + timedelta(days=30)
                     validacao = ValidacaoFaturasCartaoCredito(id_cartao=cartao2.id)
                     database.session.add(validacao)
                     database.session.commit()
 
+                time.sleep(0.5)
+                atualiza_cartao(cartao2)
                 flash('Cartão cadastrado com sucesso!', 'alert-success')
                 return redirect(url_for('cartao_credito', id_cartao=cartao2.id))
 
@@ -2005,8 +2216,7 @@ def lista_fatura_cartao_credito(id_cartao):
 @app.route('/financeiro/atributosbancos/cartoescredito/<id_cartao>/faturas/<id_fatura>')
 @login_required
 def fatura_cartao_credito(id_cartao, id_fatura):
-    faturas = FaturaCartaoCredito.query.filter(FaturaCartaoCredito.id_cartao_credito == int(id_cartao),
-                                               FaturaCartaoCredito.id == int(id_fatura)).first()
+    faturas = FaturaCartaoCredito.query.filter_by(id=int(id_fatura)).first()
     usuario = Usuarios.query.filter_by(id=faturas.id_usuario_cadastro).first()
     cartao = CartaoCredito.query.filter_by(id=int(id_cartao)).first()
     return render_template('fatura_cartao_credito.html', cartao=cartao, fatura=faturas, usuario=usuario, dados_fatura='active')
@@ -2050,6 +2260,7 @@ def alterar_pagamento_faturaa_cartao_credito(id_cartao, id_fatura):
         fatura.valor_pago = recebe_form_valor_monetario(form.valor_pago.data)
         fatura.id_cadastro = current_user.id
         database.session.commit()
+        ajusta_saldo_contas(tipo=6)
         flash('Fatura atualizada com sucesso.', 'alert-success')
         return redirect(url_for('fatura_cartao_credito', id_cartao=id_cartao, id_fatura=id_fatura))
     return render_template('alterar_pagamento_fatura_cartao_credito.html', form=form)
@@ -2208,6 +2419,8 @@ def cadastro_despesa_cartao_credito():
                                           id_usuario_cadastro=current_user.id)
         database.session.add(transacao)
         database.session.commit()
+        cartao = CartaoCredito.query.filter_by(id=id_fat.id_cartao_credito).first()
+        atualiza_cartao(cartao)
         flash('Transação cadastrada com Sucesso.', 'alert-success')
         return redirect(url_for('home_transacoes_financeiras'))
     return render_template('cadastro_despesa_cartao_credito.html', form=form)

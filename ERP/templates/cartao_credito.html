@@ -5,7 +5,7 @@
         <div class="container">
   <ul class="nav row nav-tabs justify-content-center"> <!-- Adicione a classe justify-content-center para centralizar a lista horizontalmente -->
     <li class="nav-item col m-3">
-      <a class="nav-link {{ dados_cadastro }} link-tabela text-center" href="{{ url_for('cartao_credito', id_cartao='1') }}">Dados Cadastro</a>
+      <a class="nav-link {{ dados_cadastro }} link-tabela text-center" href="{{ url_for('cartao_credito', id_cartao=cartao.id) }}">Dados Cadastro</a>
     </li>
     <li class="nav-item col m-3">
       <a class="nav-link {{ lista_faturas}} link-tabela text-center" href="{{ url_for('lista_fatura_cartao_credito', id_cartao=cartao.id) }}">Lista Faturas</a>

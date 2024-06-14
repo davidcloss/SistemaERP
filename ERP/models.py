@@ -395,13 +395,24 @@ class StatusTickets(database.Model):
 class Conferencias(database.Model):
     __tablename__ = 'conferencias'
     id = database.Column(database.Integer, primary_key=True)
+    ########### ESTOQUE ###########
     # 1 - data entrada item estoque
     # 2 - data saida item estoque
     # 3 - data entrada e saida item estoque
     # 4 - Qtds itens estoque Todos
     # 5 - Qtd item estoque Individual
+    ########## FINANCEIRO ##########
+    # 6 - Saldo Conta Todos
+    # 7 - Saldo Conta Individual
+    # 8 - Atualiza Valor Faturas Todos
+    # 9 - Atualiza Valor Faturas Individual
+    # 10 - Atualiza Valor Credito Todos
+    # 11 - Atualiza Valor Credito Individual
     id_funcao = database.Column(database.Integer)
     id_item = database.Column(database.Integer, database.ForeignKey('itens_estoque.id'))
+    id_conta = database.Column(database.Integer, database.ForeignKey('contas_bancarias.id'))
+    id_cartao = database.Column(database.Integer, database.ForeignKey('cartao_credito.id'))
+    id_fatura = database.Column(database.Integer, database.ForeignKey('fatura_cartao_credito.id'))
     data_cadastro = database.Column(database.DateTime)
 
 

@@ -161,7 +161,7 @@ with app.app_context():
     database.session.add(fornecedor)
     database.session.commit()
 
-
+# nao mexer na ordem da lista categorias
 categorias = [('Saldo Inicial Conta', 1), ('Fatura Cartão Crédito', 0), ('Descontos Recebidos', 1), ('Multas por atraso recebidas', 3)]
 with app.app_context():
     for categoria in categorias:
@@ -207,6 +207,7 @@ with app.app_context():
     database.session.add(conta)
     database.session.commit()
     transacao = TransacoesFinanceiras(id_categoria_financeira=1,
+                                      tipo_lancamento=1,
                                       lote_transacao=1,
                                       tipo_transacao=1,
                                       id_conta_bancaria=1,
