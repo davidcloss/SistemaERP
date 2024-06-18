@@ -74,6 +74,26 @@ class FormCadastroEmpresa(FlaskForm):
     botao_submit = SubmitField('Cadastrar')
 
 
+class FormCadastroCompraEstoque(FlaskForm):
+    id_documento_fiscal = SelectField('Tipo Documento Fiscal:')
+    tipo_fornecedor = SelectField('Fornecedor CPF/CNPJ')
+    pesquisa_fornecedor = SelectField('Fornecedor:')
+    nro_documento_fiscal = StringField('Nro. Documento Fiscal:')
+    emissao_documento_fiscal = DateField('Data Emissão Documento Fiscal:', validators=[DataRequired(message='Favor inserir data.')])
+    data_chegada = DateField('Data chegada:', validators=[DataRequired(message='Favor inserir data.')])
+    data_prazo = DateField('Data Prazo:', validators=[DataRequired(message='Favor inserir data.')])
+    valor_desconto = StringField('Valor Desconto:')
+    valor_acrescimo = StringField('Valor Acréscimo:')
+    parcelas = StringField('Qtd. Parcelas:')
+    id_forma_pagamento = SelectField('Forma de Pagamento:')
+    pesquisa_item = StringField('Produto:')
+    valor_item = StringField('Valor Compra')
+    situacao = SelectField('Situação Ticket:')
+    botao_pesquisar_item = SubmitField('Pesquisar Item', name='pesquisar_item')
+    botao_pesquisar_fornecedor = SubmitField('Pesquisar Fornecedor', name='pesquisar_fornecedor')
+    botao_finalizar = SubmitField('Finalizar', name='finalizar')
+
+
 class FormTiposRoupas(FlaskForm):
     nome_tipo_roupa = StringField('Tipo Roupa:', validators=[DataRequired()])
     botao_submit = SubmitField('Cadastrar')

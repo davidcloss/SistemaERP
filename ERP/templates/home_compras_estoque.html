@@ -1,0 +1,33 @@
+{% extends 'home_estoque.html' %}
+
+{% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col-3">
+            <div class="text-start">
+                <a href="{{ url_for('home_compra_estoque') }}">
+                    <img width="200" class="p-3" src="{{ url_for('static', filename='imagens/comprar.png') }}">
+                </a>
+            </div>
+            {% block menus %}
+            <a href="{{ url_for('cadastra_compra') }}" class="link-central">
+                <h3 class="m-2 text-start">Cadastrar compra</h3>
+            </a>
+            {% endblock %}
+            {% block editarpubli %}{% endblock %}
+        </div>
+        <div class="col-9 text-start p-3">
+            <div class="row">
+                <h1>Compras Estoque:</h1>
+            </div>
+            <div class="row">
+                {% block submenu %}
+                {% endblock %}
+                {% block central %}
+                    <!-- Conteúdo dinâmico que será renderizado no bloco 'central' -->
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

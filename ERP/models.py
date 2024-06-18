@@ -3,6 +3,21 @@ from datetime import datetime
 from flask_login import UserMixin
 
 
+class TiposUsuarios(database.Model):
+    __tablename__ = 'tipos_usuarios'
+    id = database.Column(database.Integer, primary_key=True)
+    nome_tipo = database.Column(database.String(70), nullable=False, unique=True)
+    tipos_usuarios = database.relationship('Usuarios', backref='usuarios_tipo', lazy=True)
+    situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
+
+
+class SituacoesUsuarios(database.Model):
+    __tablename__ = 'situacoes_usuarios'
+    id = database.Column(database.Integer, primary_key=True)
+    nome_situacao = database.Column(database.String(70))
+    situacoes_usuarios = database.relationship('Usuarios', backref='situacoes_usuarios', lazy=True)
+
+
 class Usuarios(database.Model, UserMixin):
     __tablename__ = 'usuarios'
     id = database.Column(database.Integer, primary_key=True)
@@ -11,37 +26,6 @@ class Usuarios(database.Model, UserMixin):
     data_cadastro = database.Column(database.DateTime)
     situacao = database.Column(database.Integer, database.ForeignKey('situacoes_usuarios.id'), default=1)
     tipo_usuario = database.Column(database.Integer, database.ForeignKey('tipos_usuarios.id'), nullable=False)
-
-
-class TicketsComerciais(database.Model):
-    __tablename__ = 'tickets_comerciais'
-    id = database.Column(database.Integer, primary_key=True)
-    id_tipo_ticket = database.Column(database.Integer)  # ID ticket condicional
-    id_ticket_condicional = database.Column(database.Integer)
-    id_documento_fiscal = database.Column(database.Integer, database.ForeignKey('documentos_fiscais.id'))
-    id_status_ticket = database.Column(database.Integer, database.ForeignKey('status_tickets.id'))  # Corrigido aqui
-    nro_documento_fiscal = database.Column(database.String(100))
-    emissao_documento_fiscal = database.Column(database.DateTime)
-    valor_ticket = database.Column(database.Float)
-    valor_desconto = database.Column(database.Float)
-    valor_acrescimo = database.Column(database.Float)
-    parcelas = database.Column(database.Integer, default=1)
-    id_forma_pagamento = database.Column(database.Integer, database.ForeignKey('formas_pagamento.id'))
-    data_abertura = database.Column(database.DateTime)
-    data_chegada = database.Column(database.DateTime)
-    data_devolucao = database.Column(database.DateTime)
-    data_retirada = database.Column(database.DateTime)
-    data_prazo = database.Column(database.DateTime)
-    data_cadastro = database.Column(database.DateTime)
-    situacao = database.Column(database.Integer)  # 1 - ativo 2 - inativo
-    id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False, default=1)
-
-
-class SituacoesUsuarios(database.Model):
-    __tablename__ = 'situacoes_usuarios'
-    id = database.Column(database.Integer, primary_key=True)
-    nome_situacao = database.Column(database.String(70))
-    situacoes_usuarios = database.relationship('Usuarios', backref='situacoes_usuarios', lazy=True)
 
 
 class ClientesFornecedores(database.Model):
@@ -82,14 +66,6 @@ class TiposCadastros(database.Model):
     tipos_cadastro = database.relationship('ClientesFornecedores', backref='cadastros_tipos', lazy=True)
     data_cadastro = database.Column(database.DateTime)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False, default=1)
-    situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
-
-
-class TiposUsuarios(database.Model):
-    __tablename__ = 'tipos_usuarios'
-    id = database.Column(database.Integer, primary_key=True)
-    nome_tipo = database.Column(database.String(70), nullable=False, unique=True)
-    tipos_usuarios = database.relationship('Usuarios', backref='usuarios_tipo', lazy=True)
     situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
 
 
@@ -303,7 +279,6 @@ class FaturaCartaoCredito(database.Model):
                                           default=1)
 
 
-
 class CategoriasFinanceiras(database.Model):
     __tablename__ = 'categorias_financeiras'
     id = database.Column(database.Integer, primary_key=True)
@@ -319,6 +294,105 @@ class FormasPagamento(database.Model):
     __tablename__ = 'formas_pagamento'
     id = database.Column(database.Integer, primary_key=True)
     nome_forma_pagamento = database.Column(database.String(50), nullable=False)
+    id_tipo_transacao = database.Column(database.Integer)
+    # 1 - Compra, 2 - Venda, 3 - Compra e Venda
+    situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
+    data_cadastro = database.Column(database.DateTime)
+    id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
+                                          default=1)
+
+
+class TicketsComerciais(database.Model):
+    __tablename__ = 'tickets_comerciais'
+    id = database.Column(database.Integer, primary_key=True)
+    id_tipo_ticket = database.Column(database.Integer)
+    # 1 - ticket condicional
+    # 2 - ticket compra
+    # 3 - ticket venda
+    id_ticket_condicional = database.Column(database.Integer)
+    id_documento_fiscal = database.Column(database.Integer, database.ForeignKey('documentos_fiscais.id'))
+    id_cliente = database.Column(database.Integer, database.ForeignKey('clientes_fornecedores.id'))
+    id_fornecedor = database.Column(database.Integer, database.ForeignKey('clientes_fornecedores.id'))
+    nro_documento_fiscal = database.Column(database.String(100))
+    emissao_documento_fiscal = database.Column(database.DateTime)
+    valor_ticket = database.Column(database.Float)
+    valor_desconto = database.Column(database.Float)
+    valor_acrescimo = database.Column(database.Float)
+    valor_final = database.Column(database.Float)
+    parcelas = database.Column(database.Integer, default=1)
+    id_forma_pagamento = database.Column(database.Integer, database.ForeignKey('formas_pagamento.id'))
+    data_abertura = database.Column(database.DateTime)
+    data_chegada = database.Column(database.DateTime)
+    data_devolucao = database.Column(database.DateTime)
+    data_retirada = database.Column(database.DateTime)
+    data_prazo = database.Column(database.DateTime)
+    data_cadastro = database.Column(database.DateTime)
+    #  1 - Cadastro Não Finalizado
+    #  2 - Em aberto
+    #  3 - Recebido na data correta
+    #  4 - Recebido com atraso
+    #  5 - Financeiro
+    #  6 - Pagamento Fornecedor em Atraso
+    #  7 - Recebimento Cliente em Atraso
+    #  8 - Finalizado com Atraso Financeiro
+    #  9 - Finalizado com Devolução
+    # 10 - Finalizado
+    situacao = database.Column(database.Integer)
+    id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False, default=1)
+
+
+class ItensTicketsComerciais(database.Model):
+    __tablename__ = 'itens_tickets_comerciais'
+    id = database.Column(database.Integer, primary_key=True)
+    id_ticket_comercial = database.Column(database.Integer, database.ForeignKey('tickets_comerciais.id'))
+    codigo_item = database.Column(database.String, database.ForeignKey('itens_estoque.codigo_item'))
+    valor_item = database.Column(database.Float)
+    qtd = database.Column(database.Float)
+    #  0 - Ticket não finalizado
+    #  1 - Em condicional
+    #  2 - Devolvido
+    #  3 - Convertido a compra
+    #  4 - Compra não recebida
+    #  5 - Compra Recebida
+    #  6 - Enviado ao Financeiro
+    #  7 - Pagamento em Aberto
+    #  8 - Pagamento em atraso
+    #  9 - Pagamento parcial realizado em atraso
+    # 10 - Pagamento parcial realizado
+    # 11 - Pagamento realizado em atraso
+    # 12 - Pagamento realizado
+    # 13 - Cancelado
+    # 14 - Devolução parcial
+    # 15 - Devolução completa
+    # 16 - Finalizado
+    situacao_item_ticket = database.Column(database.Integer)
+    id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'))
+    data_cadastro = database.Column(database.DateTime)
+
+
+class TemporariaCompraEstoque(database.Model):
+    __tablename__ = 'temporaria_compra_estoque'
+    id = database.Column(database.Integer, primary_key=True)
+    id_documento_fiscal = database.Column(database.Integer)
+    tipo_fornecedor = database.Column(database.Integer)
+    pesquisa_fornecedor = database.Column(database.Integer)
+    nro_documento_fiscal = database.Column(database.String)
+    emissao_documento_fiscal = database.Column(database.DateTime)
+    data_chegada = database.Column(database.DateTime)
+    data_prazo = database.Column(database.DateTime)
+    valor_desconto = database.Column(database.String)
+    valor_acrescimo = database.Column(database.String)
+    valor_item = database.Column(database.String)
+    parcelas = database.Column(database.Integer)
+    id_forma_pagamento = database.Column(database.Integer)
+    pesquisa_item = database.Column(database.Integer)
+
+
+class FormasParcelamento(database.Model):
+    __tablename__ = 'formas_parcelamento'
+    id = database.Column(database.Integer, primary_key=True)
+    nome_forma_parcelamento = database.Column(database.String(50), nullable=False)
+    observacoes = database.Column(database.String(500), nullable=False)
     situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
     data_cadastro = database.Column(database.DateTime)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,

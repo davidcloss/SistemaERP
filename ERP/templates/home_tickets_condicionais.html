@@ -1,0 +1,29 @@
+{% extends 'home_comercial.html' %}
+
+{% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col-3">
+            <div class="text-start">
+                <a href="{{ url_for('home_tickets_condicionais') }}">
+                    <img width="200" class="p-3" src="{{ url_for('static', filename='imagens/compras.png') }}">
+                </a>
+            </div>
+            <a href="{{ url_for('cadastro_cnpj') }}" class="link-central">
+                <h3 class="m-2 text-start">Cadastrar Condicional</h3>
+            </a>
+            {% block editarpubli %}{% endblock %}
+        </div>
+        <div class="col-9 text-start p-3">
+            <div class="row">
+                <h1>Condicionais:</h1>
+            </div>
+            <div class="row">
+                {% block central %}
+                    <!-- Conteúdo dinâmico que será renderizado no bloco 'central' -->
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

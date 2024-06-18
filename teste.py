@@ -7,7 +7,8 @@ from ERP.models import Usuarios, SituacoesUsuarios, ClientesFornecedores, TiposC
                        ItensEstoque, TiposTransacoesEstoque, TransacoesEstoque, Bancos, AgenciaBanco, \
                        ContasBancarias, CartaoCredito, FaturaCartaoCredito, CategoriasFinanceiras, \
                        TipoTicket, FormasPagamento, TransacoesFinanceiras, DocumentosFiscais, \
-                       StatusTickets, TicketsComerciais, ValidacaoFaturasCartaoCredito
+                       StatusTickets, TicketsComerciais, ValidacaoFaturasCartaoCredito, FormasParcelamento, \
+                       ItensTicketsComerciais, TemporariaCompraEstoque
 
 
 def criar_deletar_db(cod):
@@ -33,7 +34,8 @@ tabelas = [Usuarios, SituacoesUsuarios, ClientesFornecedores, TiposCadastros, Ti
            ItensEstoque, TiposTransacoesEstoque, TransacoesEstoque, Bancos, AgenciaBanco, \
            ContasBancarias, CartaoCredito, FaturaCartaoCredito, CategoriasFinanceiras, \
            TipoTicket, FormasPagamento, TransacoesFinanceiras, DocumentosFiscais, \
-           StatusTickets, TicketsComerciais, ValidacaoFaturasCartaoCredito]
+           StatusTickets, TicketsComerciais, ValidacaoFaturasCartaoCredito, FormasParcelamento, \
+           ItensTicketsComerciais, TemporariaCompraEstoque]
 
 
 # Chamar a função para cada modelo
@@ -66,6 +68,25 @@ with app.app_context():
                        tipo_usuario=1)
     database.session.add(usuario)
     database.session.commit()
+
+
+documentos_fiscais = ['NF-e', 'CT-e', 'NFS-e', 'Cupom Fiscal', 'Romaneio', '-']
+with app.app_context():
+    for doc in documentos_fiscais:
+        tipo = DocumentosFiscais(nome_documento=doc)
+        database.session.add(tipo)
+        database.session.commit()
+
+
+formas_parcelamento = [('Semanal', 'Uma parcela a cada 7 dias'), ('Quinzenal', 'Uma parcela a cada 15 dias'), ('Mensal', 'Uma parcela a cada 30 dias'), \
+                        ('Bimestral', 'Uma parcela a cada 60 dias'), ('Trimestral', 'Uma parcela a cada 90 dias'), ('Semestral', 'Uma parcela a cada 180 dias'), \
+                        ('Anual', 'Uma parcela a cada 365 dias')]
+with app.app_context():
+    for forma in formas_parcelamento:
+        forma = FormasParcelamento(nome_forma_parcelamento=forma[0],
+                                   observacoes=forma[1])
+        database.session.add(forma)
+        database.session.commit()
 
 
 cores = ['Laranja', 'Vermelho', 'Azul']
@@ -137,6 +158,15 @@ with app.app_context():
         database.session.commit()
 
 
+tipos_tickets = ['Compra Estoque', 'Condicional', 'Venda Cliente Final']
+with app.app_context():
+    for tipo in tipos_tickets:
+        tipo = TipoTicket(nome_tipo_ticket=tipo,
+                          situacao=1,
+                          id_usuario_cadastro=1)
+        database.session.add(tipo)
+        database.session.commit()
+
 
 with app.app_context():
     fornecedor = ClientesFornecedores(nome_fantasia='Mimos', razao_social='Mimos LTDA',
@@ -161,6 +191,7 @@ with app.app_context():
     database.session.add(fornecedor)
     database.session.commit()
 
+
 # nao mexer na ordem da lista categorias
 categorias = [('Saldo Inicial Conta', 1), ('Fatura Cartão Crédito', 0), ('Descontos Recebidos', 1), ('Multas por atraso recebidas', 3)]
 with app.app_context():
@@ -171,10 +202,13 @@ with app.app_context():
         database.session.commit()
 
 
-formas_pagamento = ['À vista']
+formas_pagamento = [('Dinheiro à vista', 3), ('Dinheiro Parcelamento Próprio', 3), ('Cheque Terceiro', 3),
+                    ('Cheque Próprio', 1), ('Cartão Crédito à vista', 3), ('Cratão Crédito Parcelado', 3),
+                    ('Cartão de Débito à vista', 3), ('Pix', 3), ('Permuta', 3)]
 with app.app_context():
     for forma in formas_pagamento:
-        f = FormasPagamento(nome_forma_pagamento=forma)
+        f = FormasPagamento(nome_forma_pagamento=forma[0],
+                            id_tipo_transacao=forma[1])
         database.session.add(f)
         database.session.commit()
 

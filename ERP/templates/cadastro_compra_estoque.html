@@ -1,0 +1,163 @@
+{% extends 'home_compras_estoque.html' %}
+
+{% block central %}
+    <div class="container">
+        <form method='POST' action="" class="border p-2">
+            {{ form.csrf_token }}
+
+            <fieldset>
+                <div class="row">
+                    <div class="col-4">
+                        <legend>Compra cod.: {{ ticket_atual.id }}:</legend>
+                    </div>
+                    <div class="col-8">
+                         <div class="form-group">
+                            {{ form.situacao.label(class="form-control-label") }}
+                            {{ form.situacao(class="form-control") }}
+                         </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-4">
+                        <div class="form-group">
+                            {{ form.id_documento_fiscal.label(class="form-control-label") }}
+                            {{ form.id_documento_fiscal(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-4">
+                         <div class="form-group">
+                            {{ form.nro_documento_fiscal.label(class="form-control-label") }}
+                            {{ form.nro_documento_fiscal(class="form-control") }}
+                         </div>
+                    </div>
+                    <div class="col-4">
+                         <div class="form-group">
+                            {{ form.emissao_documento_fiscal.label(class="form-control-label") }}
+                            {{ form.emissao_documento_fiscal(class="form-control") }}
+                         </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        {{ form.pesquisa_fornecedor.label(class="form-control-label") }}
+                        {{ form.pesquisa_fornecedor(class="form-control") }}
+                    </div>
+                    <div class="col-6">
+                        {{ form.tipo_fornecedor.label(class="form-control-label") }}
+                        {{ form.tipo_fornecedor(class="form-control") }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-4">
+                         <div class="form-group">
+                            {{ form.valor_desconto.label(class="form-control-label") }}
+                            {{ form.valor_desconto(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-4">
+                         <div class="form-group">
+                            {{ form.valor_acrescimo.label(class="form-control-label") }}
+                            {{ form.valor_acrescimo(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-4">
+                         <div class="form-group">
+                            {{ form.parcelas.label(class="form-control-label") }}
+                            {{ form.parcelas(class="form-control") }}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-4">
+                        <div class="form-group">
+                            {{ form.data_chegada.label(class="form-control-label") }}
+                            {{ form.data_chegada(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="form-group">
+                            {{ form.data_prazo.label(class="form-control-label") }}
+                            {{ form.data_prazo(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-4">
+                         <div class="form-group">
+                            {{ form.id_forma_pagamento.label(class="form-control-label") }}
+                            {{ form.id_forma_pagamento(class="form-control") }}
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-9">
+                        <div class="form-group">
+                            {{ form.pesquisa_item.label(class="form-control-label") }}
+                            {{ form.pesquisa_item(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="form-group">
+                            {{ form.valor_item.label(class="form-control-label") }}
+                            {{ form.valor_item(class="form-control") }}
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+            {{ form.botao_pesquisar_item(class="btn btn-primary m-1") }}
+            {{ form.botao_pesquisar_fornecedor(class="btn btn-primary m-1") }}
+
+            <div class="border p-2">
+                <table class="table table-striped table-hover align-middle background">
+                    <thead>
+                        <tr>
+                            <th style="width: 110px;">Cód Barras</th>
+                            <th style="width: 150px;">Produto</th>
+                            <th style="width: 50px;">Qtd</th>
+                            <th style="width: 75px;">Valor Produto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for i, compra in enumerate(lista_compras) %}
+                        {% if compra %}
+                            {% set item = retorna_item_estoque(compra.codigo_item) %}
+                                <tr>
+                                    <td>{{ item.codigo_item }}</td>
+                                    <td>{{ cria_nome_item_estoque(item.id) }}</td>
+                                    <td>{{ compra.qtd }}</td>
+                                    <td>{{ compra.valor_item }}</td>
+                                </tr>
+                        {% endif %}
+                    {% endfor %}
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <fieldset>
+                <div class="row">
+                    <div class="col-10 row">
+                        <div class="col-3">
+                            <span>Valor Total: R$ {{ ticket_atual.valor_final if ticket_atual else 0.00 }} </span>
+                        </div>
+                        <div class="col-3">
+                            <span>Acréscimo: R$ {{ ticket_atual.valor_acrescimo if ticket_atual else 0.00 }} </span>
+                        </div>
+                        <div class="col-3">
+                            <span>Desconto: R$ {{ ticket_atual.valor_desconto if ticket_atual else 0.00 }} </span>
+                        </div>
+                        <div class="col-3">
+                            <span>Qtd. Itens: {{ len(lista_compras) }}</span>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        {{ form.botao_finalizar(class="btn btn-primary m-1") }}
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+{% endblock %}
