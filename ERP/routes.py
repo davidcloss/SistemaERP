@@ -16,9 +16,110 @@ from ERP.models import CartaoCredito, GeneroRoupa, CategoriasFinanceiras, Valida
 from ERP.models import Conferencias, TicketsComerciais, DocumentosFiscais, FormasPagamento, FormasParcelamento
 from ERP.models import TemporariaCompraEstoque, ItensTicketsComerciais
 from flask_login import login_user, logout_user, current_user, login_required
-import secrets
 from datetime import datetime, timedelta
 from sqlalchemy import or_, and_, desc, func
+
+
+def rateia_valores_adicionais(ticket, itens_ticket):
+    valor_ratear = ticket.valor_acrescimo - ticket.valor_desconto
+    for item in itens_ticket:
+        perc = item.valor_item / ticket.valor_ticket
+        item.valor_item += (valor_ratear * perc)
+    database.session.commit()
+
+
+def calcula_valor_parcelado(valor, parcelas):
+    divisao = round(valor / parcelas, 2)
+    total_arredondado = divisao * parcelas
+    diferenca = valor - total_arredondado
+
+    retorno = []
+    for i in range(parcelas):
+        if i == 0:
+            retorno.append(round(divisao, 2) + round(diferenca, 2))
+        else:
+            retorno.append(round(divisao, 2))
+
+    return retorno
+
+
+def cria_transacao_estoque(itens, ticket, situacao):
+    # 1 - Entrada Estoque Compra Mercadoria
+    if situacao == 1:
+        lote = busca_ultima_transacao_estoque()
+        for item in itens:
+            # Obter o id do item de estoque
+            id_item = ItensEstoque.query.filter_by(codigo_item=item.codigo_item).first()
+
+            transacao = TransacoesEstoque(
+                tipo_transacao=1,
+                id_lote=lote,
+                id_ticket=item.id_ticket_comercial,
+                data_registro_transacao=datetime.now(),
+                data_transacao=ticket.data_chegada,
+                id_item=id_item.id,
+                qtd_transacao=item.qtd,
+                valor_total_transacao_custo=item.valor_item,
+                valor_unitario_medio_custo=item.valor_item / item.qtd
+            )
+
+            database.session.add(transacao)
+            database.session.commit()
+
+            transacao_cadastrada = TransacoesEstoque.query.filter_by(id_lote=lote).order_by(
+                TransacoesEstoque.id.desc()).first()
+            define_data_ultima_entrada_item_estoque(id_item, transacao_cadastrada)
+            saldos_itens_estoque(id_item)
+
+
+def retorn_lista_itens_tickets_comercial_compras(id_ticket, situacao):
+    # 1 - Somente ativos
+    if situacao == 1:
+        retorno = ItensTicketsComerciais.query.filter(ItensTicketsComerciais.id_ticket_comercial == id_ticket,
+                                                         ItensTicketsComerciais.situacao_item_ticket.in_([0,1])).order_by(ItensTicketsComerciais.id).all()
+    return retorno
+
+
+def cria_fatura_ticket(ticket, situacao):
+    if ticket.id_tipo_ticket == 2:
+        # CADA TIPO TICKET TEM SUA LISTA DE SITUACOES PROPRIA
+        # SITUACOES COMPRA
+        #  1 - PRIMEIRO CADASTRO FATURAS
+        if situacao == 1:
+            forma_pagamento = FormasPagamento.query.filter_by(id=ticket.id_forma_pagamento).first()
+            if forma_pagamento.parcelado == 0:
+                transacao = TransacoesFinanceiras(tipo_lancamento=1,
+                                                  lote_transacao=busc_lote_transacao(),
+                                                  tipo_transacao=3,
+                                                  id_categoria_financeira=5,
+                                                  id_forma_pagamento=ticket.id_forma_pagamento,
+                                                  id_ticket=ticket.id,
+                                                  nro_total_parcelas=1,
+                                                  nro_parcela_atual=1,
+                                                  valor_transacao=ticket.valor_final,
+                                                  data_ocorrencia=ticket.emissao_documento_fiscal,
+                                                  situacao_transacao=3,
+                                                  id_usuario_cadastro=current_user.id)
+                database.session.add(transacao)
+                database.session.commit()
+            else:
+                lote = busc_lote_transacao()
+                valor_transacao = calcula_valor_parcelado(ticket.valor_final, ticket.parcelas)
+                for i in range(ticket.parcelas):
+                    transacao = TransacoesFinanceiras(tipo_lancamento=1,
+                                                      lote_transacao=lote,
+                                                      tipo_transacao=3,
+                                                      id_categoria_financeira=5,
+                                                      id_forma_pagamento=ticket.id_forma_pagamento,
+                                                      id_ticket=ticket.id,
+                                                      nro_total_parcelas=ticket.parcelas,
+                                                      nro_parcela_atual=i+1,
+                                                      valor_transacao=valor_transacao[i],
+                                                      data_ocorrencia=ticket.emissao_documento_fiscal,
+                                                      situacao_transacao=3,
+                                                      id_usuario_cadastro=current_user.id)
+                    database.session.add(transacao)
+                    database.session.commit()
 
 
 def retorna_situacoes_ticket_compra():
@@ -38,7 +139,7 @@ def recebe_form_valor_monetario(valor):
 
 def calcular_soma_valor_item(id_ticket_comercial=False):
     if id_ticket_comercial:
-        situacoes = [0, 1, 3, 4]  # Situações desejadas
+        situacoes = [0, 1]  # Situações desejadas
 
         # Consulta para calcular a soma
         soma = database.session.query(database.func.sum(ItensTicketsComerciais.valor_item)) \
@@ -64,19 +165,33 @@ def verifica_valor(campo_form):
         return campo_form
 
 
+def retorna_sit_ticket(sit):
+    if sit == 0 or sit == 1:
+        retorno = 1
+    elif sit == 2:
+        retorno = 4
+    elif sit == 3:
+        retorno = 5
+    return retorno
+
+
 def popula_ticket_compra_estoque(ticket, form, situacao, id_ticket=False):
     # SITUACOES:
     #  0 - PRIMEIRO CADASTRO
     #  1 - CADASTRO EM ANDAMENTO, SALVANDO APENAS POR SEGURANÇA
+    #  2 - CADASTRO TICKET COM STATUS 4 - COMPRA NÃO RECEBIDA
+    #  3 - CADASTRO TICKET COM STATUS 4 - COMPRA RECEBIDA
     if situacao == 0:
         ticket.data_abertura = datetime.now()
 
-    elif situacao == 1 or situacao == 0:
+
+    elif situacao in [0, 1, 2, 3]:
+        sit_ticket = retorna_sit_ticket(situacao)
         ticket.id_tipo_ticket = 2
         ticket.id_documento_fiscal = int(verifica_valor(form.id_documento_fiscal.data))
         ticket.id_fornecedor = int(form.pesquisa_fornecedor.data)
         ticket.nro_documento_fiscal = verifica_valor(form.nro_documento_fiscal.data)
-        ticket.emissao_docuemnto_fiscal = form.emissao_documento_fiscal.data
+        ticket.emissao_documento_fiscal = form.emissao_documento_fiscal.data
         ticket.valor_ticket = calcular_soma_valor_item(id_ticket)
         ticket.valor_desconto = recebe_form_valor_monetario(form.valor_desconto.data)
         ticket.valor_acrescimo = recebe_form_valor_monetario(form.valor_acrescimo.data)
@@ -86,11 +201,14 @@ def popula_ticket_compra_estoque(ticket, form, situacao, id_ticket=False):
         ticket.id_forma_pagamento = int(form.id_forma_pagamento.data)
         ticket.data_chegada = form.data_chegada.data
         ticket.data_prazo = form.data_prazo.data
-        ticket.situacao = 1
+        ticket.situacao = sit_ticket
         ticket.id_usuario_cadastro = current_user.id
 
 
-    database.session.commit()
+        database.session.commit()
+
+        if situacao == 3:
+            return ticket
 
 
 
@@ -106,6 +224,7 @@ def converte_str_datetime_select_field(data):
 
 def clear_sessions_tickets_compra():
     session_keys = [
+        'situacao',
         'data_chegada',
         'data_prazo',
         'valor_item',
@@ -554,6 +673,24 @@ def verifica_fat_cartao(id_cartao):
                 database.session.add(nova_validacao)
                 database.session.add(nova_fatura)
                 database.session.commit()
+
+
+def calcular_soma_qtd_item(id_ticket_comercial=False):
+    if id_ticket_comercial:
+        situacoes = [0, 1]  # Situações desejadas
+
+        # Consulta para calcular a soma
+        soma_qtd = database.session.query(database.func.sum(ItensTicketsComerciais.qtd)) \
+            .filter(ItensTicketsComerciais.id_ticket_comercial == id_ticket_comercial) \
+            .filter(ItensTicketsComerciais.situacao_item_ticket.in_(situacoes)) \
+            .scalar()
+
+        return int(soma_qtd) if soma_qtd is not None else 0
+    else:
+        return 0
+
+
+app.add_template_global(calcular_soma_qtd_item, 'calcular_soma_qtd_item')
 
 
 def cria_nome_item_estoque(itens_estoque_id):
@@ -1167,6 +1304,20 @@ def cadastra_item_nao_encontrado():
     return render_template('cadastro_itens_estoque.html', form=form)
 
 
+@app.route('/comercial/comprasestoque/cadastrar/itenstickets/<id>/cancelar')
+@login_required
+def altera_status_item(id):
+    item = ItensTicketsComerciais.query.filter_by(id=int(id)).first()
+    item.situacao_item_ticket = 2
+    database.session.commit()
+    ticket = TicketsComerciais.query.filter_by(id=item.id_ticket_comercial).first()
+    ticket.valor_ticket = calcular_soma_valor_item(item.id_ticket_comercial)
+    ticket.valor_final = calcula_valor_final_compra_estoque(ticket.valor_ticket, ticket.valor_acrescimo,
+                                       ticket.valor_desconto)
+    database.session.commit()
+    return redirect(url_for('cadastra_compra'))
+
+
 @app.route('/comercial/comprasestoque/cadastrar', methods=['GET', 'POST'])
 @login_required
 def cadastra_compra():
@@ -1201,7 +1352,8 @@ def cadastra_compra():
                                            parcelas=session.get('parcelas'),
                                            id_forma_pagamento=session.get('id_forma_pagamento'),
                                            data_chegada=converte_str_datetime_select_field(session.get('data_chegada')),
-                                           data_prazo=converte_str_datetime_select_field(session.get('data_prazo')))
+                                           data_prazo=converte_str_datetime_select_field(session.get('data_prazo')),
+                                           situacao=session.get('situacao'))
         form = FormCadastroCompraEstoque(obj=temporario)
 
     else:
@@ -1218,9 +1370,6 @@ def cadastra_compra():
 
         cadastrar_ticket = TicketsComerciais()
         popula_ticket_compra_estoque(cadastrar_ticket, form, 0)
-        cadastrar_ticket.id_tipo_ticket = 2
-        cadastrar_ticket.data_abertura = data_atual
-        cadastrar_ticket.id_usuario_cadastro = current_user.id
         cadastrar_ticket.valor_desconto = recebe_form_valor_monetario(cadastrar_ticket.valor_desconto) or 0.0
         cadastrar_ticket.valor_acrescimo = recebe_form_valor_monetario(cadastrar_ticket.valor_acrescimo) or 0.0
 
@@ -1242,7 +1391,7 @@ def cadastra_compra():
                                             retorna_clientes_fornecedores(2)]
 
 
-    lista_compras = ItensTicketsComerciais.query.filter_by(id_ticket_comercial=ticket_atual.id).order_by(ItensTicketsComerciais.id).all()
+    lista_compras = retorn_lista_itens_tickets_comercial_compras(ticket_atual.id, 1)
 
     form.id_documento_fiscal.choices = [(documento.id, documento.nome_documento) for documento in DocumentosFiscais.query.filter_by(situacao=1).order_by(DocumentosFiscais.id).all()]
     form.tipo_fornecedor.choices = retorna_tipo_fornecedor()
@@ -1256,6 +1405,8 @@ def cadastra_compra():
     session['id_ticket'] = ticket_atual.id
 
     if form.validate_on_submit():
+
+
         session['id_documento_fiscal'] = form.id_documento_fiscal.data
         session['tipo_fornecedor'] = form.tipo_fornecedor.data
         session['pesquisa_fornecedor'] = form.pesquisa_fornecedor.data
@@ -1269,6 +1420,7 @@ def cadastra_compra():
         session['valor_item'] = form.valor_item.data
         session['data_chegada'] = form.data_chegada.data
         session['data_prazo'] = form.data_prazo.data
+        session['situacao'] = form.situacao.data
 
         popula_ticket_compra_estoque(ticket_atual, form, 1, ticket_atual.id)
 
@@ -1282,13 +1434,56 @@ def cadastra_compra():
             return redirect(url_for('cadastra_compra'))
 
         elif 'finalizar' in request.form:
+            if form.id_documento_fiscal.data != '6' and not form.nro_documento_fiscal.data:
+                flash('Favor incluir número do documento ou informar "-" para tipo de documento fiscal', 'alert-danger')
+                return redirect(url_for('cadastra_compra'))
+
             if form.situacao.data == '0':
                 popula_ticket_compra_estoque(ticket_atual, form, 1, ticket_atual.id)
                 clear_sessions_tickets_compra()
-                flash('Compra salva com sucesso. Porém por não estar finalizada, não entrará nos orçamentos financeiros, lembre-se de editar ela no futuro.', 'alert-success')
+                flash('Compra salva com sucesso.', 'alert-success')
                 return redirect(url_for('home_compra_estoque'))
 
-        elif 'pesquisa_item' in request.form:
+            elif form.situacao.data == '4':
+                popula_ticket_compra_estoque(ticket_atual, form, 2, ticket_atual.id)
+                clear_sessions_tickets_compra()
+                flash('Compra salva com sucesso.', 'alert-success')
+                return redirect(url_for('home_compra_estoque'))
+
+            elif form.situacao.data == '5':
+
+                forma_pagamento = FormasPagamento.query.filter_by(id=int(form.id_forma_pagamento.data)).first()
+
+                if forma_pagamento.parcelado == 0 and form.parcelas.data != '1':
+                    flash('Favor verificar forma de pagamento e número de parcelas, foi selecionado forma de pagamento à vista e múltiplas parcelas.', 'alert-warning')
+                    return redirect(url_for('cadastra_compra'))
+
+                if forma_pagamento.parcelado == 1 and form.parcelas.data == '1':
+                    flash('Favor verificar forma de pagamento e número de parcelas, foi selecionado forma de pagamento parcelado e parcela única.', 'alert-warning')
+                    return redirect(url_for('cadastra_compra'))
+                ticket_atual = popula_ticket_compra_estoque(ticket_atual, form, 3, ticket_atual.id)
+                cria_fatura_ticket(ticket_atual, 1)
+
+
+                itens = ItensTicketsComerciais.query.filter(ItensTicketsComerciais.id_ticket_comercial == ticket_atual.id,
+                                                            ItensTicketsComerciais.situacao_item_ticket == 0).all()
+
+                rateia_valores_adicionais(ticket_atual, itens)
+                if itens:
+                    for item in itens:
+                        if item.situacao_item_ticket == 0:
+                            item.situacao_item_ticket = 1
+                    database.session.commit()
+
+                cria_transacao_estoque(itens, ticket_atual, 1)
+
+
+
+                clear_sessions_tickets_compra()
+                flash('Compra salva com sucesso.', 'alert-success')
+                return redirect(url_for('home_compra_estoque'))
+
+        elif 'pesquisar_item' in request.form:
             if form.valor_item.data == '':
                 flash('Favor inserir valor', 'alert-warning')
                 return redirect(url_for('cadastra_compra'))
@@ -1301,8 +1496,8 @@ def cadastra_compra():
                                                   codigo_item=item.codigo_item,
                                                   situacao_item_ticket=0,
                                                   id_usuario_cadastro=current_user.id,
-                                                  qtd=1,
-                                                  valor_item=string_to_float(form.valor_item.data))
+                                                  qtd=int(form.qtd_item.data),
+                                                  valor_item=string_to_float(form.valor_item.data) * int(form.qtd_item.data))
                 database.session.add(cadastro)
                 database.session.commit()
 
@@ -1313,11 +1508,11 @@ def cadastra_compra():
 
             else:
 
-                flash('Código não encontrado, favor cadastro o item e após você será redirecionado para a página anterior.', 'alert-danger')
+                flash('Código não encontrado, favor cadastre o item e após você será redirecionado para a página anterior.', 'alert-danger')
                 return redirect(url_for('cadastra_item_nao_encontrado'))
 
 
-            return redirect(url_for('home'))
+            return redirect(url_for('cadastra_compra'))
 
 
 
@@ -1844,7 +2039,7 @@ def cadastro_itens_estoque():
             database.session.add(itens_estoque)
             database.session.commit()
             item_estoque = ItensEstoque.query.filter_by(codigo_item=form.codigo_item.data).first()
-            tipo_transacao = 5
+            tipo_transacao = 7
             id_lote = busca_ultima_transacao_estoque()
             transacao_estoque = TransacoesEstoque(id_lote=int(id_lote),
                                                   tipo_transacao=int(tipo_transacao),

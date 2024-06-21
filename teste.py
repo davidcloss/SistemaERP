@@ -193,7 +193,7 @@ with app.app_context():
 
 
 # nao mexer na ordem da lista categorias
-categorias = [('Saldo Inicial Conta', 1), ('Fatura Cartão Crédito', 0), ('Descontos Recebidos', 1), ('Multas por atraso recebidas', 3)]
+categorias = [('Saldo Inicial Conta', 1), ('Fatura Cartão Crédito', 0), ('Descontos Recebidos', 1), ('Multas por atraso recebidas', 3), ('Compra Estoque', 2)]
 with app.app_context():
     for categoria in categorias:
         cat = CategoriasFinanceiras(nome_categoria=categoria[0],
@@ -202,13 +202,15 @@ with app.app_context():
         database.session.commit()
 
 
-formas_pagamento = [('Dinheiro à vista', 3), ('Dinheiro Parcelamento Próprio', 3), ('Cheque Terceiro', 3),
-                    ('Cheque Próprio', 1), ('Cartão Crédito à vista', 3), ('Cratão Crédito Parcelado', 3),
-                    ('Cartão de Débito à vista', 3), ('Pix', 3), ('Permuta', 3)]
+formas_pagamento = [('Dinheiro à vista', 3, 0), ('Dinheiro Parcelamento Próprio', 3, 1), ('Cheque Terceiro', 3, 0),
+                    ('Cheque Próprio', 1, 0), ('Cheque Terceiro Parcelado', 3, 1),
+                    ('Cheque Próprio Parcelado', 1, 1), ('Cartão Crédito à vista', 3, 0), ('Cratão Crédito Parcelado', 3, 1),
+                    ('Cartão de Débito à vista', 3, 0), ('Cartão de Débito Parcelado', 3, 1), ('Pix', 3, 0), ('Permuta', 3, 0)]
 with app.app_context():
     for forma in formas_pagamento:
         f = FormasPagamento(nome_forma_pagamento=forma[0],
-                            id_tipo_transacao=forma[1])
+                            id_tipo_transacao=forma[1],
+                            parcelado=forma[2])
         database.session.add(f)
         database.session.commit()
 

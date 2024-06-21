@@ -88,7 +88,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-9">
+                    <div class="col-6">
                         <div class="form-group">
                             {{ form.pesquisa_item.label(class="form-control-label") }}
                             {{ form.pesquisa_item(class="form-control") }}
@@ -98,6 +98,12 @@
                         <div class="form-group">
                             {{ form.valor_item.label(class="form-control-label") }}
                             {{ form.valor_item(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="form-group">
+                            {{ form.qtd_item.label(class="form-control-label") }}
+                            {{ form.qtd_item(class="form-control") }}
                         </div>
                     </div>
                 </div>
@@ -112,7 +118,9 @@
                             <th style="width: 110px;">Cód Barras</th>
                             <th style="width: 150px;">Produto</th>
                             <th style="width: 50px;">Qtd</th>
+                            <th style="width: 50px;">Valor Un.</th>
                             <th style="width: 75px;">Valor Produto</th>
+                            <th style="width:50px;">Cancela</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -123,7 +131,9 @@
                                     <td>{{ item.codigo_item }}</td>
                                     <td>{{ cria_nome_item_estoque(item.id) }}</td>
                                     <td>{{ compra.qtd }}</td>
+                                    <td>{{ compra.valor_item / compra.qtd }}</td>
                                     <td>{{ compra.valor_item }}</td>
+                                    <td><a href="{{ url_for('altera_status_item', id=compra.id) }}">x</a></td>
                                 </tr>
                         {% endif %}
                     {% endfor %}
@@ -132,6 +142,9 @@
                             <td></td>
                             <td></td>
                             <td></td>
+                            <td></td>
+                            <td></td>
+
                         </tr>
                     </tbody>
                 </table>
@@ -150,7 +163,7 @@
                             <span>Desconto: R$ {{ ticket_atual.valor_desconto if ticket_atual else 0.00 }} </span>
                         </div>
                         <div class="col-3">
-                            <span>Qtd. Itens: {{ len(lista_compras) }}</span>
+                            <span>Qtd. Itens: {{ calcular_soma_qtd_item(ticket_atual.id) }}</span>
                         </div>
                     </div>
                     <div class="col-2">

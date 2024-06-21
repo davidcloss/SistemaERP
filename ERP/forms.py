@@ -88,6 +88,7 @@ class FormCadastroCompraEstoque(FlaskForm):
     id_forma_pagamento = SelectField('Forma de Pagamento:')
     pesquisa_item = StringField('Produto:')
     valor_item = StringField('Valor Compra')
+    qtd_item = StringField('Qtd. Itens')
     situacao = SelectField('Situação Ticket:')
     botao_pesquisar_item = SubmitField('Pesquisar Item', name='pesquisar_item')
     botao_pesquisar_fornecedor = SubmitField('Pesquisar Fornecedor', name='pesquisar_fornecedor')

@@ -187,10 +187,10 @@ class TransacoesEstoque(database.Model):
     data_registro_transacao = database.Column(database.DateTime, default=datetime.utcnow())
     id_item = database.Column(database.Integer, database.ForeignKey('itens_estoque.id'))
     qtd_transacao = database.Column(database.Integer, nullable=False)
-    valor_unitario_medio_custo = database.Column(database.Float, nullable=False)
-    valor_total_transacao_custo = database.Column(database.Float, nullable=False)
-    valor_unitario_venda = database.Column(database.Float, nullable=False)
-    valor_total_transacao_venda = database.Column(database.Float, nullable=False)
+    valor_unitario_medio_custo = database.Column(database.Float, nullable=False, default=0)
+    valor_total_transacao_custo = database.Column(database.Float, nullable=False, default=0)
+    valor_unitario_venda = database.Column(database.Float, nullable=False, default=0)
+    valor_total_transacao_venda = database.Column(database.Float, nullable=False, default=0)
     data_cadastro = database.Column(database.DateTime)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
                                           default=1)
@@ -296,6 +296,8 @@ class FormasPagamento(database.Model):
     nome_forma_pagamento = database.Column(database.String(50), nullable=False)
     id_tipo_transacao = database.Column(database.Integer)
     # 1 - Compra, 2 - Venda, 3 - Compra e Venda
+    parcelado = database.Column(database.Integer)
+    # 0 - a vista, 1 - parcelado
     situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
     data_cadastro = database.Column(database.DateTime)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
@@ -327,27 +329,6 @@ class TicketsComerciais(database.Model):
     data_retirada = database.Column(database.DateTime)
     data_prazo = database.Column(database.DateTime)
     data_cadastro = database.Column(database.DateTime)
-    #  1 - Cadastro Não Finalizado
-    #  2 - Em aberto
-    #  3 - Recebido na data correta
-    #  4 - Recebido com atraso
-    #  5 - Financeiro
-    #  6 - Pagamento Fornecedor em Atraso
-    #  7 - Recebimento Cliente em Atraso
-    #  8 - Finalizado com Atraso Financeiro
-    #  9 - Finalizado com Devolução
-    # 10 - Finalizado
-    situacao = database.Column(database.Integer)
-    id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False, default=1)
-
-
-class ItensTicketsComerciais(database.Model):
-    __tablename__ = 'itens_tickets_comerciais'
-    id = database.Column(database.Integer, primary_key=True)
-    id_ticket_comercial = database.Column(database.Integer, database.ForeignKey('tickets_comerciais.id'))
-    codigo_item = database.Column(database.String, database.ForeignKey('itens_estoque.codigo_item'))
-    valor_item = database.Column(database.Float)
-    qtd = database.Column(database.Float)
     #  0 - Ticket não finalizado
     #  1 - Em condicional
     #  2 - Devolvido
@@ -365,6 +346,22 @@ class ItensTicketsComerciais(database.Model):
     # 14 - Devolução parcial
     # 15 - Devolução completa
     # 16 - Finalizado
+    situacao = database.Column(database.Integer)
+    id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False, default=1)
+
+
+class ItensTicketsComerciais(database.Model):
+    __tablename__ = 'itens_tickets_comerciais'
+    id = database.Column(database.Integer, primary_key=True)
+    id_ticket_comercial = database.Column(database.Integer, database.ForeignKey('tickets_comerciais.id'))
+    codigo_item = database.Column(database.String, database.ForeignKey('itens_estoque.codigo_item'))
+    valor_item = database.Column(database.Float)
+    qtd = database.Column(database.Float)
+    # 0 - Ticket não finalizado
+    # 1 - Ativo
+    # 2 - Cancelado
+    # 3 - Devolvido
+    # 4 - Devolvido avariado
     situacao_item_ticket = database.Column(database.Integer)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'))
     data_cadastro = database.Column(database.DateTime)
@@ -386,6 +383,7 @@ class TemporariaCompraEstoque(database.Model):
     parcelas = database.Column(database.Integer)
     id_forma_pagamento = database.Column(database.Integer)
     pesquisa_item = database.Column(database.Integer)
+    situacao = database.Column(database.Integer)
 
 
 class FormasParcelamento(database.Model):
@@ -414,7 +412,7 @@ class TransacoesFinanceiras(database.Model):
     id_forma_pagamento = database.Column(database.Integer, database.ForeignKey('formas_pagamento.id'))
     id_ticket = database.Column(database.Integer, database.ForeignKey('tickets_comerciais.id'))
     nro_total_parcelas = database.Column(database.Integer)
-    nro_Parcela_atual = database.Column(database.Integer)
+    nro_parcela_atual = database.Column(database.Integer)
     valor_transacao = database.Column(database.Float, default=0)
     valor_pago = database.Column(database.Float, default=0)
     data_ocorrencia = database.Column(database.DateTime)
