@@ -1,0 +1,38 @@
+{% extends 'ticket_compra_estoque.html' %}
+
+
+            {% block dados_lista %}
+               <table class="table table-striped table-hover align-middle background">
+    <thead>
+      <tr>
+          <th style="width: 50px;">ID</th>
+        <th style="width: 150px;">Categoria Financeira</th>
+        <th style="width: 100px;">Conta Bancária</th>
+        <th style="width: 70px;">Cartão Crédito</th>
+        <th style="width: 100px;">Fatura Cartão Crédito</th>
+        <th style="width: 70px;">Valor Transação</th>
+        <th style="width: 70px;">Data Pagamento</th>
+        <th style="width: 70px;">Situação Fatura</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for fatura in faturas %}
+      <tr>
+        <td>{{ fatura.id }}</td>
+        <td>{{ categorias.query.filter_by(id=fatura.id_categoria_financeira).first().nome_categoria }}</td>
+        <td>{{ contas.query.filter_by(id=fatura.id_conta_bancaria).first().apelido_conta }}</td>
+        <td>{{ cartoes.query.filter_by(id=fatura.id_cartao_credito).first().apelido_cartão }}</td>
+          {% if fatura.id_fatura_cartao_credito %}
+        <td>{{ faturass.query.filter_by(id=fatura.id_fatura_cartao_credito).first().cod_fatura[3:].replace('.', '/') }}</td>
+          {% else %}
+          <td> </td>
+          {% endif %}
+        <td>{{ fatura.valor_transacao }}</td>
+          <td>{{ converte_data_string(fatura.data_pagamento) }} </td>
+        <td>{{ retorno_situacao_fatura(fatura.situacao_transacao) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+            {% endblock %}
+

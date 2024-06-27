@@ -1,0 +1,51 @@
+{% extends 'home_compras_estoque.html' %}
+
+{% block central %}
+<div class="container">
+  <ul class="nav row nav-tabs justify-content-center"> <!-- Adicione a classe justify-content-center para centralizar a lista horizontalmente -->
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ tickets_nao_finalizados }} link-tabela text-center" href="{{ url_for('encaminha_lista_tickets_compras', situacao='1') }}">Tickets Não Finalizados</a>
+    </li>
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ tickets_compras_nao_recebidas }} link-tabela text-center" href="{{ url_for('encaminha_lista_tickets_compras', situacao='2') }}">Compras Não Recebidas</a>
+    </li>
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ tickets_compras_recebidas }} link-tabela text-center" href="{{ url_for('encaminha_lista_tickets_compras', situacao='3') }}">Compras Recebidas</a>
+    </li>
+  </ul>
+
+  <table class="table table-striped table-hover align-middle background">
+    <thead>
+      <tr>
+        <th style="width: 70px;">Cód Ticket</th>
+        <th style="width: 150px;">Fornecedor</th>
+        <th style="width: 70px;">Tipo Documento Fiscal</th>
+        <th style="width: 160px;">Nro Documento Fiscal</th>
+        <th style="width: 160px;">Valor Final Ticket</th>
+        <th style="width: 160px;">Forma Pagamento</th>
+        <th style="width: 100px;">Data Chegada</th>
+        <th style="width: 100px;">Situação</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ticket in tickets %}
+      <tr>
+        <td><a class="link-tabela" href="{{ url_for('ticket_compra_estoque', id_ticket=ticket.id) }}">{{ ticket.id }}</a></td>
+        {% set fornecedor = fornecedores.query.filter_by(id=ticket.id_fornecedor).first() %}
+        {% if fornecedor.cpf %}
+            <td>{{ fornecedor.nome }}</td>
+        {% else %}
+          <td>{{ fornecedor.nome_fantasia }}</td>
+        {% endif %}
+        <td>{{ tipos_doc.query.filter_by(id=ticket.id_documento_fiscal).first().nome_documento }}</td>
+        <td>{{ ticket.nro_documento_fiscal }}</td>
+        <td>{{ ticket.valor_final }}</td>
+        <td>{{ forma_pagamento.query.filter_by(id=ticket.id_forma_pagamento).first().nome_forma_pagamento }}</td>
+        <td>{{ converte_data_string(ticket.data_chegada) }}</td>
+        <td>{{ situacoes[ticket.situacao] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

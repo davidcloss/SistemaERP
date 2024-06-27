@@ -356,6 +356,7 @@ class ItensTicketsComerciais(database.Model):
     id_ticket_comercial = database.Column(database.Integer, database.ForeignKey('tickets_comerciais.id'))
     codigo_item = database.Column(database.String, database.ForeignKey('itens_estoque.codigo_item'))
     valor_item = database.Column(database.Float)
+    valor_item_rateio = database.Column(database.Float, default=0)
     qtd = database.Column(database.Float)
     # 0 - Ticket não finalizado
     # 1 - Ativo
