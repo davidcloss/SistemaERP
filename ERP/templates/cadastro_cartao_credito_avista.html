@@ -1,0 +1,58 @@
+{% extends 'home_vendas_mercadoria.html' %}
+
+{% block central %}
+    <div class="container">
+        <form method='POST' action="" class="border m-5 p-2">
+            {{ form.csrf_token }}
+            <legend>Cartão de Crédito à Vista:</legend>
+            <fieldset>
+                <div class="form-group">
+                    {{ form.pesquisa_fornecedor.label(class="form-control-label") }}
+                    {{ form.pesquisa_fornecedor(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.maquina_cartao.label(class="form-control-label") }}
+                    {{ form.maquina_cartao(class="form-control") }}
+                </div>
+                {% if parcelado %}
+                    <div class="form-group">
+                        {{ form.qtd_parcelas.label(class="form-control-label") }}
+                        {{ form.qtd_parcelas(class="form-control") }}
+                    </div>
+                {% endif %}
+                <div class="form-group">
+                    <div class="form-control-label">
+                        Valor Compra:
+                    </div>
+                    <div class="form-control">
+                       {{ ticket.valor_final }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-control-label">
+                        Valor Pago:
+                    </div>
+                    <div class="form-control">
+                        {{ valor_pago }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-control-label">
+                        Valor Restante:
+                    </div>
+                    <div class="form-control">
+                        {{ ticket.valor_final - valor_pago }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    {{ form.valor_compra.label(class="form-control-label") }}
+                    {{ form.valor_compra(class="form-control") }}
+                </div>
+                {% for i, parcela in enumerate(parcelas) %}
+                <p>{{ i + 1 }}º parcela: {{ parcela }}</p>
+                {% endfor %}
+            </fieldset>
+            {{ form.botao_submit(class="btn btn-primary m-1") }}
+        </form>
+    </div>
+{% endblock %}

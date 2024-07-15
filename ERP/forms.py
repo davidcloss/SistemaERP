@@ -95,6 +95,52 @@ class FormCadastroCompraEstoque(FlaskForm):
     botao_finalizar = SubmitField('Finalizar', name='finalizar')
 
 
+class FormCadastroVendaMercadoria(FlaskForm):
+    tipo_fornecedor = SelectField('Fornecedor CPF/CNPJ')
+    pesquisa_fornecedor = SelectField('Fornecedor:')
+    valor_desconto = StringField('Valor Desconto:')
+    valor_acrescimo = StringField('Valor Acréscimo:')
+    parcelas = StringField('Qtd. Parcelas:')
+    id_forma_pagamento = SelectField('Forma de Pagamento:')
+    pesquisa_item = StringField('Produto:')
+    qtd_item = StringField('Qtd. Itens')
+    situacao = SelectField('Situação Ticket:')
+    botao_pesquisar_item = SubmitField('Pesquisar Item', name='pesquisar_item')
+    botao_pesquisar_fornecedor = SubmitField('Pesquisar Fornecedor', name='pesquisar_fornecedor')
+    botao_inserir_pagamento = SubmitField('Inserir Pagamento', name='inserir_pagamento')
+    botao_finalizar = SubmitField('Finalizar', name='finalizar')
+
+
+class FormRegistraTrocoVenda(FlaskForm):
+    valor_recebido = StringField('Valor Recebido')
+    botao_calcular = SubmitField('Calcular troco.', name='calcular')
+    botao_finalizar = SubmitField('Finalizar Venda', name='finalizar')
+
+
+class FormParcelamentoProprio(FlaskForm):
+    pesquisa_fornecedor = SelectField('Cliente:')
+    valor_a_parcelar = StringField('Valor Parcelamento:')
+    qtd_parcelas = StringField('Qtd. Parcelas:')
+    botao_calcular = SubmitField('Calcular Parcelas', name='calcular')
+    botao_cadastrar = SubmitField('Cadastrar Parcelamento', name='cadastrar')
+
+
+class FormVendaCartaoCreditoAVista(FlaskForm):
+    pesquisa_fornecedor = SelectField('Cliente')
+    maquina_cartao = SelectField('Máquina de Cartão')
+    valor_compra = StringField('Valor Venda')
+    botao_submit = SubmitField('Cadastrar Pagamento')
+
+
+class FormVendaCartaoCreditoParcelado(FlaskForm):
+    pesquisa_fornecedor = SelectField('Cliente')
+    maquina_cartao = SelectField('Máquina de Cartão')
+    qtd_parcelas = StringField('Parcelas')
+    valor_compra = StringField('Valor Venda')
+    botao_submit = SubmitField('Cadastrar Pagamento')
+
+
+
 class FormTiposRoupas(FlaskForm):
     nome_tipo_roupa = StringField('Tipo Roupa:', validators=[DataRequired()])
     botao_submit = SubmitField('Cadastrar')
@@ -176,6 +222,20 @@ class FormItensEstoque(FlaskForm):
     botao_submit = SubmitField('Cadastrar')
 
 
+class FormItensNaoEncontrados(FlaskForm):
+    id_tipo_roupa = SelectField('Tipo Roupa')
+    id_genero = SelectField('Genero')
+    id_cor = SelectField('Cor')
+    id_marca = SelectField('Marca')
+    id_tamanho = SelectField('Tamanho')
+    id_tipo_unidade = SelectField('Tipo Unidade')
+    codigo_item = StringField('Código de Barras:', validators=[DataRequired(message='Código Item requerido')])
+    valor_total_custo = StringField('Valor total: (custo)')
+    valor_unitario_venda = StringField('Valor unitário: (venda)')
+    qtd_minima = StringField('Quantidade mínima:')
+    botao_submit = SubmitField('Cadastrar')
+
+
 class FormEditarItensEstoque(FlaskForm):
     id_tipo_roupa = SelectField('Tipo Roupa')
     id_genero = SelectField('Genero')
@@ -229,6 +289,7 @@ class FormAgenciaBancoEdicao(FlaskForm):
 
 class FormContaBancariaCadastro(FlaskForm):
     id_agencia = SelectField('Agência')
+    id_tipo_conta = SelectField('Tipo Conta')
     apelido_conta = StringField('Apelido conta', validators=[DataRequired(message='Favor incluir apelido conta')])
     nro_conta = StringField('Número conta', validators=[DataRequired(message='Favor incluir número conta')])
     digito_conta = StringField('Dígito conta', validators=[DataRequired(message='Favor incluir dígito conta')])
@@ -241,6 +302,7 @@ class FormContaBancariaCadastro(FlaskForm):
 
 class FormContaBancariaCadastro2(FlaskForm):
     id_agencia = SelectField('Agência')
+    id_tipo_conta = SelectField('Tipo Conta')
     apelido_conta = StringField('Apelido conta', validators=[DataRequired(message='Favor incluir apelido conta')])
     nro_conta = StringField('Número conta', validators=[DataRequired(message='Favor incluir número conta')])
     digito_conta = StringField('Dígito conta', validators=[DataRequired(message='Favor incluir dígito conta')])

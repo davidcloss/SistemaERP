@@ -133,7 +133,7 @@
                                     <td>{{ compra.qtd }}</td>
                                     <td>{{ compra.valor_item / compra.qtd }}</td>
                                     <td>{{ compra.valor_item }}</td>
-                                    <td><a href="{{ url_for('altera_status_item', id=compra.id) }}">x</a></td>
+                                    <td><a href="{{ url_for('altera_status_item', id=compra.id, tipo_ticket='2') }}">x</a></td>
                                 </tr>
                         {% endif %}
                     {% endfor %}

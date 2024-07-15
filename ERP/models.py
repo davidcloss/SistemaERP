@@ -225,6 +225,10 @@ class AgenciaBanco(database.Model):
 class ContasBancarias(database.Model):
     __tablename__ = 'contas_bancarias'
     id = database.Column(database.Integer, primary_key=True)
+    #  1 - Conta Caixa
+    #  2 - Conta Bancária
+    #  3 - Conta Máquina Cartão
+    id_tipo_conta = database.Column(database.Integer)
     id_agencia = database.Column(database.Integer, database.ForeignKey('agencia_bancos.id'))
     apelido_conta = database.Column(database.String, unique=True)
     nro_conta = database.Column(database.String)
@@ -320,7 +324,7 @@ class TicketsComerciais(database.Model):
     valor_ticket = database.Column(database.Float)
     valor_desconto = database.Column(database.Float)
     valor_acrescimo = database.Column(database.Float)
-    valor_final = database.Column(database.Float)
+    valor_final = database.Column(database.Float, default=0)
     parcelas = database.Column(database.Integer, default=1)
     id_forma_pagamento = database.Column(database.Integer, database.ForeignKey('formas_pagamento.id'))
     data_abertura = database.Column(database.DateTime)
@@ -335,17 +339,19 @@ class TicketsComerciais(database.Model):
     #  3 - Convertido a compra
     #  4 - Compra não recebida
     #  5 - Compra Recebida
-    #  6 - Enviado ao Financeiro
-    #  7 - Pagamento em Aberto
-    #  8 - Pagamento em atraso
-    #  9 - Pagamento parcial realizado em atraso
-    # 10 - Pagamento parcial realizado
-    # 11 - Pagamento realizado em atraso
-    # 12 - Pagamento realizado
-    # 13 - Cancelado
-    # 14 - Devolução parcial
-    # 15 - Devolução completa
-    # 16 - Finalizado
+    #  6 - Venda não finalizada
+    #  7 - Venda finalizada
+    #  8 - Enviado ao Financeiro
+    #  9 - Pagamento em Aberto
+    # 10 - Pagamento em atraso
+    # 11 - Pagamento parcial realizado em atraso
+    # 12 - Pagamento parcial realizado
+    # 13 - Pagamento realizado em atraso
+    # 14 - Pagamento realizado
+    # 15 - Cancelado
+    # 16 - Devolução parcial
+    # 17 - Devolução completa
+    # 18 - Finalizado
     situacao = database.Column(database.Integer)
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False, default=1)
 

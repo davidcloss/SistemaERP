@@ -1,0 +1,36 @@
+{% extends 'home_comercial.html' %}
+
+{% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col-3">
+            <div class="text-start">
+                <a href="{{ url_for('home_venda_mercadoria') }}">
+                    <img width="200" class="p-3" src="{{ url_for('static', filename='imagens/venda-por-telefone.png') }}">
+                </a>
+            </div>
+            {% block menus %}
+            <a href="{{ url_for('cadastra_venda') }}" class="link-central">
+                <h3 class="m-2 text-start">Cadastrar venda</h3>
+            </a>
+            <a href="{{ url_for('lista_tickets_vendas') }}" class="link-central">
+                <h3 class="m-2 text-start">Lista Tickets Venda</h3>
+            </a>
+            {% endblock %}
+            {% block editarpubli %}{% endblock %}
+        </div>
+        <div class="col-9 text-start p-3">
+            <div class="row">
+                <h1>Vendas Mercadorias:</h1>
+            </div>
+            <div class="row">
+                {% block submenu %}
+                {% endblock %}
+                {% block central %}
+                    <!-- Conteúdo dinâmico que será renderizado no bloco 'central' -->
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

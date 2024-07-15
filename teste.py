@@ -169,7 +169,7 @@ with app.app_context():
 
 
 with app.app_context():
-    fornecedor = ClientesFornecedores(nome_fantasia='Mimos', razao_social='Mimos LTDA',
+    fornecedor = ClientesFornecedores(nome_fantasia='Mimos', nome='Mimos', razao_social='Mimos LTDA',
                                       cnpj='12345678901234', rua='Rua do Centro',
                                       complemento='Loja 1', nro='201', bairro='Centro',
                                       cidade='Garibaldi', uf='RS', cep='95720000',
@@ -179,9 +179,18 @@ with app.app_context():
     database.session.add(fornecedor)
     database.session.commit()
 
+with app.app_context():
+    fornecedor = ClientesFornecedores(nome='Cliente não Identificado', cpf='00000000000',
+                                      rua='Rua do Centro', complemento='Nenhum', nro='0',
+                                      bairro='Centro', cidade='Garibaldi', uf='RS',
+                                      cep='00000000', data_aniversario=datetime.strptime('01/01/2002', '%d/%m/%Y'),
+                                      telefone='0000000000', email='teste@teste.com',
+                                      tipo_cadastro=3, id_usuario_cadastro=1)
+    database.session.add(fornecedor)
+    database.session.commit()
 
 with app.app_context():
-    fornecedor = ClientesFornecedores(nome_fantasia='Banco', razao_social='Banco LTDA',
+    fornecedor = ClientesFornecedores(nome_fantasia='Banco', nome='Banco', razao_social='Banco LTDA',
                                       cnpj='01234567890123', rua='Rua do Centro',
                                       complemento='Sala Térreo', nro='6001', bairro='Centro',
                                       cidade='Garibaldi', uf='RS', cep='95720000',
@@ -193,7 +202,7 @@ with app.app_context():
 
 
 # nao mexer na ordem da lista categorias
-categorias = [('Saldo Inicial Conta', 1), ('Fatura Cartão Crédito', 0), ('Descontos Recebidos', 1), ('Multas por atraso recebidas', 3), ('Compra Estoque', 2)]
+categorias = [('Saldo Inicial Conta', 1), ('Fatura Cartão Crédito', 0), ('Descontos Recebidos', 1), ('Multas por atraso recebidas', 3), ('Compra Estoque', 2), ('Venda Mercadoria', 1)]
 with app.app_context():
     for categoria in categorias:
         cat = CategoriasFinanceiras(nome_categoria=categoria[0],
@@ -216,7 +225,7 @@ with app.app_context():
 
 
 
-bancos = [(1, 'Banco do Brasil'), (41, 'Banrisul'), (750, 'Sicredi'), (756, 'Sicoob')]
+bancos = [(1, 'Banco do Brasil'), (41, 'Banrisul'), (750, 'Sicredi'), (756, 'Sicoob'), (0, 'Caixa')]
 with app.app_context():
     for banco in bancos:
         b = Bancos(cod_banco=banco[0],
@@ -225,7 +234,7 @@ with app.app_context():
         database.session.commit()
 
 
-agencia = {'agencia': '765', 'digito_agencia': '1', 'id_banco': 1, 'apelido_agencia': 'Teste-Agencia', 'id_cliente': 2}
+agencia = {'agencia': '0', 'digito_agencia': '0', 'id_banco': 5, 'apelido_agencia': 'Caixa', 'id_cliente': 1}
 with app.app_context():
     a = AgenciaBanco(agencia=agencia['agencia'],
                      digito_agencia=agencia['digito_agencia'],
@@ -237,9 +246,9 @@ with app.app_context():
 
 
 with app.app_context():
-    conta = ContasBancarias(id_agencia=1, apelido_conta='Teste Conta',
-                            nro_conta='1789', digito_conta='2',
-                            id_titular=1, cheque_especial=5000)
+    conta = ContasBancarias(id_agencia=1, apelido_conta='Caixa',
+                            nro_conta='0', digito_conta='0',
+                            id_titular=1, cheque_especial=0, id_tipo_conta=1)
     database.session.add(conta)
     database.session.commit()
     transacao = TransacoesFinanceiras(id_categoria_financeira=1,
@@ -247,7 +256,7 @@ with app.app_context():
                                       lote_transacao=1,
                                       tipo_transacao=1,
                                       id_conta_bancaria=1,
-                                      valor_transacao=-500,
+                                      valor_transacao=0,
                                       data_pagamento=datetime.now(),
                                       situacao_transacao=3)
     database.session.add(transacao)

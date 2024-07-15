@@ -4,7 +4,7 @@
     <div class="container">
         <form method='POST' action="" class="border m-5 p-2">
             {{ form_agencia.csrf_token }}
-            <legend>Cadastro bancos:</legend>
+            <legend>Cadastro Agência Bancária:</legend>
             <fieldset>
                 <div class="form-group">
                     {{ form_agencia.agencia.label(class="form-control-label") }}
@@ -25,6 +25,10 @@
                 <div class="form-group">
                     {{ form_agencia.id_cliente.label(class="form-control-label") }}
                     {{ form_agencia.id_cliente(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form_agencia.situacao.label(class="form-control-label") }}
+                    {{ form_agencia.situacao(class="form-control") }}
                 </div>
             </fieldset>
             {{ form_agencia.botao_finalizar(class="btn btn-primary m-1") }}
