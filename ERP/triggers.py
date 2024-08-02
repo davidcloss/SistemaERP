@@ -21,6 +21,13 @@ ativar_tg_usuarios = """
     EXECUTE FUNCTION atualiza_data_cadastro_function();
 """
 
+ativar_tg_cheques = """
+    CREATE TRIGGER atualiza_data_cadastro_cheques
+    BEFORE INSERT OR UPDATE ON cheques
+    FOR EACH ROW
+    EXECUTE FUNCTION atualiza_data_cadastro_function();
+"""
+
 ativar_tg_clientes_fornecedores = """
     CREATE TRIGGER atualiza_data_cadastro_clientes_fornecedores
     BEFORE INSERT OR UPDATE ON clientes_fornecedores
@@ -244,7 +251,7 @@ class Gatilhos:
             ativar_tg_formas_pagamento, ativar_tg_transacoes_financeiras, ativar_tg_documentos_fiscais,
             ativar_tg_tipo_ticket, ativar_tg_status_tickets, ativar_tg_tickets_comerciais,
             ativar_tg_validacao_faturas_cartao_credito, ativar_tg_conferencias, ativar_tg_formas_parcelamento,
-            ativar_tg_itens_tickets_comerciais]
+            ativar_tg_itens_tickets_comerciais, ativar_tg_cheques]
 
         # Executar cada gatilho na lista
         with self.app.app_context():

@@ -324,6 +324,64 @@ class FormContaBancariaEdicao(FlaskForm):
     botao_finalizar = SubmitField('Cadastrar', name='finalizar')
 
 
+class FormChequesPropriosCadastro(FlaskForm):
+    id_conta = SelectField('Conta Bancaria:')
+    comp = StringField('Comp:')
+    banco = StringField('Banco:')
+    agencia = StringField('Agência:')
+    conta = StringField('Conta:')
+    serie = StringField('Série:')
+    nro_cheque = StringField('Nº Cheque:')
+    valor_cheque = StringField('Valor Cheque:')
+    bom_para = DateField('Bom para:')
+    data_emissao = DateField('Data Emissão')
+    botao_submit = SubmitField('Cadastrar')
+
+
+class FormChequesTerceirosCadastro(FlaskForm):
+    id_cliente = SelectField('Cliente:')
+    comp = StringField('Comp:')
+    banco = StringField('Banco:')
+    agencia = StringField('Agência:')
+    conta = StringField('Conta:')
+    serie = StringField('Série:')
+    nro_cheque = StringField('Nº Cheque:')
+    valor_cheque = StringField('Valor Cheque:')
+    bom_para = DateField('Bom para:')
+    data_emissao = DateField('Data Emissão')
+    botao_submit = SubmitField('Cadastrar')
+
+
+class FormEditarChequesPropriosCadastro(FlaskForm):
+    id_conta = SelectField('Conta Bancaria:')
+    comp = StringField('Comp:')
+    banco = StringField('Banco:')
+    agencia = StringField('Agência:')
+    conta = StringField('Conta:')
+    serie = StringField('Série:')
+    nro_cheque = StringField('Nº Cheque:')
+    valor_cheque = StringField('Valor Cheque:')
+    bom_para = DateField('Bom para:')
+    data_emissao = DateField('Data Emissão')
+    situacao_cheque = SelectField('Situação Cheque:')
+    botao_submit = SubmitField('Cadastrar')
+
+
+class FormEditarChequesTerceirosCadastro(FlaskForm):
+    id_titular_cheque = SelectField('Cliente:')
+    comp = StringField('Comp:')
+    banco = StringField('Banco:')
+    agencia = StringField('Agência:')
+    conta = StringField('Conta:')
+    serie = StringField('Série:')
+    nro_cheque = StringField('Nº Cheque:')
+    valor_cheque = StringField('Valor Cheque:')
+    bom_para = DateField('Bom para:')
+    data_emissao = DateField('Data Emissão')
+    situacao_cheque = SelectField('Situação Cheque:')
+    botao_submit = SubmitField('Cadastrar')
+
+
 class FormCartaoCredito(FlaskForm):
     id_conta_bancaria = SelectField('Conta bancária')
     apelido_cartao = StringField('Apelido cartão de crédito', validators=[DataRequired(message='Favor incluir apelido cartão de crédito')])

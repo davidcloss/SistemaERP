@@ -245,6 +245,71 @@ class ContasBancarias(database.Model):
     situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
 
 
+class Cheques(database.Model):
+    __tabelname__ = 'cheques'
+    # 1 - Cheques Próprios terão vinculação com um id_conta
+    # 2 - Chequs terceiros terão dados de conta e demais dados cadastrados indivualmente
+    id = database.Column(database.Integer, primary_key=True)
+    ## TIPO CHEQUE ##
+    # 1 - Próprio
+    # 2 - Terceiro
+    id_tipo_cheque = database.Column(database.Integer, nullable=False)
+    id_titular_cheque = database.Column(database.Integer, database.ForeignKey('clientes_fornecedores.id'))
+    id_conta = database.Column(database.Integer, database.ForeignKey('contas_bancarias.id'))
+    comp = database.Column(database.String)
+    banco = database.Column(database.String)
+    agencia = database.Column(database.String)
+    conta = database.Column(database.String)
+    serie = database.Column(database.String)
+    nro_cheque = database.Column(database.String)
+    valor_cheque = database.Column(database.Float)
+    bom_para = database.Column(database.DateTime)
+    data_emissao = database.Column(database.DateTime)
+    compensado_em = database.Column(database.DateTime)
+    ## SITUACAO CHEQUE ##
+    # 0 - Em aberto: O cheque foi emitido, mas ainda não foi entregue ao beneficiário ou descontado.
+    # 1 - Emitido: O cheque foi preenchido e entregue pelo emitente ao beneficiário.
+    # 2 - Descontado: O beneficiário apresentou o cheque a um banco para recebimento imediato dos fundos, geralmente em troca de uma taxa.
+    # 3 - Compensado: O cheque foi processado pelo banco e os fundos foram transferidos da conta do emitente para a conta do beneficiário.
+    # 4 - Devolvido: O cheque foi devolvido pelo banco por algum motivo, como insuficiência de fundos, assinatura inválida, ou outras irregularidades.
+    # 5 - Sustado: O emitente solicitou ao banco a suspensão do pagamento do cheque antes que ele fosse descontado ou compensado.
+    # 6 - Cancelado: O cheque foi cancelado pelo emitente antes de ser entregue ao beneficiário ou foi destruído.
+    # 7 - Prescrito: O cheque não foi apresentado para pagamento dentro do prazo legal (geralmente 30 dias para cheques emitidos na mesma praça e 60 dias para cheques emitidos em outra praça).
+    # 8 - Extraviado: O cheque foi perdido ou roubado antes de ser descontado ou compensado.
+    # 9 - Pré-datado: O cheque foi emitido com uma data futura e o beneficiário deve esperar até essa data para apresentá-lo ao banco.
+    situacao_cheque = database.Column(database.Integer)
+    data_cadastro = database.Column(database.DateTime)
+    id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
+                                          default=1)
+    
+
+class TemporarioCheques(database.Model):
+    __tablename__ = 'temporario_cheques'
+    id = database.Column(database.Integer, primary_key=True)
+    id_tipo_cheque = database.Column(database.Integer, nullable=False)
+    id_titular_cheque = database.Column(database.Integer, database.ForeignKey('clientes_fornecedores.id'))
+    id_conta = database.Column(database.Integer, database.ForeignKey('contas_bancarias.id'))
+    comp = database.Column(database.String)
+    banco = database.Column(database.String)
+    agencia = database.Column(database.String)
+    conta = database.Column(database.String)
+    serie = database.Column(database.String)
+    valor_cheque = database.Column(database.Float)
+    data_emissao = database.Column(database.Float)
+    bom_para = database.Column(database.DateTime)
+    ## SITUACAO CHEQUE ##
+    # 1 - Emitido: O cheque foi preenchido e entregue pelo emitente ao beneficiário.
+    # 2 - Descontado: O beneficiário apresentou o cheque a um banco para recebimento imediato dos fundos, geralmente em troca de uma taxa.
+    # 3 - Compensado: O cheque foi processado pelo banco e os fundos foram transferidos da conta do emitente para a conta do beneficiário.
+    # 4 - Devolvido: O cheque foi devolvido pelo banco por algum motivo, como insuficiência de fundos, assinatura inválida, ou outras irregularidades.
+    # 5 - Sustado: O emitente solicitou ao banco a suspensão do pagamento do cheque antes que ele fosse descontado ou compensado.
+    # 6 - Cancelado: O cheque foi cancelado pelo emitente antes de ser entregue ao beneficiário ou foi destruído.
+    # 7 - Prescrito: O cheque não foi apresentado para pagamento dentro do prazo legal (geralmente 30 dias para cheques emitidos na mesma praça e 60 dias para cheques emitidos em outra praça).
+    # 8 - Extraviado: O cheque foi perdido ou roubado antes de ser descontado ou compensado.
+    # 9 - Pré-datado: O cheque foi emitido com uma data futura e o beneficiário deve esperar até essa data para apresentá-lo ao banco.
+    situacao_cheque = database.Column(database.Integer)
+
+
 class CartaoCredito(database.Model):
     __tablename__ = 'cartao_credito'
     id = database.Column(database.Integer, primary_key=True)
@@ -332,6 +397,7 @@ class TicketsComerciais(database.Model):
     data_devolucao = database.Column(database.DateTime)
     data_retirada = database.Column(database.DateTime)
     data_prazo = database.Column(database.DateTime)
+    observacoes = database.Column(database.String)
     data_cadastro = database.Column(database.DateTime)
     #  0 - Ticket não finalizado
     #  1 - Em condicional
@@ -412,6 +478,7 @@ class TransacoesFinanceiras(database.Model):
     lote_transacao = database.Column(database.Integer)
     tipo_transacao = database.Column(database.Integer)
     # 1 - Fluxo de Caixa 2 - Fora Fluxo de caixa 3 - Revisão Financeiro
+    id_cheque = database.Column(database.Integer, database.ForeignKey('cheques.id'))
     id_categoria_financeira = database.Column(database.Integer, database.ForeignKey('categorias_financeiras.id'), nullable=False)
     id_conta_bancaria = database.Column(database.Integer, database.ForeignKey('contas_bancarias.id'))
     id_cartao_credito = database.Column(database.Integer, database.ForeignKey('cartao_credito.id'))

@@ -1,0 +1,50 @@
+{% extends 'home_cheques.html' %}
+
+{% block central %}
+<div class="container">
+  <ul class="nav row nav-tabs justify-content-center"> <!-- Adicione a classe justify-content-center para centralizar a lista horizontalmente -->
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ cheques_em_aberto }} link-tabela text-center" href="{{ url_for('encaminha_lista_cheques', situacao='1', tipo=tipo_cheque) }}">Em aberto</a>
+    </li>
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ cheques_emitidos }} link-tabela text-center" href="{{ url_for('encaminha_lista_cheques', situacao='2', tipo=tipo_cheque) }}">Emitidos</a>
+    </li>
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ cheques_descontados }} link-tabela text-center" href="{{ url_for('encaminha_lista_cheques', situacao='3', tipo=tipo_cheque) }}">Descontados</a>
+    </li>
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ cheques_devolvidos_ou_extraviados }} link-tabela text-center" href="{{ url_for('encaminha_lista_cheques', situacao='4', tipo=tipo_cheque) }}">Devolvidos ou Extraviados</a>
+    </li>
+  </ul>
+
+  <ul class="nav row nav-tabs justify-content-center">
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ cheques_proprios }} link-tabela text-center" href="{{ url_for('encaminha_lista_cheques', situacao=str(aba_um), tipo='1') }}">Próprios</a>
+    </li>
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ cheques_terceiros }} link-tabela text-center" href="{{ url_for('encaminha_lista_cheques', situacao=str(aba_um), tipo='2') }}">Terceiros</a>
+    </li>
+  </ul>
+
+  <table class="table table-striped table-hover align-middle background">
+    <thead>
+      <tr>
+        <th style="width: 50px;">ID</th>
+        <th style="width: 150px;">Tipo</th>
+        <th style="width: 100px;">Valor</th>
+        <th style="width: 160px;">Situação</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for cheque in cheques %}
+      <tr>
+        <td><a class="link-tabela" href="{{ url_for('cheques', cheques_id=str(cheque.id)) }}">{{ cheque.id }}</a></td>
+        <td>{{ retorno_tipo_cheque(cheque.id_tipo_cheque) }}</td>
+        <td>{{ cheque.valor }}</td>
+        <td>{{ retorno_situacao_cheque(cheque.situacao_cheque) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

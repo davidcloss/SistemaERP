@@ -1,0 +1,33 @@
+{% extends 'cheques.html' %}
+
+{% block dados_lista %}
+<div class="container">
+
+  <table class="table table-striped table-hover align-middle background">
+    <thead>
+      <tr>
+        <th style="width: 50px;">Período</th>
+        <th style="width: 125px;">Valor</th>
+        <th style="width: 160px;">Situação Fatura</th>
+        <th style="width: 160px;">Data Inicial</th>
+        <th style="width: 160px;">Data Final</th>
+        <th style="width: 160px;">VCTO</th>
+        <th style="width: 160px;">PGTO</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for fatura in faturas %}
+      <tr>
+        <td><a class="link-tabela" href="{{ url_for('fatura_cartao_credito', id_cartao=str(fatura.id_cartao_credito), id_fatura=str(fatura.id)) }}">{{ fatura.cod_fatura[3:].replace('.', '/') }}</a></td>
+        <td>{{ fatura.valor_fatura }}</td>
+        <td>{{ situacao_fatura_retorno(fatura.situacao_fatura) }}</td>
+        <td>{{ converte_data_string(fatura.data_inicial) }}</td>
+        <td>{{ converte_data_string(fatura.data_final) }}</td>
+        <td>{{ converte_data_string(fatura.data_vcto) }}</td>
+        <td>{{ converte_data_string(fatura.data_pgto) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

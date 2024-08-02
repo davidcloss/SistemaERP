@@ -1,0 +1,35 @@
+{% extends 'home_cheques.html' %}
+
+{% block central %}
+    <div class="container">
+        <div class="container">
+  <ul class="nav row nav-tabs justify-content-center"> <!-- Adicione a classe justify-content-center para centralizar a lista horizontalmente -->
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ dados_cadastro }} link-tabela text-center" href="{{ url_for('cheques', cheques_id=cheque.id) }}">Dados Cadastro</a>
+    </li>
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ lista_faturas}} link-tabela text-center" href="">Transações Financeira</a>
+    </li>
+  </ul>
+            {% block dados_lista %}
+        <p>Tipo Cheque: {{ retorno_tipo_cheque(cheque.id_tipo_cheque)  }}</p>
+        <p>Titular Cheque: {{ titular.query.filter_by(id=cheque.id_titular_cheque).first().nome  }}</p>
+        {% if cheque.id_tipo_cheque == 1 %}
+        <p>Conta: {{ conta.query.filter_by(id=cheque.id_conta).first().apelido_conta }}</p>
+        {% endif %}
+        <p>Comp: {{ cheque.comp  }}</p>
+        <p>Banco: {{ cheque.banco  }}</p>
+        <p>Agência: {{ cheque.agencia  }}</p>
+        <p>Conta: {{ cheque.conta  }}</p>
+        <p>Série: {{ cheque.serie  }}</p>
+        <p>Nrº Cheque: {{ cheque.nro_cheque  }}</p>
+        <p>Valor Cheque: {{ cheque.valor_cheque  }}</p>
+        <p>Data Emissão: {{ converte_data_string(cheque.data_emissao) }} </p>
+        <p>Bom para: {{ converte_data_string(cheque.bom_para) }}</p>
+        <p>Usuario cadastro: {{ usuario.username  }}</p>
+        <p>Situação Cheque: {{ retorno_situacao_cheque(cheque.situacao_cheque) }}</p>
+        <a href="{{ url_for('editar_cheques', cheques_id=cheque.id) }}">Editar</a>
+            {% endblock %}
+    </div>
+{% endblock %}
+    </div>

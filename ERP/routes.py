@@ -9,17 +9,59 @@ from ERP.forms import FormContaBancariaCadastro, FormContaBancariaEdicao, FormGe
 from ERP.forms import FormCartaoCredito, FormCategoriasFinanceiras, FormEditarUsuario, FormEditarSenha, FormEditarTiposUnidades
 from ERP.forms import FormEditarTiposRoupas, FormEditarCores, FormEditarMarcas, FormEditarTamanhos, FormEditarGeneros
 from ERP.forms import FormCadastroDespesaCartaoCredito, FormCadastroCompraEstoque, FormRegistraTrocoVenda
-from ERP.forms import FormCadastroVendaMercadoria, FormItensNaoEncontrados, FormParcelamentoProprio
-from ERP.forms import FormVendaCartaoCreditoAVista, FormVendaCartaoCreditoParcelado
+from ERP.forms import FormCadastroVendaMercadoria, FormItensNaoEncontrados, FormParcelamentoProprio, FormChequesTerceirosCadastro
+from ERP.forms import FormVendaCartaoCreditoAVista, FormVendaCartaoCreditoParcelado, FormChequesPropriosCadastro
+from ERP.forms import FormEditarChequesPropriosCadastro, FormEditarChequesTerceirosCadastro
 from ERP.models import Usuarios, CadastroEmpresa, TiposCadastros, ClientesFornecedores, TiposUsuarios, TransacoesFinanceiras
 from ERP.models import TiposRoupas, Cores, Tamanhos, Marcas, TiposUnidades, ItensEstoque, SituacoesUsuarios
 from ERP.models import TransacoesEstoque, TiposTransacoesEstoque, Bancos, AgenciaBanco, ContasBancarias
 from ERP.models import CartaoCredito, GeneroRoupa, CategoriasFinanceiras, ValidacaoFaturasCartaoCredito, FaturaCartaoCredito
 from ERP.models import Conferencias, TicketsComerciais, DocumentosFiscais, FormasPagamento, FormasParcelamento
-from ERP.models import TemporariaCompraEstoque, ItensTicketsComerciais
+from ERP.models import TemporariaCompraEstoque, ItensTicketsComerciais, Cheques
 from flask_login import login_user, logout_user, current_user, login_required
 from datetime import datetime, timedelta
 from sqlalchemy import or_, and_, desc, func
+
+
+def cadastra_transacao_financeira_cheque(cheque, categoria_financeira, data_ocorrencia, id_ticket=False, nro_total_parcelas=False, nro_parcela_atual=False):
+    lote = busc_lote_transacao()
+    if cheque.tipo_cheque == 1:
+        conta = cheque.id_conta
+    elif cheque.tipo_cheque == 2:
+        conta = 1
+    else:
+        print('erro função cadastra_transacao_financeira')
+    transacao = TransacoesFinanceiras(tipo_lancamento=1,
+                                        lote_transacao=lote,
+                                        tipo_transacao=1,
+                                        id_cheque=cheque.id,
+                                        id_categoria_financeira=categoria_financeira,
+                                        id_conta_bancaria=conta,
+                                        id_ticket=id_ticket,
+                                        nro_total_parcelas=nro_total_parcelas,
+                                        nro_parcela_atual=nro_parcela_atual,
+                                        valor_transacao=cheque.valor_cheque,
+                                        data_ocorrencia=data_ocorrencia,
+                                        data_pagamento=cheque.compensado_em,
+                                        data_vencimento=cheque.bom_para,
+                                        id_usuario_cadastro=current_user.id)
+    database.session.add(transacao)
+    database.session.commit()
+
+
+
+def retorna_tupla_situacoes_cheque():
+    situacoes = [(0, 'Em aberto'),
+                 (1, 'Emitido'),
+                 (2, 'Descontado'),
+                 (3, 'Compensado'),
+                 (4, 'Devolvido'),
+                 (5, 'Sustado'),
+                 (6, 'Cancelado'),
+                 (7, 'Prescrito'),
+                 (8, 'Extraviado'),
+                 (9, 'Pré-datado')]
+    return situacoes    
 
 
 def atualizacao_geral_financeiro(conta=False, situacao=True):
@@ -1003,6 +1045,42 @@ def retorna_item_estoque(id_item):
 
 
 app.add_template_global(retorna_item_estoque, 'retorna_item_estoque')
+
+
+def retorno_situacao_cheque(sit):
+    if sit == 0:
+        return 'Em aberto'
+    if sit == 1:
+        return 'Emitido'
+    if sit == 2:
+        return 'Descontado'
+    if sit == 3:
+        return 'Compensado'
+    if sit == 4:
+        return 'Devolvido'
+    if sit == 5:
+        return 'Sustado'
+    if sit == 6:
+        return 'Cancelado'
+    if sit == 7:
+        return 'Prescrito'
+    if sit == 8:
+        return 'Extraviado'
+    if sit == 9:
+        return 'Pré-datado'
+
+
+app.add_template_global(retorno_situacao_cheque, 'retorno_situacao_cheque')
+
+
+def retorno_tipo_cheque(sit):
+    if sit == 1:
+        return 'Próprio'
+    else:
+        return 'Terceiro'
+    
+
+app.add_template_global(retorno_tipo_cheque, 'retorno_tipo_cheque')
 
 
 def retorno_situacao_fatura(sit):
@@ -3552,6 +3630,193 @@ def recalcula_contas_bancarias():
     atualizacao_geral_financeiro()
     return redirect(url_for('home_contas_bancarias'))
 
+
+@app.route('/financeiro/atributosbancos/cheques')
+@login_required
+def home_cheques():
+    return render_template('home_cheques.html')
+
+
+@app.route('/financeiro/atributosbancos/cheques/proprios/cadastro', methods=['GET', 'POST'])
+@login_required
+def cadastro_cheques_proprios():
+    form = FormChequesPropriosCadastro()
+    form.id_conta.choices = [(conta.id, conta.apelido_conta) for conta in ContasBancarias.query.filter(ContasBancarias.situacao == 1,
+                                                                                                       ContasBancarias.id_tipo_conta == 2).all()]
+    if form.validate_on_submit():
+        hoje = datetime.now()
+        cheque = Cheques(id_tipo_cheque=1,
+                         id_titular_cheque=ClientesFornecedores.query.filter(ClientesFornecedores.situacao == 1,
+                                                                             ClientesFornecedores.tipo_cadastro == 4).first().id,
+                         id_conta=int(form.id_conta.data),
+                         comp=form.comp.data,
+                         banco=form.banco.data,
+                         agencia=form.agencia.data,
+                         conta=form.conta.data,
+                         serie=form.serie.data,
+                         nro_cheque=form.nro_cheque.data,
+                         valor_cheque=recebe_form_valor_monetario(form.valor_cheque.data),
+                         bom_para=form.bom_para.data,
+                         data_emissao=form.data_emissao.data,
+                         situacao_cheque=0,
+                         data_cadastro=hoje,
+                         id_usuario_cadastro=current_user.id)
+        database.session.add(cheque)
+        database.session.commit()
+        flash(f"Cadastro concluído!", 'alert-success')
+        ## cheque_cadastrado = Cheques.query.filter(Cheques.nro_cheque == form.nro_cheque.data,
+        ##                                         Cheques.valor_cheque == recebe_form_valor_monetario(form.valor_cheque.data),
+        ##                                         Cheques.data_cadastro == hoje).first()
+        return redirect(url_for('home_cheques'))
+    return render_template('cadastro_cheques_proprios.html', form=form)
+
+
+@app.route('/financeiro/atributosbancos/cheques/terceiros/cadastro', methods=['GET', 'POST'])
+@login_required
+def cadastro_cheques_terceiros():
+    form = FormChequesTerceirosCadastro()
+    form.id_cliente.choices = [(cliente.id, cliente.nome) for cliente in ClientesFornecedores.query.filter(ClientesFornecedores.situacao == 1,
+                                                                                                       ClientesFornecedores.tipo_cadastro.in_([1,2,3])).all()]
+    if form.validate_on_submit():
+        hoje = datetime.now()
+        cheque = Cheques(id_tipo_cheque=2,
+                         id_titular_cheque=int(form.id_cliente.data),
+                         comp=form.comp.data,
+                         banco=form.banco.data,
+                         agencia=form.agencia.data,
+                         conta=form.conta.data,
+                         serie=form.serie.data,
+                         nro_cheque=form.nro_cheque.data,
+                         valor_cheque=recebe_form_valor_monetario(form.valor_cheque.data),
+                         bom_para=form.bom_para.data,
+                         data_emissao=form.data_emissao.data,
+                         situacao_cheque=0,
+                         data_cadastro=hoje,
+                         id_usuario_cadastro=current_user.id)
+        database.session.add(cheque)
+        database.session.commit()
+        flash(f"Cadastro concluído!", 'alert-success')
+        return redirect(url_for('home_cheques'))
+    return render_template('cadastro_cheques_terceiros.html', form=form)
+
+
+@app.route('/financeiro/atributosbancos/cheques/<cheques_id>')
+@login_required
+def cheques(cheques_id):
+    cheques = Cheques.query.filter_by(id=int(cheques_id)).first()
+    usuario = Usuarios.query.filter_by(id=cheques.id_usuario_cadastro).first()
+    return render_template('cheques.html', cheque=cheques, usuario=usuario, conta=ContasBancarias(), titular=ClientesFornecedores(), 
+                           dados_cadastro='active', lista_faturas=False)
+
+
+@app.route('/financeiro/atributosbancos/cheques/<cheques_id>/transacoesfinanceiras')
+@login_required
+def transacoes_financeiras_cheques(cheques_id):
+    cheque = Cheques.query.filter_by(id=int(cheques_id)).first()
+    transacoes = TransacoesFinanceiras.query.filter_by(id_cheque=int(cheques_id)).all()
+    return render_template('transacoes_cheques.html', dados_cadastro=False, lista_faturas='active',
+                           cheque=cheque, transacoes=transacoes)
+
+
+@app.route('/financeiro/atributosbancos/cheques/lista')
+@login_required
+def lista_cheques():
+    cheques_em_aberto = False
+    cheques_emitidos = False
+    cheques_descontados = False
+    cheques_devolvidos_ou_extraviados = False
+    cheques_proprios = False
+    cheques_terceiros = False
+    if not session.get('cheques_proprios') and not session.get('cheques_terceiros'):
+        cheques_proprios = 'active'
+        tipo_cheque = '1'
+    if session.get('cheques_proprios'):
+        cheques_proprios = 'active'
+        session.pop('cheques_proprios', None)
+        tipo_cheque = '1'
+    if session.get('cheques_terceiros'):
+        cheques_terceiros = 'active'
+        session.pop('cheques_terceiros', None)
+        tipo_cheque = '2'
+    if not session.get('cheques_em_aberto') and not session.get('cheques_emitidos') and not session.get('cheques_descontados') and not session.get('cheques_devolvidos_ou_extraviados'):
+        cheques_em_aberto = 'active'
+        aba_um = '1'
+        cheques = Cheques.query.filter(Cheques.id_tipo_cheque==int(tipo_cheque),
+                                       Cheques.situacao_cheque==0).order_by(Cheques.data_emissao).all()
+    if session.get('cheques_em_aberto'):
+        cheques_em_aberto = 'active'
+        aba_um = '1'
+        session.pop('cheques_em_aberto', None)
+        cheques = Cheques.query.filter(Cheques.id_tipo_cheque==int(tipo_cheque),
+                                       Cheques.situacao_cheque==0).order_by(Cheques.data_emissao).all()
+    if session.get('cheques_emitidos'):
+        cheques_emitidos = 'active'
+        aba_um = '2'
+        session.pop('cheques_emitidos', None)
+        cheques = Cheques.query.filter(Cheques.id_tipo_cheque==int(tipo_cheque),
+                                       Cheques.situacao_cheque.in_([1, 9])).order_by(Cheques.data_emissao).all()
+    if session.get('cheques_descontados'):
+        cheques_descontados = 'active'
+        aba_um = '3'
+        session.pop('cheques_descontados', None)
+        cheques = Cheques.query.filter(Cheques.id_tipo_cheque==int(tipo_cheque),
+                                       Cheques.situacao_cheque.in_([2, 3])).order_by(Cheques.data_emissao).all()
+    if session.get('cheques_devolvidos_ou_extraviados'):
+        cheques_devolvidos_ou_extraviados = 'active'
+        aba_um = '4'
+        session.pop('cheques_devolvidos_ou_extraviados', None)
+        cheques = Cheques.query.filter(Cheques.id_tipo_cheque==int(tipo_cheque),
+                                       Cheques.situacao_cheque.in_([4, 5, 6, 7, 8])).order_by(Cheques.data_emissao).all()
+    return render_template('lista_cheques.html', str=str, cheques_em_aberto=cheques_em_aberto,
+                           cheques_emitidos=cheques_emitidos, cheques_descontados=cheques_descontados,
+                           cheques_devolvidos_ou_extraviados=cheques_devolvidos_ou_extraviados, cheques_proprios=cheques_proprios, 
+                           cheques_terceiros=cheques_terceiros, tipo_cheque=tipo_cheque, aba_um=aba_um, cheques=cheques)
+
+
+@app.route('/financeiro/atributosbancos/cheques/lista/enc/<situacao>/<tipo>')
+@login_required
+def encaminha_lista_cheques(situacao, tipo):
+    if tipo == '1':
+        session['cheques_proprios'] = True
+    if tipo == '2':
+        session['cheques_terceiros'] = True
+    if situacao == '1':
+        session['cheques_em_aberto'] = True
+    elif situacao == '2':
+        session['cheques_emitidos'] = True
+    elif situacao == '3':
+        session['cheques_descontados'] = True
+    elif situacao == '4':
+        session['cheques_devolvidos_ou_extraviados'] = True
+    return redirect(url_for('lista_cheques'))
+
+
+@app.route('/financeiro/atributosbancos/cheques/<int:cheques_id>/edicao', methods=['GET', 'POST'])
+@login_required
+def editar_cheques(cheques_id):
+    cheque = Cheques.query.filter_by(id=int(cheques_id)).first()
+    if cheque.id_tipo_cheque == 1:
+        form = FormEditarChequesPropriosCadastro(obj=cheque)
+        form.id_conta.choices = [(conta.id, conta.apelido_conta) for conta in ContasBancarias.query.filter(ContasBancarias.situacao == 1,
+                                                                                                           ContasBancarias.id_tipo_conta == 2).all()]
+    else:
+        form = FormEditarChequesTerceirosCadastro(obj=cheque)
+        form.id_titular_cheque.choices = [(cliente.id, cliente.nome) for cliente in ClientesFornecedores.query.filter(ClientesFornecedores.situacao == 1,
+                                                                                                       ClientesFornecedores.tipo_cadastro.in_([1,2,3])).all()]
+    form.situacao_cheque.choices = retorna_tupla_situacoes_cheque()
+
+    if form.validate_on_submit():
+        form.populate_obj(cheque)
+        cheque.id_usuario_cadastro = current_user.id
+        database.session.commit()
+        flash(f"Edição concluída!", 'alert-success')
+        return redirect(url_for('cheques', cheques_id=int(cheques_id)))
+    
+    if cheque.id_tipo_cheque == 1:
+        return render_template('editar_cheques_proprios.html', form=form)
+    else:
+        return render_template('editar_cheques_terceiros.html', form=form)
+# TODO: Implementar verificação status cheque
 
 @app.route('/financeiro/atributosbancos/cartoescredito')
 @login_required

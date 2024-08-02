@@ -8,7 +8,7 @@ from ERP.models import Usuarios, SituacoesUsuarios, ClientesFornecedores, TiposC
                        ContasBancarias, CartaoCredito, FaturaCartaoCredito, CategoriasFinanceiras, \
                        TipoTicket, FormasPagamento, TransacoesFinanceiras, DocumentosFiscais, \
                        StatusTickets, TicketsComerciais, ValidacaoFaturasCartaoCredito, FormasParcelamento, \
-                       ItensTicketsComerciais, TemporariaCompraEstoque
+                       ItensTicketsComerciais, TemporariaCompraEstoque, Cheques
 
 
 def criar_deletar_db(cod):
@@ -35,7 +35,7 @@ tabelas = [Usuarios, SituacoesUsuarios, ClientesFornecedores, TiposCadastros, Ti
            ContasBancarias, CartaoCredito, FaturaCartaoCredito, CategoriasFinanceiras, \
            TipoTicket, FormasPagamento, TransacoesFinanceiras, DocumentosFiscais, \
            StatusTickets, TicketsComerciais, ValidacaoFaturasCartaoCredito, FormasParcelamento, \
-           ItensTicketsComerciais, TemporariaCompraEstoque]
+           ItensTicketsComerciais, TemporariaCompraEstoque, Cheques]
 
 
 # Chamar a função para cada modelo

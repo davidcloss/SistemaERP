@@ -1,0 +1,16 @@
+{% extends 'home_atributos_banco.html' %}
+
+            {% block menus %}
+            <a href="{{ url_for('cadastro_cheques_proprios') }}" class="link-central">
+                <h3 class="m-2 text-start">Cadastro Cheques Próprios</h3>
+            </a>
+            <a href="{{ url_for('cadastro_cheques_terceiros') }}" class="link-central">
+                <h3 class="m-2 text-start">Recebimento Cheques</h3>
+            </a>
+            <a href="{{ url_for('lista_cheques') }}" class="link-central">
+                <h3 class="m-2 text-start">Lista</h3>
+            </a>
+            {% endblock %}
+{% block submenu %}
+<h2>Cheques</h2>
+{% endblock %}

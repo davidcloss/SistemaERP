@@ -1,0 +1,54 @@
+{% extends 'home_cheques.html' %}
+
+{% block central %}
+    <div class="container">
+        <form method='POST' action="" class="border m-5 p-2">
+            {{ form.csrf_token }}
+            <legend>Cadastro bancos:</legend>
+            <fieldset>
+                <div class="form-group">
+                    {{ form.id_conta.label(class="form-control-label") }}
+                    {{ form.id_conta(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.comp.label(class="form-control-label") }}
+                    {{ form.comp(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.banco.label(class="form-control-label") }}
+                    {{ form.banco(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.agencia.label(class="form-control-label") }}
+                    {{ form.agencia(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.conta.label(class="form-control-label") }}
+                    {{ form.conta(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.serie.label(class="form-control-label") }}
+                    {{ form.serie(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.nro_cheque.label(class="form-control-label") }}
+                    {{ form.nro_cheque(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.valor_cheque.label(class="form-control-label") }}
+                    {{ form.valor_cheque(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.bom_para.label(class="form-control-label") }}
+                    {{ form.bom_para(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.data_emissao.label(class="form-control-label") }}
+                    {{ form.data_emissao(class="form-control") }}
+                </div>
+            </fieldset>
+            {{ form.botao_submit(class="btn btn-primary m-1") }}
+            
+        </form>
+    </div>
+{% endblock %}
