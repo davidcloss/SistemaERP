@@ -1,6 +1,8 @@
 from ERP import database, login_manager
 from datetime import datetime
 from flask_login import UserMixin
+from sqlalchemy import text  # Importar o método 'text' para comandos SQL nativos
+from sqlalchemy.sql import func
 
 
 class TiposUsuarios(database.Model):
@@ -26,6 +28,7 @@ class Usuarios(database.Model, UserMixin):
     data_cadastro = database.Column(database.DateTime)
     situacao = database.Column(database.Integer, database.ForeignKey('situacoes_usuarios.id'), default=1)
     tipo_usuario = database.Column(database.Integer, database.ForeignKey('tipos_usuarios.id'), nullable=False)
+    status_tickets = database.relationship('StatusTickets', backref='usuario', cascade='all, delete-orphan')
 
 
 class ClientesFornecedores(database.Model):
@@ -422,6 +425,23 @@ class TicketsComerciais(database.Model):
     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False, default=1)
 
 
+class StatusTickets(database.Model):
+    __tablename__ = 'status_tickets'
+    id = database.Column(database.Integer, primary_key=True)
+    id_tipo_status = database.Column(database.Integer)
+    id_transacao_estoque = database.Column(database.Integer, database.ForeignKey('transacoes_estoque.id'))
+    id_transacao_financeira = database.Column(database.Integer, database.ForeignKey('transacoes_financeiras.id'))
+    id_ticket_comercial = database.Column(database.Integer, database.ForeignKey('tickets_comerciais.id'))
+    status = database.Column(database.Integer)
+    situacao = database.Column(database.Integer, default=1)
+    data_cadastro = database.Column(database.DateTime, default=func.now())
+    id_usuario_cadastro = database.Column(
+        database.Integer, 
+        database.ForeignKey('usuarios.id', ondelete='CASCADE'), 
+        nullable=False
+    )
+
+
 class ItensTicketsComerciais(database.Model):
     __tablename__ = 'itens_tickets_comerciais'
     id = database.Column(database.Integer, primary_key=True)
@@ -474,7 +494,7 @@ class TransacoesFinanceiras(database.Model):
     __tablename__ = 'transacoes_financeiras'
     id = database.Column(database.Integer, primary_key=True)
     tipo_lancamento = database.Column(database.Integer)
-    # 1 - Débito/Crédito Conta Bancaria 2 - Extrato despesa fatura cartao credito, 3 - Receita Cartão de Crédito
+    # 1 - Débito/Crédito Conta Bancaria 2 - Extrato despesa fatura cartao credito, 3 - Receita Cartão de Crédito, 4 - Cheques Terceiros
     lote_transacao = database.Column(database.Integer)
     tipo_transacao = database.Column(database.Integer)
     # 1 - Fluxo de Caixa 2 - Fora Fluxo de caixa 3 - Revisão Financeiro
@@ -526,16 +546,22 @@ class TipoTicket(database.Model):
                                           default=1)
 
 
-class StatusTickets(database.Model):
-    __tablename__ = 'status_tickets'
-    id = database.Column(database.Integer, primary_key=True)
-    nome_status = database.Column(database.String(100), nullable=False)
-    quem_atende = database.Column(database.Integer)
-    #1 - Compras 2 - Vendas 3 - Condicionais 4 - Compra&Vendas 5 - Vendas&Condicionas 6 - Compras&Condicionais 7 - Compras&Vendas&Condicionais
-    situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
-    data_cadastro = database.Column(database.DateTime)
-    id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
-                                          default=1)
+# TODO: Verificar o que é, documentado no diario de bordo dia 06/08/2024
+# class StatusTickets(database.Model):
+#     __tablename__ = 'status_tickets'
+#     id = database.Column(database.Integer, primary_key=True)
+#     # 1 - Movimentação Estoque
+#     # 2 - Movimentação Financeiras
+#     id_tipo_satus = database.Column(database.Integer)
+#     id_transacao_estoque = database.Column(database.Integer, database.ForeignKey('transacoes_estoque.id'))
+#     id_transacao_financeira = database.Column(database.Integer, database.ForeignKey('transacoes_financeiras.id'))
+#     nome_status = database.Column(database.String(100), nullable=False)
+#     quem_atende = database.Column(database.Integer)
+#     #1 - Compras 2 - Vendas 3 - Condicionais 4 - Compra&Vendas 5 - Vendas&Condicionas 6 - Compras&Condicionais 7 - Compras&Vendas&Condicionais
+#     situacao = database.Column(database.Integer, default=1)  # 1 - ativo 2 - inativo
+#     data_cadastro = database.Column(database.DateTime)
+#     id_usuario_cadastro = database.Column(database.Integer, database.ForeignKey('usuarios.id'), nullable=False,
+#                                           default=1)
 
 
 class Conferencias(database.Model):

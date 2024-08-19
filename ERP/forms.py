@@ -117,6 +117,11 @@ class FormRegistraTrocoVenda(FlaskForm):
     botao_finalizar = SubmitField('Finalizar Venda', name='finalizar')
 
 
+class FormVendaChequeTerceiros(FlaskForm):
+    cheque = SelectField('Cheque:')
+    botao_submit = SubmitField('Cadastrar Pagamento')
+
+
 class FormParcelamentoProprio(FlaskForm):
     pesquisa_fornecedor = SelectField('Cliente:')
     valor_a_parcelar = StringField('Valor Parcelamento:')

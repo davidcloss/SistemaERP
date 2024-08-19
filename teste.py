@@ -2,25 +2,31 @@ from ERP import app, database, bcrypt
 from ERP.triggers import Gatilhos
 from datetime import datetime
 from ERP.logs_auditoria import create_audit_trigger
-from ERP.models import Usuarios, SituacoesUsuarios, ClientesFornecedores, TiposCadastros, TiposUsuarios, \
-                       CadastroEmpresa, GeneroRoupa, TiposRoupas, Cores, Tamanhos, Marcas, TiposUnidades, \
-                       ItensEstoque, TiposTransacoesEstoque, TransacoesEstoque, Bancos, AgenciaBanco, \
-                       ContasBancarias, CartaoCredito, FaturaCartaoCredito, CategoriasFinanceiras, \
-                       TipoTicket, FormasPagamento, TransacoesFinanceiras, DocumentosFiscais, \
-                       StatusTickets, TicketsComerciais, ValidacaoFaturasCartaoCredito, FormasParcelamento, \
-                       ItensTicketsComerciais, TemporariaCompraEstoque, Cheques
+from ERP.models import (
+    Usuarios, SituacoesUsuarios, ClientesFornecedores, TiposCadastros, TiposUsuarios,
+    CadastroEmpresa, GeneroRoupa, TiposRoupas, Cores, Tamanhos, Marcas, TiposUnidades,
+    ItensEstoque, TiposTransacoesEstoque, TransacoesEstoque, Bancos, AgenciaBanco,
+    ContasBancarias, CartaoCredito, FaturaCartaoCredito, CategoriasFinanceiras,
+    TipoTicket, FormasPagamento, TransacoesFinanceiras, DocumentosFiscais,
+    TicketsComerciais, ValidacaoFaturasCartaoCredito, FormasParcelamento,
+    ItensTicketsComerciais, TemporariaCompraEstoque, Cheques, StatusTickets
+)
+from sqlalchemy import text  # Importar o método 'text' para comandos SQL nativos
+from sqlalchemy.sql import func
 
 
-def criar_deletar_db(cod):
-    if cod == 1:
-        with app.app_context():
+def criar_deletar_db(opcao):
+    with app.app_context():
+        if opcao == 1:
             database.create_all()
-    elif cod == 2:
-        with app.app_context():
-            database.drop_all()
+        elif opcao == 2:
+            with database.engine.connect() as connection:
+                # Remover a restrição de chave estrangeira
+                connection.execute(text("ALTER TABLE status_tickets DROP CONSTRAINT IF EXISTS status_tickets_id_usuario_cadastro_fkey"))
+                # Deletar a tabela com CASCADE
+                connection.execute(text("DROP TABLE IF EXISTS usuarios CASCADE"))
 
 
-criar_deletar_db(2)
 criar_deletar_db(1)
 
 
@@ -212,8 +218,7 @@ with app.app_context():
 
 
 formas_pagamento = [('Dinheiro à vista', 3, 0), ('Dinheiro Parcelamento Próprio', 3, 1), ('Cheque Terceiro', 3, 0),
-                    ('Cheque Próprio', 1, 0), ('Cheque Terceiro Parcelado', 3, 1),
-                    ('Cheque Próprio Parcelado', 1, 1), ('Cartão Crédito à vista', 3, 0), ('Cratão Crédito Parcelado', 3, 1),
+                    ('Cheque Próprio', 1, 0), ('Cartão Crédito à vista', 3, 0), ('Cratão Crédito Parcelado', 3, 1),
                     ('Cartão de Débito à vista', 3, 0), ('Cartão de Débito Parcelado', 3, 1), ('Pix', 3, 0), ('Permuta', 3, 0)]
 with app.app_context():
     for forma in formas_pagamento:
