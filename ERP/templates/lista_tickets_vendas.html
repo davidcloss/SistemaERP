@@ -4,13 +4,13 @@
 <div class="container">
   <ul class="nav row nav-tabs justify-content-center"> <!-- Adicione a classe justify-content-center para centralizar a lista horizontalmente -->
     <li class="nav-item col m-3">
-      <a class="nav-link {{ tickets_nao_finalizados }} link-tabela text-center" href="{{ url_for('encaminha_lista_tickets_compras', situacao='1') }}">Tickets Não Finalizados</a>
+      <a class="nav-link {{ vendas_nao_finalizadas }} link-tabela text-center" href="{{ url_for('encaminha_lista_tickets_vendas', situacao='1') }}">Vendas não Finalizadas</a>
     </li>
     <li class="nav-item col m-3">
-      <a class="nav-link {{ tickets_compras_nao_recebidas }} link-tabela text-center" href="{{ url_for('encaminha_lista_tickets_compras', situacao='2') }}">Compras Não Recebidas</a>
+      <a class="nav-link {{ vendas_finalizadas }} link-tabela text-center" href="{{ url_for('encaminha_lista_tickets_vendas', situacao='2') }}">Vendas Finalizadas</a>
     </li>
     <li class="nav-item col m-3">
-      <a class="nav-link {{ tickets_compras_recebidas }} link-tabela text-center" href="{{ url_for('encaminha_lista_tickets_compras', situacao='3') }}">Compras Recebidas</a>
+      <a class="nav-link {{ vendas_devolvidas_ou_extornadas }} link-tabela text-center" href="{{ url_for('encaminha_lista_tickets_vendas', situacao='3') }}">Vendas Devolvidas ou extornadas</a>
     </li>
   </ul>
 

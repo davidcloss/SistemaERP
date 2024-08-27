@@ -2054,7 +2054,7 @@ def editar_ticket_compra(id_ticket):
 def home_venda_mercadoria():
     return render_template('home_vendas_mercadoria.html')
 
-
+# TODO: verificar calculo do troco ticket venda, calcula errado quando pagamentos anteriores existe
 @app.route('/comercial/vendamercadoria/cadastrar', methods=['GET', 'POST'])
 @login_required
 def cadastra_venda():
@@ -2063,8 +2063,9 @@ def cadastra_venda():
         ticket_atual = TicketsComerciais.query.filter_by(id=int(session['id_ticket'])).first()
 
         transacoes_financeiras = TransacoesFinanceiras.query.filter_by(id_ticket=int(session['id_ticket'])).all()
+        transacoes_financeiras_ = TransacoesFinanceiras.query.filter_by(id_ticket=int(session['id_ticket']))
         if transacoes_financeiras:
-            soma_valor_transacao = transacoes_financeiras.with_entities(func.sum(TransacoesFinanceiras.valor_transacao)).scalar()
+            soma_valor_transacao = transacoes_financeiras_.with_entities(func.sum(TransacoesFinanceiras.valor_transacao)).scalar()
             if soma_valor_transacao == ticket_atual.valor_final:
                 ticket_atual.situacao = 14
                 database.session.commit()
@@ -2411,32 +2412,32 @@ def registra_troco_venda():
 @app.route('/comercial/vendamercadoria/lista')
 @login_required
 def lista_tickets_vendas():
-    tickets_nao_finalizados = False
-    tickets_compras_nao_recebidas = False
-    tickets_compras_recebidas = False
-    if not session.get('tickets_nao_finalizados') and not session.get('tickets_compras_nao_recebidas') and not session.get('tickets_compras_recebidas'):
-        tickets_nao_finalizados = 'active'
-        tickets = TicketsComerciais.query.filter(TicketsComerciais.id_tipo_ticket == 2, TicketsComerciais.situacao == 0).order_by(TicketsComerciais.id.desc()).all()
-    if session.get('tickets_nao_finalizados'):
-        tickets_nao_finalizados = 'active'
-        session.pop('tickets_nao_finalizados', None)
-        tickets = TicketsComerciais.query.filter(TicketsComerciais.id_tipo_ticket == 2,
+    vendas_nao_finalizadas = False
+    vendas_finalizadas = False
+    vendas_devolvidas_ou_extornadas = False
+    if not session.get('vendas_nao_finalizadas') and not session.get('vendas_finalizadas') and not session.get('vendas_devolvidas_ou_extornadas'):
+        vendas_nao_finalizadas = 'active'
+        tickets = TicketsComerciais.query.filter(TicketsComerciais.id_tipo_ticket == 3, TicketsComerciais.situacao.in_([0,6])).order_by(TicketsComerciais.id.desc()).all()
+    if session.get('vendas_nao_finalizadas'):
+        vendas_nao_finalizadas = 'active'
+        session.pop('vendas_nao_finalizadas', None)
+        tickets = TicketsComerciais.query.filter(TicketsComerciais.id_tipo_ticket == 3,
                                                  TicketsComerciais.situacao == 0).order_by(
             TicketsComerciais.id.desc()).all()
-    if session.get('tickets_compras_nao_recebidas'):
-        tickets_compras_nao_recebidas = 'active'
-        session.pop('tickets_compras_nao_recebidas', None)
-        tickets = TicketsComerciais.query.filter(TicketsComerciais.id_tipo_ticket == 2,
+    if session.get('vendas_finalizadas'):
+        vendas_finalizadas = 'active'
+        session.pop('vendas_finalizadas', None)
+        tickets = TicketsComerciais.query.filter(TicketsComerciais.id_tipo_ticket == 3,
                                                  TicketsComerciais.situacao == 4).order_by(
             TicketsComerciais.id.desc()).all()
-    if session.get('tickets_compras_recebidas'):
-        tickets_compras_recebidas = 'active'
-        session.pop('tickets_compras_recebidas', None)
-        tickets = TicketsComerciais.query.filter(TicketsComerciais.id_tipo_ticket == 2,
+    if session.get('vendas_devolvidas_ou_extornadas'):
+        vendas_devolvidas_ou_extornadas = 'active'
+        session.pop('vendas_devolvidas_ou_extornadas', None)
+        tickets = TicketsComerciais.query.filter(TicketsComerciais.id_tipo_ticket == 3,
                                                  TicketsComerciais.situacao >= 5).order_by(
             TicketsComerciais.id.desc()).all()
-    return render_template('lista_tickets_vendas.html', str=str, tickets_nao_finalizados=tickets_nao_finalizados,
-                           tickets_compras_nao_recebidas=tickets_compras_nao_recebidas, tickets_compras_recebidas=tickets_compras_recebidas, tickets=tickets,
+    return render_template('lista_tickets_vendas.html', str=str, vendas_nao_finalizadas=vendas_nao_finalizadas,
+                           vendas_finalizadas=vendas_finalizadas, vendas_devolvidas_ou_extornadas=vendas_devolvidas_ou_extornadas, tickets=tickets,
                            fornecedores=ClientesFornecedores, tipos_doc=DocumentosFiscais, situacoes=retorna_situacoes_tickets(), forma_pagamento=FormasPagamento)
 
 
@@ -2444,12 +2445,12 @@ def lista_tickets_vendas():
 @login_required
 def encaminha_lista_tickets_vendas(situacao):
     if situacao == '1':
-        session['tickets_nao_finalizados'] = True
+        session['vendas_nao_finalizadas'] = True
     elif situacao == '2':
-        session['tickets_compras_nao_recebidas'] = True
+        session['vendas_finalizadas'] = True
     elif situacao == '3':
-        session['tickets_compras_recebidas'] = True
-    return redirect(url_for('lista_tickets_compras'))
+        session['vendas_devolvidas_ou_extornadas'] = True
+    return redirect(url_for('lista_tickets_vendas'))
 
 
 @app.route('/comercial/vendamercadoria/<id_ticket>')
