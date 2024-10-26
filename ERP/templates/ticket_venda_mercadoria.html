@@ -1,0 +1,75 @@
+{% extends 'home_vendas_mercadoria.html' %}
+{% block editarpubli %}
+<a href="{{ url_for('editar_ticket_venda', id_ticket=ticket.id) }}" class="link-central">
+                <h3 class="m-2 text-start">Editar Ticket</h3>
+            </a>
+{% endblock %}
+{% block central %}
+    <div class="container">
+        <div class="container">
+  <ul class="nav row nav-tabs justify-content-center"> <!-- Adicione a classe justify-content-center para centralizar a lista horizontalmente -->
+    <li class="nav-item col m-3">
+      <a class="nav-link {{ dados_ticket }} link-tabela text-center" href="">Dados Ticket</a>
+    </li>
+    <li class="nav-item col m-3">
+      <a class="nav-link link-tabela {{ lista_faturas }} text-center" href="">Lista Faturas</a>
+    </li>
+  </ul>
+            {% block dados_lista %}
+                <p>Compra cod.: {{ ticket.id  }}</p>
+                <p>Situação Ticket: {{ situacoes[ticket.situacao]  }}</p>
+                <p>Tipo Documento Fiscal: {{ tipos_doc.query.filter_by(id=ticket.id_documento_fiscal).first().nome_documento }}</p>
+                <p>Nº Doc Fiscal: {{ ticket.nro_documento_fiscal if ticket.nro_documento_fiscal is not none else '' }}</p>
+                <p>Data Emissão Documento Fiscal: {{ converte_data_string(ticket.emissao_documento_fiscal)  }}</p>
+                <p>Cliente: {{ clientes.query.filter_by(id=ticket.id).first().nome }}</p>
+                <p>Valor Desconto: {{ ticket.valor_desconto }}</p>
+                <p>Valor Acréscimo: {{ ticket.valor_acrescimo }}</p>
+                <p>Qtd. Parcelas: {{ ticket.parcelas }}</p>
+                <p>Forma de Pagamento: {{  ''}}</p>
+                <hr>
+            <h3>Itens Comprados:</h3><table class="table table-striped table-hover align-middle background">
+    <thead>
+      <tr>
+        <th style="width: 70px;">Cód Produto</th>
+        <th style="width: 150px;">Produto</th>
+        <th style="width: 100px;">Valor Unit. Produto</th>
+        <th style="width: 70px;">Qtd. Produto</th>
+        <th style="width: 100px;">Valor Total Produto</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in itens %}
+      {% set nome_item = cria_nome_item_estoque(estoque.query.filter_by(codigo_item=item.codigo_item).first().id) %}
+      <tr>
+        <td>{{ item.codigo_item }}</td>
+        <td>{{ nome_item }}</td>
+        <td>{{ item.valor_item / item.qtd }}</td>
+        <td>{{ item.qtd }}</td>
+        <td>{{ item.valor_item }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+            <hr>
+            <div class="row">
+                <div class="col">
+                    <strong>Valor Produtos: {{ ticket.valor_ticket }}</strong>
+                </div>
+                <div class="col">
+                    <strong>Valor Desconto: {{ ticket.valor_desconto }}</strong>
+                </div>
+                <div class="col">
+                    <strong>Valor Acréscimo: {{ ticket.valor_acrescimo }}</strong>
+                </div>
+                <div class="col">
+                    <strong>Valor Final: {{ ticket.valor_final }}</strong>
+                </div>
+                <div class="col">
+                  <strong>Valor Pago: {{ pagamentos }}</strong>
+              </div>
+            </div>
+            {% endblock %}
+    </div>
+</div>
+{% endblock %}
+

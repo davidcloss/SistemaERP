@@ -18,30 +18,22 @@
     <thead>
       <tr>
         <th style="width: 70px;">Cód Ticket</th>
-        <th style="width: 150px;">Fornecedor</th>
-        <th style="width: 70px;">Tipo Documento Fiscal</th>
-        <th style="width: 160px;">Nro Documento Fiscal</th>
-        <th style="width: 160px;">Valor Final Ticket</th>
-        <th style="width: 160px;">Forma Pagamento</th>
-        <th style="width: 100px;">Data Chegada</th>
-        <th style="width: 100px;">Situação</th>
+        <th style="width: 180px;">Nome Cliente</th>
+        <th style="width: 70px;">Valor Final</th>
+        <th style="width: 90px;">Qtd Itens</th>
+        <th style="width: 90px;">Data Venda</th>
+        <th style="width: 70px;">Situação</th>
       </tr>
     </thead>
     <tbody>
       {% for ticket in tickets %}
       <tr>
-        <td><a class="link-tabela" href="{{ url_for('ticket_compra_estoque', id_ticket=ticket.id) }}">{{ ticket.id }}</a></td>
-        {% set fornecedor = fornecedores.query.filter_by(id=ticket.id_fornecedor).first() %}
-        {% if fornecedor.cpf %}
-            <td>{{ fornecedor.nome }}</td>
-        {% else %}
-          <td>{{ fornecedor.nome_fantasia }}</td>
-        {% endif %}
-        <td>{{ tipos_doc.query.filter_by(id=ticket.id_documento_fiscal).first().nome_documento }}</td>
-        <td>{{ ticket.nro_documento_fiscal }}</td>
+        <td><a class="link-tabela" href="{{ url_for('ticket_venda_mercadoria', id_ticket=ticket.id) }}">{{ ticket.id }}</a></td>
+        <td>{{ clientes.query.filter_by(id=ticket.id_cliente).first().nome }}</td>
         <td>{{ ticket.valor_final }}</td>
-        <td>{{ forma_pagamento.query.filter_by(id=ticket.id_forma_pagamento).first().nome_forma_pagamento }}</td>
-        <td>{{ converte_data_string(ticket.data_chegada) }}</td>
+        <td>{{ database.session.query(func.sum(itens_tickets.qtd)).filter(itens_tickets.id_ticket_comercial == ticket.id, itens_tickets.situacao_item_ticket.in_([0, 1])).scalar() or 0
+        }}</td>
+        <td>{{ converte_data_string(ticket.data_abertura) }}</td>
         <td>{{ situacoes[ticket.situacao] }}</td>
       </tr>
       {% endfor %}

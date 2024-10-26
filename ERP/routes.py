@@ -2235,7 +2235,7 @@ def cadastra_venda():
             
             transacoes = TransacoesEstoque.query.filter(TransacoesEstoque.id_ticket == ticket_atual.id,
                                                         TransacoesEstoque.situacao == 1).first()
-            
+            popula_ticket(ticket_atual, form, 7, id_ticket=ticket_atual.id)
             if transacoes:
                 cria_transacao_estoque(itens, ticket_atual, 2)
             cria_transacao_estoque(itens, ticket_atual, 3)
@@ -2421,24 +2421,21 @@ def lista_tickets_vendas():
     if session.get('vendas_nao_finalizadas'):
         vendas_nao_finalizadas = 'active'
         session.pop('vendas_nao_finalizadas', None)
-        tickets = TicketsComerciais.query.filter(TicketsComerciais.id_tipo_ticket == 3,
-                                                 TicketsComerciais.situacao == 0).order_by(
-            TicketsComerciais.id.desc()).all()
+        tickets = TicketsComerciais.query.filter(TicketsComerciais.id_tipo_ticket == 3, TicketsComerciais.situacao.in_([0,6])).order_by(TicketsComerciais.id.desc()).all()
     if session.get('vendas_finalizadas'):
         vendas_finalizadas = 'active'
         session.pop('vendas_finalizadas', None)
         tickets = TicketsComerciais.query.filter(TicketsComerciais.id_tipo_ticket == 3,
-                                                 TicketsComerciais.situacao == 4).order_by(
+                                                 TicketsComerciais.situacao == 7).order_by(
             TicketsComerciais.id.desc()).all()
     if session.get('vendas_devolvidas_ou_extornadas'):
         vendas_devolvidas_ou_extornadas = 'active'
         session.pop('vendas_devolvidas_ou_extornadas', None)
-        tickets = TicketsComerciais.query.filter(TicketsComerciais.id_tipo_ticket == 3,
-                                                 TicketsComerciais.situacao >= 5).order_by(
-            TicketsComerciais.id.desc()).all()
+        tickets = TicketsComerciais.query.filter(TicketsComerciais.id_tipo_ticket == 3, TicketsComerciais.situacao.in_([2,16,17])).order_by(TicketsComerciais.id.desc()).all()
     return render_template('lista_tickets_vendas.html', str=str, vendas_nao_finalizadas=vendas_nao_finalizadas,
                            vendas_finalizadas=vendas_finalizadas, vendas_devolvidas_ou_extornadas=vendas_devolvidas_ou_extornadas, tickets=tickets,
-                           fornecedores=ClientesFornecedores, tipos_doc=DocumentosFiscais, situacoes=retorna_situacoes_tickets(), forma_pagamento=FormasPagamento)
+                           tipos_doc=DocumentosFiscais, situacoes=retorna_situacoes_tickets(), forma_pagamento=FormasPagamento,clientes=ClientesFornecedores,
+                           itens_tickets = ItensTicketsComerciais, database=database, func=func)
 
 
 @app.route('/comercial/vendamercadoria/lista/enc/<situacao>')
@@ -2460,18 +2457,17 @@ def ticket_venda_mercadoria(id_ticket):
         session.pop('faturas_ticket', None)
         return redirect(url_for('faturas_ticket_compra', id_ticket=id_ticket))
     else:
+
         #TODO: por encaminhamento para outras paginas quando não for ticket compra estoque
         ticket = TicketsComerciais.query.filter_by(id=int(id_ticket)).first()
-        forncedor = ClientesFornecedores.query.filter_by(id=ticket.id_fornecedor).first()
-        if forncedor.cpf:
-            nome_fornecedor = forncedor.nome
-        else:
-            nome_fornecedor = forncedor.nome_fantasia
+        
+        pagamentos = retorna_total_faturas_ticket_venda(ticket.id)
 
         itens = ItensTicketsComerciais.query.filter(ItensTicketsComerciais.id_ticket_comercial == ticket.id,
                                                     ItensTicketsComerciais.situacao_item_ticket.in_([0,1])).all()
-        return render_template('ticket_compra_estoque.html', ticket=ticket, situacoes=retorna_situacoes_tickets(), nome_fornecedor=nome_fornecedor,
-                           tipos_doc=DocumentosFiscais, fornecedor=forncedor, forma_pagamento=FormasPagamento, dados_ticket='active', lista_faturas=False, itens=itens, estoque=ItensEstoque)
+        return render_template('ticket_venda_mercadoria.html', ticket=ticket, situacoes=retorna_situacoes_tickets(),
+                           tipos_doc=DocumentosFiscais, forma_pagamento=FormasPagamento, dados_ticket='active', lista_faturas=False, itens=itens, 
+                           estoque=ItensEstoque, clientes=ClientesFornecedores, pagamentos=pagamentos)
 
 
 @app.route('/comercial/vendamercadoria/<id_ticket>/enc/faturas')
@@ -2491,15 +2487,15 @@ def faturas_ticket_venda(id_ticket):
                            ticket=ticket, categorias=CategoriasFinanceiras, contas=ContasBancarias, cartoes=CartaoCredito, faturass=FaturaCartaoCredito)
 
 
-@app.route('/comercial/compraestoque/<id_ticket>/enc/editar')
+@app.route('/comercial/vendamercadoria/<id_ticket>/enc/editar')
 @login_required
 def editar_ticket_venda(id_ticket):
     ticket = TicketsComerciais.query.filter_by(id=int(id_ticket)).first()
-    if ticket.situacao not in [0, 4, 5, 6]:
-        flash('Ticket já possui faturas lançadas, favor falar com o financeiro', 'alert-danger')
-        return redirect(url_for('ticket_compra_estoque', id_ticket=id_ticket))
+    # if ticket.situacao not in [0, 6]:
+    #     flash('Ticket já possui faturas lançadas, favor falar com o financeiro', 'alert-danger')
+    #     return redirect(url_for('ticket_venda_mercadoria', id_ticket=id_ticket))
     session['id_ticket'] = int(id_ticket)
-    return redirect(url_for('cadastra_compra'))
+    return redirect(url_for('cadastra_venda'))
 
 # TICKETS CONDICIONAIS
 

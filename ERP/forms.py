@@ -96,8 +96,8 @@ class FormCadastroCompraEstoque(FlaskForm):
 
 
 class FormCadastroVendaMercadoria(FlaskForm):
-    tipo_fornecedor = SelectField('Fornecedor CPF/CNPJ')
-    pesquisa_fornecedor = SelectField('Fornecedor:')
+    tipo_fornecedor = SelectField('Cliente CPF/CNPJ')
+    pesquisa_fornecedor = SelectField('Cliente:')
     valor_desconto = StringField('Valor Desconto:')
     valor_acrescimo = StringField('Valor Acréscimo:')
     parcelas = StringField('Qtd. Parcelas:')
@@ -106,7 +106,7 @@ class FormCadastroVendaMercadoria(FlaskForm):
     qtd_item = StringField('Qtd. Itens')
     situacao = SelectField('Situação Ticket:')
     botao_pesquisar_item = SubmitField('Pesquisar Item', name='pesquisar_item')
-    botao_pesquisar_fornecedor = SubmitField('Pesquisar Fornecedor', name='pesquisar_fornecedor')
+    botao_pesquisar_fornecedor = SubmitField('Pesquisar Cliente', name='pesquisar_fornecedor')
     botao_inserir_pagamento = SubmitField('Inserir Pagamento', name='inserir_pagamento')
     botao_finalizar = SubmitField('Finalizar', name='finalizar')
 

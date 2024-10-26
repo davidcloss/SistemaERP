@@ -404,7 +404,7 @@ class TicketsComerciais(database.Model):
     data_cadastro = database.Column(database.DateTime)
     #  0 - Ticket não finalizado
     #  1 - Em condicional
-    #  2 - Devolvido
+    #  2 - Extornado
     #  3 - Convertido a compra
     #  4 - Compra não recebida
     #  5 - Compra Recebida
